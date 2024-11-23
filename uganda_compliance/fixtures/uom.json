@@ -1,0 +1,7052 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "102",
+  "enabled": 1,
+  "modified": "2024-10-29 15:08:44.832475",
+  "must_be_whole_number": 0,
+  "name": "LTS",
+  "uom_name": "LTS"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "102",
+  "enabled": 1,
+  "modified": "2024-10-29 15:09:02.140217",
+  "must_be_whole_number": 0,
+  "name": "SLT",
+  "uom_name": "SLT"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PP",
+  "enabled": 1,
+  "modified": "2024-10-29 15:09:18.436381",
+  "must_be_whole_number": 0,
+  "name": "PCS",
+  "uom_name": "PCS"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-09-16 14:11:12.185664",
+  "must_be_whole_number": 0,
+  "name": "Tons",
+  "uom_name": "Tons"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "UN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:07.165126",
+  "must_be_whole_number": 1,
+  "name": "Unit",
+  "uom_name": "Unit"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "110",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:07.140175",
+  "must_be_whole_number": 1,
+  "name": "Box",
+  "uom_name": "Box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "111",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:07.093958",
+  "must_be_whole_number": 1,
+  "name": "Pair",
+  "uom_name": "Pair"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SET",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:07.072415",
+  "must_be_whole_number": 1,
+  "name": "Set",
+  "uom_name": "Set"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "200",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:07.048906",
+  "must_be_whole_number": 0,
+  "name": "Meter",
+  "uom_name": "Meter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.347101",
+  "must_be_whole_number": 0,
+  "name": "Barleycorn",
+  "uom_name": "Barleycorn"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.350244",
+  "must_be_whole_number": 0,
+  "name": "Calibre",
+  "uom_name": "Calibre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.353711",
+  "must_be_whole_number": 0,
+  "name": "Cable Length (UK)",
+  "uom_name": "Cable Length (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.356282",
+  "must_be_whole_number": 0,
+  "name": "Cable Length (US)",
+  "uom_name": "Cable Length (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.360583",
+  "must_be_whole_number": 0,
+  "name": "Cable Length",
+  "uom_name": "Cable Length"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CMT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.947228",
+  "must_be_whole_number": 0,
+  "name": "Centimeter",
+  "uom_name": "Centimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.367131",
+  "must_be_whole_number": 0,
+  "name": "Chain",
+  "uom_name": "Chain"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DMT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.897739",
+  "must_be_whole_number": 0,
+  "name": "Decimeter",
+  "uom_name": "Decimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.371810",
+  "must_be_whole_number": 0,
+  "name": "Ells (UK)",
+  "uom_name": "Ells (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.374127",
+  "must_be_whole_number": 0,
+  "name": "Ems(Pica)",
+  "uom_name": "Ems(Pica)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.378181",
+  "must_be_whole_number": 0,
+  "name": "Fathom",
+  "uom_name": "Fathom"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FOT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.836188",
+  "must_be_whole_number": 0,
+  "name": "Foot",
+  "uom_name": "Foot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.382861",
+  "must_be_whole_number": 0,
+  "name": "Furlong",
+  "uom_name": "Furlong"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.384990",
+  "must_be_whole_number": 0,
+  "name": "Hand",
+  "uom_name": "Hand"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.387392",
+  "must_be_whole_number": 0,
+  "name": "Hectometer",
+  "uom_name": "Hectometer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.390322",
+  "must_be_whole_number": 0,
+  "name": "Inch",
+  "uom_name": "Inch"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "206",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.770139",
+  "must_be_whole_number": 0,
+  "name": "Kilometer",
+  "uom_name": "Kilometer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.395681",
+  "must_be_whole_number": 0,
+  "name": "Link",
+  "uom_name": "Link"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.398108",
+  "must_be_whole_number": 0,
+  "name": "Micrometer",
+  "uom_name": "Micrometer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.400355",
+  "must_be_whole_number": 0,
+  "name": "Mile",
+  "uom_name": "Mile"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.405397",
+  "must_be_whole_number": 0,
+  "name": "Mile (Nautical)",
+  "uom_name": "Mile (Nautical)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.408129",
+  "must_be_whole_number": 0,
+  "name": "Millimeter",
+  "uom_name": "Millimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.410416",
+  "must_be_whole_number": 0,
+  "name": "Nanometer",
+  "uom_name": "Nanometer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.675434",
+  "must_be_whole_number": 0,
+  "name": "Rod",
+  "uom_name": "Rod"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.418708",
+  "must_be_whole_number": 0,
+  "name": "Vara",
+  "uom_name": "Vara"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.423721",
+  "must_be_whole_number": 0,
+  "name": "Versta",
+  "uom_name": "Versta"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "112",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.630098",
+  "must_be_whole_number": 0,
+  "name": "Yard",
+  "uom_name": "Yard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.431588",
+  "must_be_whole_number": 0,
+  "name": "Arshin",
+  "uom_name": "Arshin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.434325",
+  "must_be_whole_number": 0,
+  "name": "Sazhen",
+  "uom_name": "Sazhen"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.436713",
+  "must_be_whole_number": 0,
+  "name": "Medio Metro",
+  "uom_name": "Medio Metro"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.445729",
+  "must_be_whole_number": 0,
+  "name": "Square Meter",
+  "uom_name": "Square Meter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.448151",
+  "must_be_whole_number": 0,
+  "name": "Centiarea",
+  "uom_name": "Centiarea"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.451244",
+  "must_be_whole_number": 0,
+  "name": "Area",
+  "uom_name": "Area"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.453787",
+  "must_be_whole_number": 0,
+  "name": "Manzana",
+  "uom_name": "Manzana"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.456081",
+  "must_be_whole_number": 0,
+  "name": "Caballeria",
+  "uom_name": "Caballeria"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.458469",
+  "must_be_whole_number": 0,
+  "name": "Square Kilometer",
+  "uom_name": "Square Kilometer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.460993",
+  "must_be_whole_number": 0,
+  "name": "Are",
+  "uom_name": "Are"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.463884",
+  "must_be_whole_number": 0,
+  "name": "Acre",
+  "uom_name": "Acre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.466437",
+  "must_be_whole_number": 0,
+  "name": "Acre (US)",
+  "uom_name": "Acre (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.469160",
+  "must_be_whole_number": 0,
+  "name": "Hectare",
+  "uom_name": "Hectare"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YDK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.446771",
+  "must_be_whole_number": 0,
+  "name": "Square Yard",
+  "uom_name": "Square Yard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FTK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.424699",
+  "must_be_whole_number": 0,
+  "name": "Square Foot",
+  "uom_name": "Square Foot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "INK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.390102",
+  "must_be_whole_number": 0,
+  "name": "Square Inch",
+  "uom_name": "Square Inch"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CMK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.365528",
+  "must_be_whole_number": 0,
+  "name": "Square Centimeter",
+  "uom_name": "Square Centimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.481980",
+  "must_be_whole_number": 0,
+  "name": "Square Mile",
+  "uom_name": "Square Mile"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.484281",
+  "must_be_whole_number": 0,
+  "name": "Meter/Second",
+  "uom_name": "Meter/Second"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.486645",
+  "must_be_whole_number": 0,
+  "name": "Inch/Minute",
+  "uom_name": "Inch/Minute"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.489103",
+  "must_be_whole_number": 0,
+  "name": "Foot/Minute",
+  "uom_name": "Foot/Minute"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.492775",
+  "must_be_whole_number": 0,
+  "name": "Inch/Second",
+  "uom_name": "Inch/Second"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.495027",
+  "must_be_whole_number": 0,
+  "name": "Kilometer/Hour",
+  "uom_name": "Kilometer/Hour"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.498445",
+  "must_be_whole_number": 0,
+  "name": "Foot/Second",
+  "uom_name": "Foot/Second"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.500979",
+  "must_be_whole_number": 0,
+  "name": "Mile/Hour",
+  "uom_name": "Mile/Hour"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.504166",
+  "must_be_whole_number": 0,
+  "name": "Knot",
+  "uom_name": "Knot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.510105",
+  "must_be_whole_number": 0,
+  "name": "Mile/Minute",
+  "uom_name": "Mile/Minute"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.512365",
+  "must_be_whole_number": 0,
+  "name": "Mile/Second",
+  "uom_name": "Mile/Second"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.514682",
+  "must_be_whole_number": 0,
+  "name": "Carat",
+  "uom_name": "Carat"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.517689",
+  "must_be_whole_number": 0,
+  "name": "Cental",
+  "uom_name": "Cental"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.520691",
+  "must_be_whole_number": 0,
+  "name": "Dram",
+  "uom_name": "Dram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.524435",
+  "must_be_whole_number": 0,
+  "name": "Grain",
+  "uom_name": "Grain"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GRM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.137846",
+  "must_be_whole_number": 0,
+  "name": "Gram",
+  "uom_name": "Gram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.530679",
+  "must_be_whole_number": 0,
+  "name": "Hundredweight (UK)",
+  "uom_name": "Hundredweight (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.533127",
+  "must_be_whole_number": 0,
+  "name": "Hundredweight (US)",
+  "uom_name": "Hundredweight (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.535529",
+  "must_be_whole_number": 0,
+  "name": "Quintal",
+  "uom_name": "Quintal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "103",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:06.022186",
+  "must_be_whole_number": 0,
+  "name": "Kg",
+  "uom_name": "Kg"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.540440",
+  "must_be_whole_number": 0,
+  "name": "Microgram",
+  "uom_name": "Microgram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MGM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.939173",
+  "must_be_whole_number": 0,
+  "name": "Milligram",
+  "uom_name": "Milligram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.546362",
+  "must_be_whole_number": 0,
+  "name": "Ounce",
+  "uom_name": "Ounce"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.548562",
+  "must_be_whole_number": 0,
+  "name": "Pood",
+  "uom_name": "Pood"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LBR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.841110",
+  "must_be_whole_number": 0,
+  "name": "Pound",
+  "uom_name": "Pound"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.554033",
+  "must_be_whole_number": 0,
+  "name": "Slug",
+  "uom_name": "Slug"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "STI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.781225",
+  "must_be_whole_number": 0,
+  "name": "Stone",
+  "uom_name": "Stone"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TNE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.736507",
+  "must_be_whole_number": 0,
+  "name": "Tonne",
+  "uom_name": "Tonne"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.561448",
+  "must_be_whole_number": 0,
+  "name": "Kip",
+  "uom_name": "Kip"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.571656",
+  "must_be_whole_number": 0,
+  "name": "Barrel(Beer)",
+  "uom_name": "Barrel(Beer)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.575897",
+  "must_be_whole_number": 0,
+  "name": "Barrel (Oil)",
+  "uom_name": "Barrel (Oil)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.579202",
+  "must_be_whole_number": 0,
+  "name": "Bushel (UK)",
+  "uom_name": "Bushel (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.583027",
+  "must_be_whole_number": 0,
+  "name": "Bushel (US Dry Level)",
+  "uom_name": "Bushel (US Dry Level)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CLT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.576989",
+  "must_be_whole_number": 0,
+  "name": "Centilitre",
+  "uom_name": "Centilitre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CMQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.541678",
+  "must_be_whole_number": 0,
+  "name": "Cubic Centimeter",
+  "uom_name": "Cubic Centimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DMQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.508559",
+  "must_be_whole_number": 0,
+  "name": "Cubic Decimeter",
+  "uom_name": "Cubic Decimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FTQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.460856",
+  "must_be_whole_number": 0,
+  "name": "Cubic Foot",
+  "uom_name": "Cubic Foot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "INQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.413941",
+  "must_be_whole_number": 0,
+  "name": "Cubic Inch",
+  "uom_name": "Cubic Inch"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.604221",
+  "must_be_whole_number": 0,
+  "name": "Cubic Meter",
+  "uom_name": "Cubic Meter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.606619",
+  "must_be_whole_number": 0,
+  "name": "Cubic Millimeter",
+  "uom_name": "Cubic Millimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YDQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.302955",
+  "must_be_whole_number": 0,
+  "name": "Cubic Yard",
+  "uom_name": "Cubic Yard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.254252",
+  "must_be_whole_number": 0,
+  "name": "Cup",
+  "uom_name": "Cup"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DLT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.231809",
+  "must_be_whole_number": 0,
+  "name": "Decilitre",
+  "uom_name": "Decilitre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OZI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.210317",
+  "must_be_whole_number": 0,
+  "name": "Fluid Ounce (UK)",
+  "uom_name": "Fluid Ounce (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OZA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.177667",
+  "must_be_whole_number": 0,
+  "name": "Fluid Ounce (US)",
+  "uom_name": "Fluid Ounce (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GLI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.152093",
+  "must_be_whole_number": 0,
+  "name": "Gallon (UK)",
+  "uom_name": "Gallon (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GLD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.127830",
+  "must_be_whole_number": 0,
+  "name": "Gallon Dry (US)",
+  "uom_name": "Gallon Dry (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GLL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.108001",
+  "must_be_whole_number": 0,
+  "name": "Gallon Liquid (US)",
+  "uom_name": "Gallon Liquid (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "102",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:05.082620",
+  "must_be_whole_number": 0,
+  "name": "Litre",
+  "uom_name": "Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.637598",
+  "must_be_whole_number": 0,
+  "name": "Millilitre",
+  "uom_name": "Millilitre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.639694",
+  "must_be_whole_number": 0,
+  "name": "Peck",
+  "uom_name": "Peck"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.642053",
+  "must_be_whole_number": 0,
+  "name": "Pint (UK)",
+  "uom_name": "Pint (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.646936",
+  "must_be_whole_number": 0,
+  "name": "Pint, Dry (US)",
+  "uom_name": "Pint, Dry (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.649200",
+  "must_be_whole_number": 0,
+  "name": "Pint, Liquid (US)",
+  "uom_name": "Pint, Liquid (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.651348",
+  "must_be_whole_number": 0,
+  "name": "Quart (UK)",
+  "uom_name": "Quart (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.653566",
+  "must_be_whole_number": 0,
+  "name": "Quart Dry (US)",
+  "uom_name": "Quart Dry (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.655740",
+  "must_be_whole_number": 0,
+  "name": "Quart Liquid (US)",
+  "uom_name": "Quart Liquid (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.658533",
+  "must_be_whole_number": 0,
+  "name": "Tablespoon (US)",
+  "uom_name": "Tablespoon (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.660809",
+  "must_be_whole_number": 0,
+  "name": "Teaspoon",
+  "uom_name": "Teaspoon"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:04.921349",
+  "must_be_whole_number": 0,
+  "name": "Day",
+  "uom_name": "Day"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "207",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:04.895834",
+  "must_be_whole_number": 0,
+  "name": "Hour",
+  "uom_name": "Hour"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "105",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:04.872396",
+  "must_be_whole_number": 0,
+  "name": "Minute",
+  "uom_name": "Minute"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.670470",
+  "must_be_whole_number": 0,
+  "name": "Second",
+  "uom_name": "Second"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.672996",
+  "must_be_whole_number": 0,
+  "name": "Millisecond",
+  "uom_name": "Millisecond"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.676187",
+  "must_be_whole_number": 0,
+  "name": "Microsecond",
+  "uom_name": "Microsecond"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.679520",
+  "must_be_whole_number": 0,
+  "name": "Nanosecond",
+  "uom_name": "Nanosecond"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "114",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:04.799385",
+  "must_be_whole_number": 0,
+  "name": "Week",
+  "uom_name": "Week"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.693358",
+  "must_be_whole_number": 0,
+  "name": "Atmosphere",
+  "uom_name": "Atmosphere"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.701763",
+  "must_be_whole_number": 0,
+  "name": "Pascal",
+  "uom_name": "Pascal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.705158",
+  "must_be_whole_number": 0,
+  "name": "Bar",
+  "uom_name": "Bar"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.709613",
+  "must_be_whole_number": 0,
+  "name": "Foot Of Water",
+  "uom_name": "Foot Of Water"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.713751",
+  "must_be_whole_number": 0,
+  "name": "Hectopascal",
+  "uom_name": "Hectopascal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.718885",
+  "must_be_whole_number": 0,
+  "name": "Iches Of Water",
+  "uom_name": "Iches Of Water"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.722426",
+  "must_be_whole_number": 0,
+  "name": "Inches Of Mercury",
+  "uom_name": "Inches Of Mercury"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.726018",
+  "must_be_whole_number": 0,
+  "name": "Kilopascal",
+  "uom_name": "Kilopascal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.729037",
+  "must_be_whole_number": 0,
+  "name": "Meter Of Water",
+  "uom_name": "Meter Of Water"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.733961",
+  "must_be_whole_number": 0,
+  "name": "Microbar",
+  "uom_name": "Microbar"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.741309",
+  "must_be_whole_number": 0,
+  "name": "Milibar",
+  "uom_name": "Milibar"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.744907",
+  "must_be_whole_number": 0,
+  "name": "Millimeter Of Mercury",
+  "uom_name": "Millimeter Of Mercury"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.750348",
+  "must_be_whole_number": 0,
+  "name": "Millimeter Of Water",
+  "uom_name": "Millimeter Of Water"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.761295",
+  "must_be_whole_number": 0,
+  "name": "Technical Atmosphere",
+  "uom_name": "Technical Atmosphere"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.770198",
+  "must_be_whole_number": 0,
+  "name": "Torr",
+  "uom_name": "Torr"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.774103",
+  "must_be_whole_number": 0,
+  "name": "Dyne",
+  "uom_name": "Dyne"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.781745",
+  "must_be_whole_number": 0,
+  "name": "Gram-Force",
+  "uom_name": "Gram-Force"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.790265",
+  "must_be_whole_number": 0,
+  "name": "Joule/Meter",
+  "uom_name": "Joule/Meter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.808703",
+  "must_be_whole_number": 0,
+  "name": "Kilogram-Force",
+  "uom_name": "Kilogram-Force"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.819959",
+  "must_be_whole_number": 0,
+  "name": "Kilopond",
+  "uom_name": "Kilopond"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.831450",
+  "must_be_whole_number": 0,
+  "name": "Kilopound-Force",
+  "uom_name": "Kilopound-Force"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.843853",
+  "must_be_whole_number": 0,
+  "name": "Newton",
+  "uom_name": "Newton"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.846751",
+  "must_be_whole_number": 0,
+  "name": "Ounce-Force",
+  "uom_name": "Ounce-Force"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.854156",
+  "must_be_whole_number": 0,
+  "name": "Pond",
+  "uom_name": "Pond"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.857266",
+  "must_be_whole_number": 0,
+  "name": "Pound-Force",
+  "uom_name": "Pound-Force"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.863509",
+  "must_be_whole_number": 0,
+  "name": "Poundal",
+  "uom_name": "Poundal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.874571",
+  "must_be_whole_number": 0,
+  "name": "Tonne-Force(Metric)",
+  "uom_name": "Tonne-Force(Metric)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.877759",
+  "must_be_whole_number": 0,
+  "name": "Ton-Force (UK)",
+  "uom_name": "Ton-Force (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.882273",
+  "must_be_whole_number": 0,
+  "name": "Ton-Force (US)",
+  "uom_name": "Ton-Force (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.884962",
+  "must_be_whole_number": 0,
+  "name": "Btu (It)",
+  "uom_name": "Btu (It)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.888385",
+  "must_be_whole_number": 0,
+  "name": "Btu (Th)",
+  "uom_name": "Btu (Th)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.892162",
+  "must_be_whole_number": 0,
+  "name": "Btu (Mean)",
+  "uom_name": "Btu (Mean)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.898441",
+  "must_be_whole_number": 0,
+  "name": "Calorie (It)",
+  "uom_name": "Calorie (It)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.901387",
+  "must_be_whole_number": 0,
+  "name": "Calorie (Th)",
+  "uom_name": "Calorie (Th)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.906824",
+  "must_be_whole_number": 0,
+  "name": "Calorie (Mean)",
+  "uom_name": "Calorie (Mean)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.910562",
+  "must_be_whole_number": 0,
+  "name": "Calorie (Food)",
+  "uom_name": "Calorie (Food)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.915600",
+  "must_be_whole_number": 0,
+  "name": "Erg",
+  "uom_name": "Erg"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.918499",
+  "must_be_whole_number": 0,
+  "name": "Horsepower-Hours",
+  "uom_name": "Horsepower-Hours"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.921143",
+  "must_be_whole_number": 0,
+  "name": "Inch Pound-Force",
+  "uom_name": "Inch Pound-Force"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.924205",
+  "must_be_whole_number": 0,
+  "name": "Joule",
+  "uom_name": "Joule"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.927106",
+  "must_be_whole_number": 0,
+  "name": "Kilojoule",
+  "uom_name": "Kilojoule"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.932382",
+  "must_be_whole_number": 0,
+  "name": "Kilocalorie",
+  "uom_name": "Kilocalorie"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "202",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:04.151730",
+  "must_be_whole_number": 0,
+  "name": "Kilowatt-Hour",
+  "uom_name": "Kilowatt-Hour"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.942653",
+  "must_be_whole_number": 0,
+  "name": "Litre-Atmosphere",
+  "uom_name": "Litre-Atmosphere"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.954452",
+  "must_be_whole_number": 0,
+  "name": "Megajoule",
+  "uom_name": "Megajoule"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.956989",
+  "must_be_whole_number": 0,
+  "name": "Watt-Hour",
+  "uom_name": "Watt-Hour"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.959646",
+  "must_be_whole_number": 0,
+  "name": "Btu/Hour",
+  "uom_name": "Btu/Hour"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.962056",
+  "must_be_whole_number": 0,
+  "name": "Btu/Minutes",
+  "uom_name": "Btu/Minutes"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.964046",
+  "must_be_whole_number": 0,
+  "name": "Btu/Seconds",
+  "uom_name": "Btu/Seconds"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.966477",
+  "must_be_whole_number": 0,
+  "name": "Calorie/Seconds",
+  "uom_name": "Calorie/Seconds"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.969925",
+  "must_be_whole_number": 0,
+  "name": "Horsepower",
+  "uom_name": "Horsepower"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "kW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:03.775619",
+  "must_be_whole_number": 0,
+  "name": "Kilowatt",
+  "uom_name": "Kilowatt"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:03.697889",
+  "must_be_whole_number": 0,
+  "name": "Megawatt",
+  "uom_name": "Megawatt"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.977460",
+  "must_be_whole_number": 0,
+  "name": "Volt-Ampere",
+  "uom_name": "Volt-Ampere"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.980097",
+  "must_be_whole_number": 0,
+  "name": "Watt",
+  "uom_name": "Watt"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.983158",
+  "must_be_whole_number": 0,
+  "name": "Centigram/Litre",
+  "uom_name": "Centigram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.986322",
+  "must_be_whole_number": 0,
+  "name": "Decigram/Litre",
+  "uom_name": "Decigram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:20.997870",
+  "must_be_whole_number": 0,
+  "name": "Dekagram/Litre",
+  "uom_name": "Dekagram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.000202",
+  "must_be_whole_number": 0,
+  "name": "Hectogram/Litre",
+  "uom_name": "Hectogram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.003151",
+  "must_be_whole_number": 0,
+  "name": "Gram/Cubic Meter",
+  "uom_name": "Gram/Cubic Meter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.006082",
+  "must_be_whole_number": 0,
+  "name": "Gram/Cubic Centimeter",
+  "uom_name": "Gram/Cubic Centimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.054529",
+  "must_be_whole_number": 0,
+  "name": "Gram/Cubic Millimeter",
+  "uom_name": "Gram/Cubic Millimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.056880",
+  "must_be_whole_number": 0,
+  "name": "Gram/Litre",
+  "uom_name": "Gram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.058764",
+  "must_be_whole_number": 0,
+  "name": "Grain/Gallon (US)",
+  "uom_name": "Grain/Gallon (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.061240",
+  "must_be_whole_number": 0,
+  "name": "Grain/Gallon (UK)",
+  "uom_name": "Grain/Gallon (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.063677",
+  "must_be_whole_number": 0,
+  "name": "Grain/Cubic Foot",
+  "uom_name": "Grain/Cubic Foot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.066089",
+  "must_be_whole_number": 0,
+  "name": "Kilogram/Cubic Meter",
+  "uom_name": "Kilogram/Cubic Meter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.068440",
+  "must_be_whole_number": 0,
+  "name": "Kilogram/Cubic Centimeter",
+  "uom_name": "Kilogram/Cubic Centimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.071457",
+  "must_be_whole_number": 0,
+  "name": "Kilogram/Litre",
+  "uom_name": "Kilogram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.074169",
+  "must_be_whole_number": 0,
+  "name": "Milligram/Cubic Meter",
+  "uom_name": "Milligram/Cubic Meter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.076560",
+  "must_be_whole_number": 0,
+  "name": "Milligram/Cubic Centimeter",
+  "uom_name": "Milligram/Cubic Centimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.079106",
+  "must_be_whole_number": 0,
+  "name": "Milligram/Cubic Millimeter",
+  "uom_name": "Milligram/Cubic Millimeter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.081893",
+  "must_be_whole_number": 0,
+  "name": "Megagram/Litre",
+  "uom_name": "Megagram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.084158",
+  "must_be_whole_number": 0,
+  "name": "Milligram/Litre",
+  "uom_name": "Milligram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.086560",
+  "must_be_whole_number": 0,
+  "name": "Microgram/Litre",
+  "uom_name": "Microgram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.088812",
+  "must_be_whole_number": 0,
+  "name": "Nanogram/Litre",
+  "uom_name": "Nanogram/Litre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.091188",
+  "must_be_whole_number": 0,
+  "name": "Ounce/Cubic Inch",
+  "uom_name": "Ounce/Cubic Inch"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.093979",
+  "must_be_whole_number": 0,
+  "name": "Ounce/Cubic Foot",
+  "uom_name": "Ounce/Cubic Foot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.096414",
+  "must_be_whole_number": 0,
+  "name": "Ounce/Gallon (US)",
+  "uom_name": "Ounce/Gallon (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.099262",
+  "must_be_whole_number": 0,
+  "name": "Ounce/Gallon (UK)",
+  "uom_name": "Ounce/Gallon (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.101881",
+  "must_be_whole_number": 0,
+  "name": "Pound/Cubic Inch",
+  "uom_name": "Pound/Cubic Inch"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.104583",
+  "must_be_whole_number": 0,
+  "name": "Pound/Cubic Foot",
+  "uom_name": "Pound/Cubic Foot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.106992",
+  "must_be_whole_number": 0,
+  "name": "Pound/Cubic Yard",
+  "uom_name": "Pound/Cubic Yard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.109533",
+  "must_be_whole_number": 0,
+  "name": "Pound/Gallon (US)",
+  "uom_name": "Pound/Gallon (US)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.112139",
+  "must_be_whole_number": 0,
+  "name": "Pound/Gallon (UK)",
+  "uom_name": "Pound/Gallon (UK)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.114718",
+  "must_be_whole_number": 0,
+  "name": "Psi/1000 Feet",
+  "uom_name": "Psi/1000 Feet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.117562",
+  "must_be_whole_number": 0,
+  "name": "Slug/Cubic Foot",
+  "uom_name": "Slug/Cubic Foot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.121614",
+  "must_be_whole_number": 0,
+  "name": "Ton (Short)/Cubic Yard",
+  "uom_name": "Ton (Short)/Cubic Yard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.124057",
+  "must_be_whole_number": 0,
+  "name": "Ton (Long)/Cubic Yard",
+  "uom_name": "Ton (Long)/Cubic Yard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.126681",
+  "must_be_whole_number": 0,
+  "name": "Celsius",
+  "uom_name": "Celsius"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.129242",
+  "must_be_whole_number": 0,
+  "name": "Fahrenheit",
+  "uom_name": "Fahrenheit"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.131962",
+  "must_be_whole_number": 0,
+  "name": "Kelvin",
+  "uom_name": "Kelvin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.135155",
+  "must_be_whole_number": 0,
+  "name": "Cycle/Second",
+  "uom_name": "Cycle/Second"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.139103",
+  "must_be_whole_number": 0,
+  "name": "Nanohertz",
+  "uom_name": "Nanohertz"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.141869",
+  "must_be_whole_number": 0,
+  "name": "Millihertz",
+  "uom_name": "Millihertz"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.144615",
+  "must_be_whole_number": 0,
+  "name": "Hertz",
+  "uom_name": "Hertz"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.147044",
+  "must_be_whole_number": 0,
+  "name": "Kilohertz",
+  "uom_name": "Kilohertz"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.149448",
+  "must_be_whole_number": 0,
+  "name": "Megahertz",
+  "uom_name": "Megahertz"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.151940",
+  "must_be_whole_number": 0,
+  "name": "Wavelength In Gigametres",
+  "uom_name": "Wavelength In Gigametres"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.156490",
+  "must_be_whole_number": 0,
+  "name": "Wavelength In Megametres",
+  "uom_name": "Wavelength In Megametres"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.159093",
+  "must_be_whole_number": 0,
+  "name": "Wavelength In Kilometres",
+  "uom_name": "Wavelength In Kilometres"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.161580",
+  "must_be_whole_number": 0,
+  "name": "Ampere-Hour",
+  "uom_name": "Ampere-Hour"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.163927",
+  "must_be_whole_number": 0,
+  "name": "Ampere-Minute",
+  "uom_name": "Ampere-Minute"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.166202",
+  "must_be_whole_number": 0,
+  "name": "Ampere-Second",
+  "uom_name": "Ampere-Second"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.169100",
+  "must_be_whole_number": 0,
+  "name": "Coulomb",
+  "uom_name": "Coulomb"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.171695",
+  "must_be_whole_number": 0,
+  "name": "EMU Of Charge",
+  "uom_name": "EMU Of Charge"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.174300",
+  "must_be_whole_number": 0,
+  "name": "Faraday",
+  "uom_name": "Faraday"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.176928",
+  "must_be_whole_number": 0,
+  "name": "Kilocoulomb",
+  "uom_name": "Kilocoulomb"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.179346",
+  "must_be_whole_number": 0,
+  "name": "Megacoulomb",
+  "uom_name": "Megacoulomb"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.182974",
+  "must_be_whole_number": 0,
+  "name": "Millicoulomb",
+  "uom_name": "Millicoulomb"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.185429",
+  "must_be_whole_number": 0,
+  "name": "Nanocoulomb",
+  "uom_name": "Nanocoulomb"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.187831",
+  "must_be_whole_number": 0,
+  "name": "Ampere",
+  "uom_name": "Ampere"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.190267",
+  "must_be_whole_number": 0,
+  "name": "Abampere",
+  "uom_name": "Abampere"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.201974",
+  "must_be_whole_number": 0,
+  "name": "Biot",
+  "uom_name": "Biot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.205556",
+  "must_be_whole_number": 0,
+  "name": "EMU of current",
+  "uom_name": "EMU of current"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.209635",
+  "must_be_whole_number": 0,
+  "name": "Kiloampere",
+  "uom_name": "Kiloampere"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.214099",
+  "must_be_whole_number": 0,
+  "name": "Milliampere",
+  "uom_name": "Milliampere"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.218160",
+  "must_be_whole_number": 0,
+  "name": "Gamma",
+  "uom_name": "Gamma"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.223927",
+  "must_be_whole_number": 0,
+  "name": "Gauss",
+  "uom_name": "Gauss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.227339",
+  "must_be_whole_number": 0,
+  "name": "Tesla",
+  "uom_name": "Tesla"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "210",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:02.764146",
+  "must_be_whole_number": 0,
+  "name": "Percent",
+  "uom_name": "Percent"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-07-30 20:37:21.236658",
+  "must_be_whole_number": 0,
+  "name": "Parts Per Million",
+  "uom_name": "Parts Per Million"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "117",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:02.649257",
+  "must_be_whole_number": 0,
+  "name": "1UGX",
+  "uom_name": "1UGX"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BG",
+  "enabled": 1,
+  "modified": "2024-07-30 12:41:31.600060",
+  "must_be_whole_number": 1,
+  "name": "BG-Bag",
+  "uom_name": "BG-Bag"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "101",
+  "enabled": 1,
+  "modified": "2024-07-30 19:01:49.561922",
+  "must_be_whole_number": 1,
+  "name": "Sticks",
+  "uom_name": "Sticks"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "101",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.015825",
+  "must_be_whole_number": 0,
+  "name": "Stick",
+  "uom_name": "Stick"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "104",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.196514",
+  "must_be_whole_number": 0,
+  "name": "User per day of access",
+  "uom_name": "User per day of access"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "106",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.244856",
+  "must_be_whole_number": 0,
+  "name": "1000sticks",
+  "uom_name": "1000sticks"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "107",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.294317",
+  "must_be_whole_number": 0,
+  "name": "50kgs",
+  "uom_name": "50kgs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "108",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.349292",
+  "must_be_whole_number": 0,
+  "name": "-",
+  "uom_name": "-"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "109",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.394632",
+  "must_be_whole_number": 0,
+  "name": "g",
+  "uom_name": "g"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.431010",
+  "must_be_whole_number": 0,
+  "name": "OK-Block",
+  "uom_name": "OK-Block"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.478323",
+  "must_be_whole_number": 0,
+  "name": "OF-Platform",
+  "uom_name": "OF-Platform"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.575410",
+  "must_be_whole_number": 0,
+  "name": "OE-Pallet",
+  "uom_name": "OE-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.618245",
+  "must_be_whole_number": 0,
+  "name": "OD-Pallet",
+  "uom_name": "OD-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.678987",
+  "must_be_whole_number": 0,
+  "name": "OC-Pallet",
+  "uom_name": "OC-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.721199",
+  "must_be_whole_number": 0,
+  "name": "OB-Pallet",
+  "uom_name": "OB-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.751244",
+  "must_be_whole_number": 0,
+  "name": "OA-Pallet",
+  "uom_name": "OA-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.812431",
+  "must_be_whole_number": 0,
+  "name": "NV-Net, tube, textile",
+  "uom_name": "NV-Net, tube, textile"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.856928",
+  "must_be_whole_number": 0,
+  "name": "NU-Net, tube, plastic",
+  "uom_name": "NU-Net, tube, plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.892318",
+  "must_be_whole_number": 0,
+  "name": "NT-Net",
+  "uom_name": "NT-Net"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.937680",
+  "must_be_whole_number": 0,
+  "name": "NS-Nest",
+  "uom_name": "NS-Nest"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:19.971467",
+  "must_be_whole_number": 0,
+  "name": "NG-Unpacked or unpackaged",
+  "uom_name": "NG-Unpacked or unpackaged"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.008549",
+  "must_be_whole_number": 0,
+  "name": "NF-Unpacked or unpackaged",
+  "uom_name": "NF-Unpacked or unpackaged"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.043203",
+  "must_be_whole_number": 0,
+  "name": "NE-Unpacked or unpackaged",
+  "uom_name": "NE-Unpacked or unpackaged"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.073681",
+  "must_be_whole_number": 0,
+  "name": "NA-Not available",
+  "uom_name": "NA-Not available"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.105828",
+  "must_be_whole_number": 0,
+  "name": "MX-Matchbox",
+  "uom_name": "MX-Matchbox"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.158761",
+  "must_be_whole_number": 0,
+  "name": "MW-Receptable, plastic wrapped",
+  "uom_name": "MW-Receptable, plastic wrapped"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.193718",
+  "must_be_whole_number": 0,
+  "name": "MT-Mat",
+  "uom_name": "MT-Mat"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.220493",
+  "must_be_whole_number": 0,
+  "name": "MS-Sack, multi-wall",
+  "uom_name": "MS-Sack, multi-wall"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.243071",
+  "must_be_whole_number": 0,
+  "name": "MR-Receptable, metal",
+  "uom_name": "MR-Receptable, metal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ME",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.269435",
+  "must_be_whole_number": 0,
+  "name": "ME-Container",
+  "uom_name": "ME-Container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.304106",
+  "must_be_whole_number": 0,
+  "name": "MC-Crate, milk",
+  "uom_name": "MC-Crate, milk"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.332907",
+  "must_be_whole_number": 0,
+  "name": "MB-Bag, multiply",
+  "uom_name": "MB-Bag, multiply"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.352847",
+  "must_be_whole_number": 0,
+  "name": "MA-Crate",
+  "uom_name": "MA-Crate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.375909",
+  "must_be_whole_number": 0,
+  "name": "LZ-Logs, in bundle/bunch/truss",
+  "uom_name": "LZ-Logs, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.396741",
+  "must_be_whole_number": 0,
+  "name": "LV-Liftvan",
+  "uom_name": "LV-Liftvan"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.414753",
+  "must_be_whole_number": 0,
+  "name": "LU-Lug",
+  "uom_name": "LU-Lug"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.428076",
+  "must_be_whole_number": 0,
+  "name": "LT-Lot",
+  "uom_name": "LT-Lot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.440845",
+  "must_be_whole_number": 0,
+  "name": "LG-Log",
+  "uom_name": "LG-Log"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.453671",
+  "must_be_whole_number": 0,
+  "name": "LE-Luggage",
+  "uom_name": "LE-Luggage"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.527422",
+  "must_be_whole_number": 0,
+  "name": "KI-Kit",
+  "uom_name": "KI-Kit"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.552812",
+  "must_be_whole_number": 0,
+  "name": "KG-Keg",
+  "uom_name": "KG-Keg"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "JY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.572700",
+  "must_be_whole_number": 0,
+  "name": "JY-Jerrican, cylindrical",
+  "uom_name": "JY-Jerrican, cylindrical"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "JT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.588236",
+  "must_be_whole_number": 0,
+  "name": "JT-Jute bag",
+  "uom_name": "JT-Jute bag"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "JR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.606548",
+  "must_be_whole_number": 0,
+  "name": "JR-Jar",
+  "uom_name": "JR-Jar"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "JG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.622562",
+  "must_be_whole_number": 0,
+  "name": "JG-Jug",
+  "uom_name": "JG-Jug"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "JC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.643566",
+  "must_be_whole_number": 0,
+  "name": "JC-Jerrican, rectangular",
+  "uom_name": "JC-Jerrican, rectangular"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "JB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.663606",
+  "must_be_whole_number": 0,
+  "name": "JB-Bag",
+  "uom_name": "JB-Bag"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.678475",
+  "must_be_whole_number": 0,
+  "name": "IZ-Ingots, in bundle/bunch/truss",
+  "uom_name": "IZ-Ingots, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.695600",
+  "must_be_whole_number": 0,
+  "name": "IN-Ingot",
+  "uom_name": "IN-Ingot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.716118",
+  "must_be_whole_number": 0,
+  "name": "IL-Tray",
+  "uom_name": "IL-Tray"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.735086",
+  "must_be_whole_number": 0,
+  "name": "IK-Package",
+  "uom_name": "IK-Package"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.755189",
+  "must_be_whole_number": 0,
+  "name": "IH-Drum, plastic",
+  "uom_name": "IH-Drum, plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.778706",
+  "must_be_whole_number": 0,
+  "name": "IG-Package, paper wrapped",
+  "uom_name": "IG-Package, paper wrapped"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.795850",
+  "must_be_whole_number": 0,
+  "name": "IF-Package, flow",
+  "uom_name": "IF-Package, flow"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.816537",
+  "must_be_whole_number": 0,
+  "name": "IE-Package, show",
+  "uom_name": "IE-Package, show"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ID",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.832404",
+  "must_be_whole_number": 0,
+  "name": "ID-Package, display, metal",
+  "uom_name": "ID-Package, display, metal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.847587",
+  "must_be_whole_number": 0,
+  "name": "IC-Package, display, plastic",
+  "uom_name": "IC-Package, display, plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.865506",
+  "must_be_whole_number": 0,
+  "name": "IB-Package, display, cardboard",
+  "uom_name": "IB-Package, display, cardboard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "IA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.882768",
+  "must_be_whole_number": 0,
+  "name": "IA-Package, display, wooden",
+  "uom_name": "IA-Package, display, wooden"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.897124",
+  "must_be_whole_number": 0,
+  "name": "HR-Hamper",
+  "uom_name": "HR-Hamper"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.917442",
+  "must_be_whole_number": 0,
+  "name": "HN-Hanger",
+  "uom_name": "HN-Hanger"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.936331",
+  "must_be_whole_number": 0,
+  "name": "HG-Hogshead",
+  "uom_name": "HG-Hogshead"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.953683",
+  "must_be_whole_number": 0,
+  "name": "HC-Basket, with handle, cardboard",
+  "uom_name": "HC-Basket, with handle, cardboard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:20.998353",
+  "must_be_whole_number": 0,
+  "name": "HB-Basket, with handle, wooden",
+  "uom_name": "HB-Basket, with handle, wooden"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.014572",
+  "must_be_whole_number": 0,
+  "name": "HA-Basket, with handle, plastic",
+  "uom_name": "HA-Basket, with handle, plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.033154",
+  "must_be_whole_number": 0,
+  "name": "GZ-Girders, in bundle/bunch/truss",
+  "uom_name": "GZ-Girders, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.050496",
+  "must_be_whole_number": 0,
+  "name": "GY-Bag",
+  "uom_name": "GY-Bag"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.070874",
+  "must_be_whole_number": 0,
+  "name": "GU-Tray",
+  "uom_name": "GU-Tray"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.120874",
+  "must_be_whole_number": 0,
+  "name": "GR-Receptable, glass",
+  "uom_name": "GR-Receptable, glass"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.136910",
+  "must_be_whole_number": 0,
+  "name": "GL-Container",
+  "uom_name": "GL-Container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.162353",
+  "must_be_whole_number": 0,
+  "name": "GI-Girder",
+  "uom_name": "GI-Girder"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.190937",
+  "must_be_whole_number": 0,
+  "name": "GB-Bottle, gas",
+  "uom_name": "GB-Bottle, gas"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.231156",
+  "must_be_whole_number": 0,
+  "name": "FX-Bag",
+  "uom_name": "FX-Bag"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.282317",
+  "must_be_whole_number": 0,
+  "name": "FW-Cart",
+  "uom_name": "FW-Cart"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.334769",
+  "must_be_whole_number": 0,
+  "name": "FT-Foodtainer",
+  "uom_name": "FT-Foodtainer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.397509",
+  "must_be_whole_number": 0,
+  "name": "FR-Frame",
+  "uom_name": "FR-Frame"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.442111",
+  "must_be_whole_number": 0,
+  "name": "FP-Filmpack",
+  "uom_name": "FP-Filmpack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.512832",
+  "must_be_whole_number": 0,
+  "name": "FO-Footlocker",
+  "uom_name": "FO-Footlocker"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.546600",
+  "must_be_whole_number": 0,
+  "name": "FL-Flask",
+  "uom_name": "FL-Flask"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.585180",
+  "must_be_whole_number": 0,
+  "name": "FI-Firkin",
+  "uom_name": "FI-Firkin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.616591",
+  "must_be_whole_number": 0,
+  "name": "FE-Flexitank",
+  "uom_name": "FE-Flexitank"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.641735",
+  "must_be_whole_number": 0,
+  "name": "FD-Crate, framed",
+  "uom_name": "FD-Crate, framed"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.668348",
+  "must_be_whole_number": 0,
+  "name": "FC-Crate, friut",
+  "uom_name": "FC-Crate, friut"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "FB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.704642",
+  "must_be_whole_number": 0,
+  "name": "FB-Flexibag",
+  "uom_name": "FB-Flexibag"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "EN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.731711",
+  "must_be_whole_number": 0,
+  "name": "EN-Envelope",
+  "uom_name": "EN-Envelope"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "EI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.764856",
+  "must_be_whole_number": 0,
+  "name": "EI-Case, isothermic",
+  "uom_name": "EI-Case, isothermic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "EH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.794361",
+  "must_be_whole_number": 0,
+  "name": "EH-Case, with pallet base, metal",
+  "uom_name": "EH-Case, with pallet base, metal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "EG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.836656",
+  "must_be_whole_number": 0,
+  "name": "EG-Case, with pallet base, plastic",
+  "uom_name": "EG-Case, with pallet base, plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "EF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.875240",
+  "must_be_whole_number": 0,
+  "name": "EF-Case, with pallet base, cardboard",
+  "uom_name": "EF-Case, with pallet base, cardboard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "EE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.904537",
+  "must_be_whole_number": 0,
+  "name": "EE-Case, with pallet base, wooden",
+  "uom_name": "EE-Case, with pallet base, wooden"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ED",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.945296",
+  "must_be_whole_number": 0,
+  "name": "ED-Case, with pallet base",
+  "uom_name": "ED-Case, with pallet base"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "EC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:21.983295",
+  "must_be_whole_number": 0,
+  "name": "EC-Bag, plastic",
+  "uom_name": "EC-Bag, plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.025526",
+  "must_be_whole_number": 0,
+  "name": "DY-Tray, two layers no cover,cardboard",
+  "uom_name": "DY-Tray, two layers no cover,cardboard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.050109",
+  "must_be_whole_number": 0,
+  "name": "DX-Tray, two layers no cover, wooden",
+  "uom_name": "DX-Tray, two layers no cover, wooden"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.082334",
+  "must_be_whole_number": 0,
+  "name": "DW-Tray,two layers no cover,platic tra",
+  "uom_name": "DW-Tray,two layers no cover,platic tra"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.117918",
+  "must_be_whole_number": 0,
+  "name": "DV-Tray, one layer no cover, cardboard",
+  "uom_name": "DV-Tray, one layer no cover, cardboard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.160903",
+  "must_be_whole_number": 0,
+  "name": "DU-Tray, one layer no cover,polystyren",
+  "uom_name": "DU-Tray, one layer no cover,polystyren"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.200776",
+  "must_be_whole_number": 0,
+  "name": "DT-Tray, one layer no cover, wooden",
+  "uom_name": "DT-Tray, one layer no cover, wooden"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.227579",
+  "must_be_whole_number": 0,
+  "name": "DS-Tray, one layer no cover,plastic",
+  "uom_name": "DS-Tray, one layer no cover,plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.267185",
+  "must_be_whole_number": 0,
+  "name": "DR-Drum",
+  "uom_name": "DR-Drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.300180",
+  "must_be_whole_number": 0,
+  "name": "DP-Demijohn, protected",
+  "uom_name": "DP-Demijohn, protected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.339603",
+  "must_be_whole_number": 0,
+  "name": "DN-Dispenser",
+  "uom_name": "DN-Dispenser"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.381129",
+  "must_be_whole_number": 0,
+  "name": "DM-Crate, bulk, wooden",
+  "uom_name": "DM-Crate, bulk, wooden"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.410738",
+  "must_be_whole_number": 0,
+  "name": "DL-Crate, bulk, plastic",
+  "uom_name": "DL-Crate, bulk, plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.446541",
+  "must_be_whole_number": 0,
+  "name": "DK-Crate, bulk, cardboard",
+  "uom_name": "DK-Crate, bulk, cardboard"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.484603",
+  "must_be_whole_number": 0,
+  "name": "DJ-Demijohn, non-protected",
+  "uom_name": "DJ-Demijohn, non-protected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.532633",
+  "must_be_whole_number": 0,
+  "name": "DI-Drum, iron",
+  "uom_name": "DI-Drum, iron"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.563510",
+  "must_be_whole_number": 0,
+  "name": "DH-Box,commonwealth handlig equip pool",
+  "uom_name": "DH-Box,commonwealth handlig equip pool"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.587101",
+  "must_be_whole_number": 0,
+  "name": "DG-Cage,commonwealth handlg equip pool",
+  "uom_name": "DG-Cage,commonwealth handlg equip pool"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.608219",
+  "must_be_whole_number": 0,
+  "name": "DC-Crate",
+  "uom_name": "DC-Crate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.624443",
+  "must_be_whole_number": 0,
+  "name": "DB-Crate, multiple layer, wooden",
+  "uom_name": "DB-Crate, multiple layer, wooden"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.639754",
+  "must_be_whole_number": 0,
+  "name": "DA-Crate, multiple layer, plastic",
+  "uom_name": "DA-Crate, multiple layer, plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.659649",
+  "must_be_whole_number": 0,
+  "name": "CZ-Canvas",
+  "uom_name": "CZ-Canvas"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.677780",
+  "must_be_whole_number": 0,
+  "name": "CY-Cylinder",
+  "uom_name": "CY-Cylinder"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.692593",
+  "must_be_whole_number": 0,
+  "name": "CX-Can, cylindrical",
+  "uom_name": "CX-Can, cylindrical"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.708276",
+  "must_be_whole_number": 0,
+  "name": "CW-Cage, roll",
+  "uom_name": "CW-Cage, roll"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.725629",
+  "must_be_whole_number": 0,
+  "name": "CV-Cover",
+  "uom_name": "CV-Cover"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.746147",
+  "must_be_whole_number": 0,
+  "name": "CT-Carton",
+  "uom_name": "CT-Carton"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.767453",
+  "must_be_whole_number": 0,
+  "name": "CS-Case",
+  "uom_name": "CS-Case"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.785043",
+  "must_be_whole_number": 0,
+  "name": "CR-Crate",
+  "uom_name": "CR-Crate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.807703",
+  "must_be_whole_number": 0,
+  "name": "CQ-Cartridge",
+  "uom_name": "CQ-Cartridge"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.826721",
+  "must_be_whole_number": 0,
+  "name": "CP-Carboy, protected",
+  "uom_name": "CP-Carboy, protected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.844959",
+  "must_be_whole_number": 0,
+  "name": "CO-Carboy, non-protected",
+  "uom_name": "CO-Carboy, non-protected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.860004",
+  "must_be_whole_number": 0,
+  "name": "CN-Container,nes as transport equipmen",
+  "uom_name": "CN-Container,nes as transport equipmen"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.880720",
+  "must_be_whole_number": 0,
+  "name": "CM-Card",
+  "uom_name": "CM-Card"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.901542",
+  "must_be_whole_number": 0,
+  "name": "CL-Coil",
+  "uom_name": "CL-Coil"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.923812",
+  "must_be_whole_number": 0,
+  "name": "CK-Cask",
+  "uom_name": "CK-Cask"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.946698",
+  "must_be_whole_number": 0,
+  "name": "CJ-Coffin",
+  "uom_name": "CJ-Coffin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.962211",
+  "must_be_whole_number": 0,
+  "name": "CI-Canister",
+  "uom_name": "CI-Canister"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.978393",
+  "must_be_whole_number": 0,
+  "name": "CH-Chest",
+  "uom_name": "CH-Chest"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:22.989830",
+  "must_be_whole_number": 0,
+  "name": "CG-Cage",
+  "uom_name": "CG-Cage"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.016910",
+  "must_be_whole_number": 0,
+  "name": "CF-Coffer",
+  "uom_name": "CF-Coffer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.038025",
+  "must_be_whole_number": 0,
+  "name": "CE-Creel",
+  "uom_name": "CE-Creel"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.057452",
+  "must_be_whole_number": 0,
+  "name": "CD-Can, with handle and spout",
+  "uom_name": "CD-Can, with handle and spout"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.074840",
+  "must_be_whole_number": 0,
+  "name": "CC-Churn",
+  "uom_name": "CC-Churn"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.091434",
+  "must_be_whole_number": 0,
+  "name": "CB-Crate, beer",
+  "uom_name": "CB-Crate, beer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.110275",
+  "must_be_whole_number": 0,
+  "name": "CA-Can, rectangular",
+  "uom_name": "CA-Can, rectangular"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.128839",
+  "must_be_whole_number": 0,
+  "name": "BZ-Bars, in bundle/bunch/truss",
+  "uom_name": "BZ-Bars, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.148196",
+  "must_be_whole_number": 0,
+  "name": "BY-Board, in bundle/bunch/truss",
+  "uom_name": "BY-Board, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.167621",
+  "must_be_whole_number": 0,
+  "name": "BX-Box 21 to",
+  "uom_name": "BX-Box 21 to"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.199659",
+  "must_be_whole_number": 0,
+  "name": "BW-Box, for liquids",
+  "uom_name": "BW-Box, for liquids"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.215800",
+  "must_be_whole_number": 0,
+  "name": "BV-Bottle, protected bulbous",
+  "uom_name": "BV-Bottle, protected bulbous"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.236471",
+  "must_be_whole_number": 0,
+  "name": "BU-Butt",
+  "uom_name": "BU-Butt"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.253180",
+  "must_be_whole_number": 0,
+  "name": "BT-Bolt",
+  "uom_name": "BT-Bolt"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.269283",
+  "must_be_whole_number": 0,
+  "name": "BS-Bottle, non protected, bulbous",
+  "uom_name": "BS-Bottle, non protected, bulbous"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.314676",
+  "must_be_whole_number": 0,
+  "name": "BR-Bar",
+  "uom_name": "BR-Bar"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.343800",
+  "must_be_whole_number": 0,
+  "name": "BQ-Bottle, protected cylindrical",
+  "uom_name": "BQ-Bottle, protected cylindrical"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.365099",
+  "must_be_whole_number": 0,
+  "name": "BP-Ballon, protected",
+  "uom_name": "BP-Ballon, protected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.385626",
+  "must_be_whole_number": 0,
+  "name": "BO-Bottle, non protected, cylindrical",
+  "uom_name": "BO-Bottle, non protected, cylindrical"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.412646",
+  "must_be_whole_number": 0,
+  "name": "BN-Bale, non compressed",
+  "uom_name": "BN-Bale, non compressed"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.437729",
+  "must_be_whole_number": 0,
+  "name": "BM-Basin 5",
+  "uom_name": "BM-Basin 5"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.463598",
+  "must_be_whole_number": 0,
+  "name": "BL-Bale, compressed",
+  "uom_name": "BL-Bale, compressed"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.487661",
+  "must_be_whole_number": 0,
+  "name": "BK-Basket",
+  "uom_name": "BK-Basket"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.522310",
+  "must_be_whole_number": 0,
+  "name": "BJ-Bucket",
+  "uom_name": "BJ-Bucket"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.546773",
+  "must_be_whole_number": 0,
+  "name": "BI-Bin",
+  "uom_name": "BI-Bin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.584547",
+  "must_be_whole_number": 0,
+  "name": "BH-Bunch",
+  "uom_name": "BH-Bunch"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.618032",
+  "must_be_whole_number": 0,
+  "name": "BF-Ballon, non-protected",
+  "uom_name": "BF-Ballon, non-protected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.645825",
+  "must_be_whole_number": 0,
+  "name": "BE-Bundle",
+  "uom_name": "BE-Bundle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.672147",
+  "must_be_whole_number": 0,
+  "name": "BD-Board",
+  "uom_name": "BD-Board"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.702011",
+  "must_be_whole_number": 0,
+  "name": "BC-Bottle crate / bottle rack",
+  "uom_name": "BC-Bottle crate / bottle rack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.737146",
+  "must_be_whole_number": 0,
+  "name": "BB-Bobbin",
+  "uom_name": "BB-Bobbin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.771519",
+  "must_be_whole_number": 0,
+  "name": "BA-Barrel",
+  "uom_name": "BA-Barrel"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.805338",
+  "must_be_whole_number": 0,
+  "name": "AV-Capsule",
+  "uom_name": "AV-Capsule"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.833520",
+  "must_be_whole_number": 0,
+  "name": "AT-Atomizer",
+  "uom_name": "AT-Atomizer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.891995",
+  "must_be_whole_number": 0,
+  "name": "AP-Ampoule, protected",
+  "uom_name": "AP-Ampoule, protected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.922228",
+  "must_be_whole_number": 0,
+  "name": "AM-Ampoule, non protected",
+  "uom_name": "AM-Ampoule, non protected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.969965",
+  "must_be_whole_number": 0,
+  "name": "AL-Ball",
+  "uom_name": "AL-Ball"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:23.998739",
+  "must_be_whole_number": 0,
+  "name": "AJ-Cone",
+  "uom_name": "AJ-Cone"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.036993",
+  "must_be_whole_number": 0,
+  "name": "AI-Clamshell",
+  "uom_name": "AI-Clamshell"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.219730",
+  "must_be_whole_number": 0,
+  "name": "AH-Pallet",
+  "uom_name": "AH-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.253683",
+  "must_be_whole_number": 0,
+  "name": "AG-Pallet",
+  "uom_name": "AG-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.300339",
+  "must_be_whole_number": 0,
+  "name": "AF-Pallet",
+  "uom_name": "AF-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.345249",
+  "must_be_whole_number": 0,
+  "name": "AE-Aerosol",
+  "uom_name": "AE-Aerosol"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.404711",
+  "must_be_whole_number": 0,
+  "name": "AD-Receptacle",
+  "uom_name": "AD-Receptacle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.465728",
+  "must_be_whole_number": 0,
+  "name": "AC-Receptacle",
+  "uom_name": "AC-Receptacle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.510121",
+  "must_be_whole_number": 0,
+  "name": "AB-Receptacle",
+  "uom_name": "AB-Receptacle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.549391",
+  "must_be_whole_number": 0,
+  "name": "AA-Intermediate bulk container",
+  "uom_name": "AA-Intermediate bulk container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.662215",
+  "must_be_whole_number": 0,
+  "name": "ZZ-Mutually defined",
+  "uom_name": "ZZ-Mutually defined"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.697829",
+  "must_be_whole_number": 0,
+  "name": "ZY-Intermediate bulk container",
+  "uom_name": "ZY-Intermediate bulk container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.748562",
+  "must_be_whole_number": 0,
+  "name": "ZX-Intermediate bulk container",
+  "uom_name": "ZX-Intermediate bulk container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.779200",
+  "must_be_whole_number": 0,
+  "name": "ZW-Intermediate bulk container",
+  "uom_name": "ZW-Intermediate bulk container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.801186",
+  "must_be_whole_number": 0,
+  "name": "ZV-Intermediate bulk container",
+  "uom_name": "ZV-Intermediate bulk container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.822384",
+  "must_be_whole_number": 0,
+  "name": "ZU-Intermediate bulk container",
+  "uom_name": "ZU-Intermediate bulk container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.869279",
+  "must_be_whole_number": 0,
+  "name": "ZT-Intermediate bulk container",
+  "uom_name": "ZT-Intermediate bulk container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.892826",
+  "must_be_whole_number": 0,
+  "name": "ZS-Intermediate bulk container",
+  "uom_name": "ZS-Intermediate bulk container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.913509",
+  "must_be_whole_number": 0,
+  "name": "ZR-Int.bulk.cont,comp,flex plast,liqui",
+  "uom_name": "ZR-Int.bulk.cont,comp,flex plast,liqui"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.937859",
+  "must_be_whole_number": 0,
+  "name": "ZQ-Int.bulk.cont,comp,rigid plast,liqu",
+  "uom_name": "ZQ-Int.bulk.cont,comp,rigid plast,liqu"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.962108",
+  "must_be_whole_number": 0,
+  "name": "ZP-Int.bulk.cont,comp,flex plast,press",
+  "uom_name": "ZP-Int.bulk.cont,comp,flex plast,press"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.977203",
+  "must_be_whole_number": 0,
+  "name": "ZN-Int.bulk.cont,comp,rigid plast,pres",
+  "uom_name": "ZN-Int.bulk.cont,comp,rigid plast,pres"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:24.995120",
+  "must_be_whole_number": 0,
+  "name": "ZM-Int.bulk.cont,comp,flexi plast,soli",
+  "uom_name": "ZM-Int.bulk.cont,comp,flexi plast,soli"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.014520",
+  "must_be_whole_number": 0,
+  "name": "ZL-Int.bulk.cont,comp,rigid plast,soli",
+  "uom_name": "ZL-Int.bulk.cont,comp,rigid plast,soli"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.035726",
+  "must_be_whole_number": 0,
+  "name": "ZK-Int.bulk.cont,plast,freestand,liqui",
+  "uom_name": "ZK-Int.bulk.cont,plast,freestand,liqui"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.053441",
+  "must_be_whole_number": 0,
+  "name": "ZJ-Int.bulk.cont,plast,struc equip liq",
+  "uom_name": "ZJ-Int.bulk.cont,plast,struc equip liq"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.073966",
+  "must_be_whole_number": 0,
+  "name": "ZH-Int.bulk.cont,plast,freestand,press",
+  "uom_name": "ZH-Int.bulk.cont,plast,freestand,press"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.088726",
+  "must_be_whole_number": 0,
+  "name": "ZG-Int.bulk.cont,plast,struc equp pres",
+  "uom_name": "ZG-Int.bulk.cont,plast,struc equp pres"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.102598",
+  "must_be_whole_number": 0,
+  "name": "ZF-Int.bulk.cont,plast,free standing",
+  "uom_name": "ZF-Int.bulk.cont,plast,free standing"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.122614",
+  "must_be_whole_number": 0,
+  "name": "ZD-Int.bulk.cont,plast,struc equip sol",
+  "uom_name": "ZD-Int.bulk.cont,plast,struc equip sol"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.143266",
+  "must_be_whole_number": 0,
+  "name": "ZC-Inter bulk cont,paper,water resista",
+  "uom_name": "ZC-Inter bulk cont,paper,water resista"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.163522",
+  "must_be_whole_number": 0,
+  "name": "ZB-Bag, large",
+  "uom_name": "ZB-Bag, large"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ZA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.182637",
+  "must_be_whole_number": 0,
+  "name": "ZA-Interm bulk cont, paper, multi-wall",
+  "uom_name": "ZA-Interm bulk cont, paper, multi-wall"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.202269",
+  "must_be_whole_number": 0,
+  "name": "YZ-Composte pack,glas rec so plas pack",
+  "uom_name": "YZ-Composte pack,glas rec so plas pack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.228077",
+  "must_be_whole_number": 0,
+  "name": "YY-Composte pack,glas rec ex plas pack",
+  "uom_name": "YY-Composte pack,glas rec ex plas pack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.246231",
+  "must_be_whole_number": 0,
+  "name": "YX-Composte pack,glass recp fibreb box",
+  "uom_name": "YX-Composte pack,glass recp fibreb box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.262107",
+  "must_be_whole_number": 0,
+  "name": "YW-Composte pack,glass recp fibre drum",
+  "uom_name": "YW-Composte pack,glass recp fibre drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.276488",
+  "must_be_whole_number": 0,
+  "name": "YV-Composte pack,glass recp wicker ham",
+  "uom_name": "YV-Composte pack,glass recp wicker ham"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.297591",
+  "must_be_whole_number": 0,
+  "name": "YT-Composte pack,glass recp plywo drum",
+  "uom_name": "YT-Composte pack,glass recp plywo drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.322987",
+  "must_be_whole_number": 0,
+  "name": "YS-Composte pack,glass recp wooden box",
+  "uom_name": "YS-Composte pack,glass recp wooden box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.339704",
+  "must_be_whole_number": 0,
+  "name": "YR-Composte pack,glass recp alum crate",
+  "uom_name": "YR-Composte pack,glass recp alum crate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.363609",
+  "must_be_whole_number": 0,
+  "name": "YQ-Composte pack,glass recp alumi drum",
+  "uom_name": "YQ-Composte pack,glass recp alumi drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.381071",
+  "must_be_whole_number": 0,
+  "name": "YP-Composte pack,glass recp steel crat",
+  "uom_name": "YP-Composte pack,glass recp steel crat"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.407247",
+  "must_be_whole_number": 0,
+  "name": "YN-Composte pack,glass recp steel drum",
+  "uom_name": "YN-Composte pack,glass recp steel drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.430129",
+  "must_be_whole_number": 0,
+  "name": "YM-Composte pack,plast recp plastc box",
+  "uom_name": "YM-Composte pack,plast recp plastc box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.451894",
+  "must_be_whole_number": 0,
+  "name": "YL-Composte pack,plast recp plast drum",
+  "uom_name": "YL-Composte pack,plast recp plast drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.466928",
+  "must_be_whole_number": 0,
+  "name": "YK-Composte pack,plast recp fibreb box",
+  "uom_name": "YK-Composte pack,plast recp fibreb box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.483480",
+  "must_be_whole_number": 0,
+  "name": "YJ-Composte pack,plast recp fibre drum",
+  "uom_name": "YJ-Composte pack,plast recp fibre drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.502234",
+  "must_be_whole_number": 0,
+  "name": "YH-Composte pack,plast recp plywo box",
+  "uom_name": "YH-Composte pack,plast recp plywo box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.519022",
+  "must_be_whole_number": 0,
+  "name": "YG-Composte pack,plast recp plywo drum",
+  "uom_name": "YG-Composte pack,plast recp plywo drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.545248",
+  "must_be_whole_number": 0,
+  "name": "YF-Composte pack,plast recp wooden box",
+  "uom_name": "YF-Composte pack,plast recp wooden box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.562731",
+  "must_be_whole_number": 0,
+  "name": "YD-Composte pack,plast recp alum crate",
+  "uom_name": "YD-Composte pack,plast recp alum crate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.581669",
+  "must_be_whole_number": 0,
+  "name": "YC-Composte pack,plast recp alumi drum",
+  "uom_name": "YC-Composte pack,plast recp alumi drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.600601",
+  "must_be_whole_number": 0,
+  "name": "YB-Composte pack,plast recp steel crat",
+  "uom_name": "YB-Composte pack,plast recp steel crat"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.616653",
+  "must_be_whole_number": 0,
+  "name": "YA-Composte pack,plast recp steel drum",
+  "uom_name": "YA-Composte pack,plast recp steel drum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.630070",
+  "must_be_whole_number": 0,
+  "name": "XX-SCT UN-IDENTIFIED",
+  "uom_name": "XX-SCT UN-IDENTIFIED"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.645931",
+  "must_be_whole_number": 0,
+  "name": "XK-Bag,paper,multi-wall,water resistan",
+  "uom_name": "XK-Bag,paper,multi-wall,water resistan"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.660614",
+  "must_be_whole_number": 0,
+  "name": "XJ-Bag, paper, multi-wall",
+  "uom_name": "XJ-Bag, paper, multi-wall"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.676628",
+  "must_be_whole_number": 0,
+  "name": "XH-Bag, textile, water resistant",
+  "uom_name": "XH-Bag, textile, water resistant"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.690849",
+  "must_be_whole_number": 0,
+  "name": "XG-Bag, textile, sift proof",
+  "uom_name": "XG-Bag, textile, sift proof"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.710318",
+  "must_be_whole_number": 0,
+  "name": "XF-Bag, textile,without inner coat/lin",
+  "uom_name": "XF-Bag, textile,without inner coat/lin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.725932",
+  "must_be_whole_number": 0,
+  "name": "XD-Bag, plastics film",
+  "uom_name": "XD-Bag, plastics film"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.744144",
+  "must_be_whole_number": 0,
+  "name": "XC-Bag, woven plastic, water resistant",
+  "uom_name": "XC-Bag, woven plastic, water resistant"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.760889",
+  "must_be_whole_number": 0,
+  "name": "XB-Bag,woven plastic, sift proof",
+  "uom_name": "XB-Bag,woven plastic, sift proof"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "XA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.788112",
+  "must_be_whole_number": 0,
+  "name": "XA-Bag,woven plastic,without inner coa",
+  "uom_name": "XA-Bag,woven plastic,without inner coa"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.808636",
+  "must_be_whole_number": 0,
+  "name": "WZ-Interm bulk conta,reconsituted wood",
+  "uom_name": "WZ-Interm bulk conta,reconsituted wood"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.824818",
+  "must_be_whole_number": 0,
+  "name": "WY-Inter bulk cont,plywood,inner liner",
+  "uom_name": "WY-Inter bulk cont,plywood,inner liner"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.856619",
+  "must_be_whole_number": 0,
+  "name": "WX-Inter bulk cont,textile,coated/line",
+  "uom_name": "WX-Inter bulk cont,textile,coated/line"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.894660",
+  "must_be_whole_number": 0,
+  "name": "WW-Inter bulk conta,textile,with liner",
+  "uom_name": "WW-Inter bulk conta,textile,with liner"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.921200",
+  "must_be_whole_number": 0,
+  "name": "WV-Inter bulk contain, textile, coated",
+  "uom_name": "WV-Inter bulk contain, textile, coated"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.951736",
+  "must_be_whole_number": 0,
+  "name": "WU-Inter bulk cont,natural wood,liner",
+  "uom_name": "WU-Inter bulk cont,natural wood,liner"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:25.984262",
+  "must_be_whole_number": 0,
+  "name": "WT-Inter bulk cont,textile no coat/lin",
+  "uom_name": "WT-Inter bulk cont,textile no coat/lin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.019700",
+  "must_be_whole_number": 0,
+  "name": "WS-Interm bulk container, plastic film",
+  "uom_name": "WS-Interm bulk container, plastic film"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.053185",
+  "must_be_whole_number": 0,
+  "name": "WR-Inter bulk cont,woven plastic,coate",
+  "uom_name": "WR-Inter bulk cont,woven plastic,coate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.094915",
+  "must_be_whole_number": 0,
+  "name": "WQ-Inter bulk cont,woven plastic,liner",
+  "uom_name": "WQ-Inter bulk cont,woven plastic,liner"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.131619",
+  "must_be_whole_number": 0,
+  "name": "WP-Inter bulk cont,woven plastic,coate",
+  "uom_name": "WP-Inter bulk cont,woven plastic,coate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.176270",
+  "must_be_whole_number": 0,
+  "name": "WN-Int bulk cont,woven plastic,no coat",
+  "uom_name": "WN-Int bulk cont,woven plastic,no coat"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.212929",
+  "must_be_whole_number": 0,
+  "name": "WM-Interm bulk container,metal,liquid",
+  "uom_name": "WM-Interm bulk container,metal,liquid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.241878",
+  "must_be_whole_number": 0,
+  "name": "WL-Inter bulk container,alumin liquid",
+  "uom_name": "WL-Inter bulk container,alumin liquid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.273779",
+  "must_be_whole_number": 0,
+  "name": "WK-Interme bulk container,steel,liquid",
+  "uom_name": "WK-Interme bulk container,steel,liquid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.329028",
+  "must_be_whole_number": 0,
+  "name": "WJ-Inter bulk container,metal,pressure",
+  "uom_name": "WJ-Inter bulk container,metal,pressure"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.371593",
+  "must_be_whole_number": 0,
+  "name": "WH-Inter bulk container,alumin,pressur",
+  "uom_name": "WH-Inter bulk container,alumin,pressur"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.399773",
+  "must_be_whole_number": 0,
+  "name": "WG-Intermediate bulk cont,steel,pressu",
+  "uom_name": "WG-Intermediate bulk cont,steel,pressu"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.440238",
+  "must_be_whole_number": 0,
+  "name": "WF-Intermediate bulk container,metal",
+  "uom_name": "WF-Intermediate bulk container,metal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.483264",
+  "must_be_whole_number": 0,
+  "name": "WD-Intermediate bulk container,alumini",
+  "uom_name": "WD-Intermediate bulk container,alumini"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.526758",
+  "must_be_whole_number": 0,
+  "name": "WC-Intermediate bulk container,steel",
+  "uom_name": "WC-Intermediate bulk container,steel"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.546418",
+  "must_be_whole_number": 0,
+  "name": "WB-Wickerbottle",
+  "uom_name": "WB-Wickerbottle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.589814",
+  "must_be_whole_number": 0,
+  "name": "WA-Intermediate bulk container",
+  "uom_name": "WA-Intermediate bulk container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.619308",
+  "must_be_whole_number": 0,
+  "name": "VY-Bulk, solid, fine particles(powder)",
+  "uom_name": "VY-Bulk, solid, fine particles(powder)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.651147",
+  "must_be_whole_number": 0,
+  "name": "VS-Bulk",
+  "uom_name": "VS-Bulk"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.698185",
+  "must_be_whole_number": 0,
+  "name": "VR-Bulk, solid, granular particles",
+  "uom_name": "VR-Bulk, solid, granular particles"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.726882",
+  "must_be_whole_number": 0,
+  "name": "VQ-Bulk,liquefied gas(abnormal temp/pr",
+  "uom_name": "VQ-Bulk,liquefied gas(abnormal temp/pr"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.766411",
+  "must_be_whole_number": 0,
+  "name": "VP-Vacuum-packed",
+  "uom_name": "VP-Vacuum-packed"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.801957",
+  "must_be_whole_number": 0,
+  "name": "VO-Bulk,solid,large particles(nodules)",
+  "uom_name": "VO-Bulk,solid,large particles(nodules)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.846838",
+  "must_be_whole_number": 0,
+  "name": "VN-Vehicle",
+  "uom_name": "VN-Vehicle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.880494",
+  "must_be_whole_number": 0,
+  "name": "VL-Bulk, liquid",
+  "uom_name": "VL-Bulk, liquid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.906555",
+  "must_be_whole_number": 0,
+  "name": "VK-Vanpack",
+  "uom_name": "VK-Vanpack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.928242",
+  "must_be_whole_number": 0,
+  "name": "VI-Vial",
+  "uom_name": "VI-Vial"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:26.974992",
+  "must_be_whole_number": 0,
+  "name": "VG-Bulk",
+  "uom_name": "VG-Bulk"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VEH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.023008",
+  "must_be_whole_number": 0,
+  "name": "VEH-Vehicle",
+  "uom_name": "VEH-Vehicle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "VA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.047307",
+  "must_be_whole_number": 0,
+  "name": "VA-Vat",
+  "uom_name": "VA-Vat"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "UC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.090888",
+  "must_be_whole_number": 0,
+  "name": "UC-Uncaged",
+  "uom_name": "UC-Uncaged"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.127856",
+  "must_be_whole_number": 0,
+  "name": "TZ-Tubes, in bundle/bunch/truss",
+  "uom_name": "TZ-Tubes, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.162442",
+  "must_be_whole_number": 0,
+  "name": "TY-Tank, cylindrical",
+  "uom_name": "TY-Tank, cylindrical"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.195404",
+  "must_be_whole_number": 0,
+  "name": "TW-Pallet",
+  "uom_name": "TW-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.236552",
+  "must_be_whole_number": 0,
+  "name": "TV-Tube, with nozzle",
+  "uom_name": "TV-Tube, with nozzle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.293139",
+  "must_be_whole_number": 0,
+  "name": "TU-Tube",
+  "uom_name": "TU-Tube"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.334340",
+  "must_be_whole_number": 0,
+  "name": "TT-Bag",
+  "uom_name": "TT-Bag"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.353150",
+  "must_be_whole_number": 0,
+  "name": "TS-Truss",
+  "uom_name": "TS-Truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.373233",
+  "must_be_whole_number": 0,
+  "name": "TR-Trunk",
+  "uom_name": "TR-Trunk"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.391678",
+  "must_be_whole_number": 0,
+  "name": "TO-Tun",
+  "uom_name": "TO-Tun"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.420119",
+  "must_be_whole_number": 0,
+  "name": "TN-Tin",
+  "uom_name": "TN-Tin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.442632",
+  "must_be_whole_number": 0,
+  "name": "TL-Tub",
+  "uom_name": "TL-Tub"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.470889",
+  "must_be_whole_number": 0,
+  "name": "TK-Tank, rectangular",
+  "uom_name": "TK-Tank, rectangular"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.488112",
+  "must_be_whole_number": 0,
+  "name": "TI-Tierce",
+  "uom_name": "TI-Tierce"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.511868",
+  "must_be_whole_number": 0,
+  "name": "TG-Tank container",
+  "uom_name": "TG-Tank container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.534258",
+  "must_be_whole_number": 0,
+  "name": "TE-Tyre",
+  "uom_name": "TE-Tyre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.553072",
+  "must_be_whole_number": 0,
+  "name": "TD-Tube, collapsible",
+  "uom_name": "TD-Tube, collapsible"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.569663",
+  "must_be_whole_number": 0,
+  "name": "TC-Tea-chest",
+  "uom_name": "TC-Tea-chest"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.590268",
+  "must_be_whole_number": 0,
+  "name": "TB-Tub",
+  "uom_name": "TB-Tub"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "T1",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.612097",
+  "must_be_whole_number": 0,
+  "name": "T1-Tablet",
+  "uom_name": "T1-Tablet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.634906",
+  "must_be_whole_number": 0,
+  "name": "SZ-Sheets, in bundle/bunch/truss",
+  "uom_name": "SZ-Sheets, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.694294",
+  "must_be_whole_number": 0,
+  "name": "SY-Sleeve",
+  "uom_name": "SY-Sleeve"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.713115",
+  "must_be_whole_number": 0,
+  "name": "SX-Set",
+  "uom_name": "SX-Set"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SW",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.729082",
+  "must_be_whole_number": 0,
+  "name": "SW-Shrinkwrapped",
+  "uom_name": "SW-Shrinkwrapped"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.744316",
+  "must_be_whole_number": 0,
+  "name": "SV-Envelope",
+  "uom_name": "SV-Envelope"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.763368",
+  "must_be_whole_number": 0,
+  "name": "SU-Suitcase",
+  "uom_name": "SU-Suitcase"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ST",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.781399",
+  "must_be_whole_number": 0,
+  "name": "ST-Sheet",
+  "uom_name": "ST-Sheet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.796171",
+  "must_be_whole_number": 0,
+  "name": "SS-Case",
+  "uom_name": "SS-Case"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.811798",
+  "must_be_whole_number": 0,
+  "name": "SP-Sheet, plastic wrapping",
+  "uom_name": "SP-Sheet, plastic wrapping"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.827609",
+  "must_be_whole_number": 0,
+  "name": "SO-Spool",
+  "uom_name": "SO-Spool"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.844785",
+  "must_be_whole_number": 0,
+  "name": "SM-Sheetmetal",
+  "uom_name": "SM-Sheetmetal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.860086",
+  "must_be_whole_number": 0,
+  "name": "SL-Slipsheet",
+  "uom_name": "SL-Slipsheet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.877017",
+  "must_be_whole_number": 0,
+  "name": "SK-Case, skeleton",
+  "uom_name": "SK-Case, skeleton"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.892170",
+  "must_be_whole_number": 0,
+  "name": "SI-Skid",
+  "uom_name": "SI-Skid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.908560",
+  "must_be_whole_number": 0,
+  "name": "SH-Sachet",
+  "uom_name": "SH-Sachet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.926220",
+  "must_be_whole_number": 0,
+  "name": "SE-Sea-chest",
+  "uom_name": "SE-Sea-chest"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.943661",
+  "must_be_whole_number": 0,
+  "name": "SD-Spindle",
+  "uom_name": "SD-Spindle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.960509",
+  "must_be_whole_number": 0,
+  "name": "SC-Crate, shallow",
+  "uom_name": "SC-Crate, shallow"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:27.977640",
+  "must_be_whole_number": 0,
+  "name": "SB-Slab",
+  "uom_name": "SB-Slab"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.008582",
+  "must_be_whole_number": 0,
+  "name": "SA-Sack",
+  "uom_name": "SA-Sack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.025032",
+  "must_be_whole_number": 0,
+  "name": "RZ-Rods, in bundle/bunch/truss",
+  "uom_name": "RZ-Rods, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.044511",
+  "must_be_whole_number": 0,
+  "name": "RT-Rednet",
+  "uom_name": "RT-Rednet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.059844",
+  "must_be_whole_number": 0,
+  "name": "RO-Roll",
+  "uom_name": "RO-Roll"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.075451",
+  "must_be_whole_number": 0,
+  "name": "RL-Reel",
+  "uom_name": "RL-Reel"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.092392",
+  "must_be_whole_number": 0,
+  "name": "RK-Rack",
+  "uom_name": "RK-Rack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.114560",
+  "must_be_whole_number": 0,
+  "name": "RJ-Rack, clothing hanger",
+  "uom_name": "RJ-Rack, clothing hanger"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.132987",
+  "must_be_whole_number": 0,
+  "name": "RG-Ring",
+  "uom_name": "RG-Ring"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.148553",
+  "must_be_whole_number": 0,
+  "name": "QS-Box, plastic, solid",
+  "uom_name": "QS-Box, plastic, solid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.164445",
+  "must_be_whole_number": 0,
+  "name": "QR-Box, plastic, expanded",
+  "uom_name": "QR-Box, plastic, expanded"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.184850",
+  "must_be_whole_number": 0,
+  "name": "QQ-Box,natural wood,with sift walls 5",
+  "uom_name": "QQ-Box,natural wood,with sift walls 5"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.205110",
+  "must_be_whole_number": 0,
+  "name": "QP-Box, wooden, natural wood, ordinary",
+  "uom_name": "QP-Box, wooden, natural wood, ordinary"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.233158",
+  "must_be_whole_number": 0,
+  "name": "QN-Jerrican, plastic, removable head",
+  "uom_name": "QN-Jerrican, plastic, removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.253877",
+  "must_be_whole_number": 0,
+  "name": "QM-Jerrican,plastic,non-removable head",
+  "uom_name": "QM-Jerrican,plastic,non-removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.277885",
+  "must_be_whole_number": 0,
+  "name": "QL-Jerrican, steel, removable head",
+  "uom_name": "QL-Jerrican, steel, removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.296408",
+  "must_be_whole_number": 0,
+  "name": "QK-Jerrican, steel, non-removable head",
+  "uom_name": "QK-Jerrican, steel, non-removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.319359",
+  "must_be_whole_number": 0,
+  "name": "QJ-Barrel, wooden, removable head",
+  "uom_name": "QJ-Barrel, wooden, removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.363118",
+  "must_be_whole_number": 0,
+  "name": "QH-Barrel, wooden, bung type",
+  "uom_name": "QH-Barrel, wooden, bung type"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.415038",
+  "must_be_whole_number": 0,
+  "name": "QG-Drum, plastic, removable head",
+  "uom_name": "QG-Drum, plastic, removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.441202",
+  "must_be_whole_number": 0,
+  "name": "QF-Drum, plastic, non-removable head",
+  "uom_name": "QF-Drum, plastic, non-removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.471606",
+  "must_be_whole_number": 0,
+  "name": "QD-Drum, aluminium, removable head",
+  "uom_name": "QD-Drum, aluminium, removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.510938",
+  "must_be_whole_number": 0,
+  "name": "QC-Drum,aluminium,non-removable head",
+  "uom_name": "QC-Drum,aluminium,non-removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.538326",
+  "must_be_whole_number": 0,
+  "name": "QB-Drum, steel, removable head",
+  "uom_name": "QB-Drum, steel, removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.569495",
+  "must_be_whole_number": 0,
+  "name": "QA-Drum,steel,non-removable head",
+  "uom_name": "QA-Drum,steel,non-removable head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.621563",
+  "must_be_whole_number": 0,
+  "name": "PZ-Planks, in bundle/bunch/truss",
+  "uom_name": "PZ-Planks, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PY",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.645413",
+  "must_be_whole_number": 0,
+  "name": "PY-Plates, in bundle/bunch/truss",
+  "uom_name": "PY-Plates, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.675040",
+  "must_be_whole_number": 0,
+  "name": "PX-Pallet",
+  "uom_name": "PX-Pallet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.705245",
+  "must_be_whole_number": 0,
+  "name": "PV-Pipes, in bundle/bunch/truss",
+  "uom_name": "PV-Pipes, in bundle/bunch/truss"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.745179",
+  "must_be_whole_number": 0,
+  "name": "PU-Tray",
+  "uom_name": "PU-Tray"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.775410",
+  "must_be_whole_number": 0,
+  "name": "PT-Pot",
+  "uom_name": "PT-Pot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.815734",
+  "must_be_whole_number": 0,
+  "name": "PR-Receptable, plastic",
+  "uom_name": "PR-Receptable, plastic"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.850807",
+  "must_be_whole_number": 0,
+  "name": "PP-Piece",
+  "uom_name": "PP-Piece"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.883355",
+  "must_be_whole_number": 0,
+  "name": "PO-Pouch",
+  "uom_name": "PO-Pouch"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.924133",
+  "must_be_whole_number": 0,
+  "name": "PN-Plank",
+  "uom_name": "PN-Plank"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.959462",
+  "must_be_whole_number": 0,
+  "name": "PL-Pail",
+  "uom_name": "PL-Pail"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.017654",
+  "must_be_whole_number": 0,
+  "name": "PK-Package",
+  "uom_name": "PK-Package"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PJ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.044201",
+  "must_be_whole_number": 0,
+  "name": "PJ-Punnet",
+  "uom_name": "PJ-Punnet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.075234",
+  "must_be_whole_number": 0,
+  "name": "PI-Pipe",
+  "uom_name": "PI-Pipe"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.098649",
+  "must_be_whole_number": 0,
+  "name": "PH-Pitcher",
+  "uom_name": "PH-Pitcher"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PG",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.149714",
+  "must_be_whole_number": 0,
+  "name": "PG-Plate",
+  "uom_name": "PG-Plate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.189696",
+  "must_be_whole_number": 0,
+  "name": "PF-Pen",
+  "uom_name": "PF-Pen"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.228381",
+  "must_be_whole_number": 0,
+  "name": "PE-Pallet, modular,collars 80cm*120cms",
+  "uom_name": "PE-Pallet, modular,collars 80cm*120cms"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PLT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.255313",
+  "must_be_whole_number": 0,
+  "name": "PLT - Pallet_ modular_ collars 80cm x 100cms",
+  "uom_name": "PLT - Pallet_ modular_ collars 80cm x 100cms"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.290528",
+  "must_be_whole_number": 0,
+  "name": "PC-Parcel",
+  "uom_name": "PC-Parcel"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.333642",
+  "must_be_whole_number": 0,
+  "name": "PB-Pallet, box",
+  "uom_name": "PB-Pallet, box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.360832",
+  "must_be_whole_number": 0,
+  "name": "PA-Packet",
+  "uom_name": "PA-Packet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "P2",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.384696",
+  "must_be_whole_number": 0,
+  "name": "P2-Pan",
+  "uom_name": "P2-Pan"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.427195",
+  "must_be_whole_number": 0,
+  "name": "OU-Container",
+  "uom_name": "OU-Container"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "OT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.468634",
+  "must_be_whole_number": 0,
+  "name": "OT-Octabin",
+  "uom_name": "OT-Octabin"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "113",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.509943",
+  "must_be_whole_number": 0,
+  "name": "Dozen",
+  "uom_name": "Dozen"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "115",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.540606",
+  "must_be_whole_number": 0,
+  "name": "Per month",
+  "uom_name": "Per month"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "116",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.571223",
+  "must_be_whole_number": 0,
+  "name": "Per annum",
+  "uom_name": "Per annum"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "118",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.609121",
+  "must_be_whole_number": 0,
+  "name": "1USD",
+  "uom_name": "1USD"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KPP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.647557",
+  "must_be_whole_number": 0,
+  "name": "KPP-Kilogram of phosphoric anhydride",
+  "uom_name": "KPP-Kilogram of phosphoric anhydride"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KPO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.738800",
+  "must_be_whole_number": 0,
+  "name": "KPO-Kilogram of potassium oxide",
+  "uom_name": "KPO-Kilogram of potassium oxide"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KPH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.761260",
+  "must_be_whole_number": 0,
+  "name": "KPH-Kilogram of caustic potash",
+  "uom_name": "KPH-Kilogram of caustic potash"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KNS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.789796",
+  "must_be_whole_number": 0,
+  "name": "KNS-Kilogram of named substance",
+  "uom_name": "KNS-Kilogram of named substance"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KNI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.813530",
+  "must_be_whole_number": 0,
+  "name": "KNI-Kilogram of nitrogen",
+  "uom_name": "KNI-Kilogram of nitrogen"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "INH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.836735",
+  "must_be_whole_number": 0,
+  "name": "INH-Inch (25,4 mm)",
+  "uom_name": "INH-Inch (25,4 mm)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HPA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.860622",
+  "must_be_whole_number": 0,
+  "name": "HPA-Hectolitre of pure alcohol",
+  "uom_name": "HPA-Hectolitre of pure alcohol"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HLT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.883546",
+  "must_be_whole_number": 0,
+  "name": "HLT-Hectolitre",
+  "uom_name": "HLT-Hectolitre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HIU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.914837",
+  "must_be_whole_number": 0,
+  "name": "HIU-Hundred international units",
+  "uom_name": "HIU-Hundred international units"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "HGM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.937256",
+  "must_be_whole_number": 0,
+  "name": "HGM-Hectogram",
+  "uom_name": "HGM-Hectogram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GRT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.957871",
+  "must_be_whole_number": 0,
+  "name": "GRT-Gross [register] ton",
+  "uom_name": "GRT-Gross [register] ton"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GRO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.974185",
+  "must_be_whole_number": 0,
+  "name": "GRO-Gross",
+  "uom_name": "GRO-Gross"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GRN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.994647",
+  "must_be_whole_number": 0,
+  "name": "GRN-Grain gb, us (64,798910 mg)",
+  "uom_name": "GRN-Grain gb, us (64,798910 mg)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GII",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.021241",
+  "must_be_whole_number": 0,
+  "name": "GII-Gill (0,142065 dm3)",
+  "uom_name": "GII-Gill (0,142065 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GIA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.041850",
+  "must_be_whole_number": 0,
+  "name": "GIA-Gill (11,8294 cm3)",
+  "uom_name": "GIA-Gill (11,8294 cm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GGR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.063852",
+  "must_be_whole_number": 0,
+  "name": "GGR-Great gross (12 gross)",
+  "uom_name": "GGR-Great gross (12 gross)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DZP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.089208",
+  "must_be_whole_number": 0,
+  "name": "DZP-Dozen packs",
+  "uom_name": "DZP-Dozen packs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DZN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.104197",
+  "must_be_whole_number": 0,
+  "name": "DZN-Dozen",
+  "uom_name": "DZN-Dozen"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DWT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.128653",
+  "must_be_whole_number": 0,
+  "name": "DWT-Pennyweight gb, us (1,555174 g)",
+  "uom_name": "DWT-Pennyweight gb, us (1,555174 g)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DTN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.145727",
+  "must_be_whole_number": 0,
+  "name": "DTN-Centner, metric (100 kg)",
+  "uom_name": "DTN-Centner, metric (100 kg)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DTH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.168316",
+  "must_be_whole_number": 0,
+  "name": "DTH-Hectokilogram",
+  "uom_name": "DTH-Hectokilogram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DRM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.188148",
+  "must_be_whole_number": 0,
+  "name": "DRM-Drachm gb (3,887935 g)",
+  "uom_name": "DRM-Drachm gb (3,887935 g)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DRL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.206056",
+  "must_be_whole_number": 0,
+  "name": "DRL-Dozen rolls",
+  "uom_name": "DRL-Dozen rolls"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DRI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.231126",
+  "must_be_whole_number": 0,
+  "name": "DRI-Dram gb (l,771745 g)",
+  "uom_name": "DRI-Dram gb (l,771745 g)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DRA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.257362",
+  "must_be_whole_number": 0,
+  "name": "DRA-Dram us (3,887935 g)",
+  "uom_name": "DRA-Dram us (3,887935 g)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DPR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.284928",
+  "must_be_whole_number": 0,
+  "name": "DPR-Dozen pairs",
+  "uom_name": "DPR-Dozen pairs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DPC",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.308932",
+  "must_be_whole_number": 0,
+  "name": "DPC-Dozen pieces",
+  "uom_name": "DPC-Dozen pieces"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "DMK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.327796",
+  "must_be_whole_number": 0,
+  "name": "DMK-Square decimetre",
+  "uom_name": "DMK-Square decimetre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CWI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.345873",
+  "must_be_whole_number": 0,
+  "name": "CWI-Hundredweight gb (50,802345 kg)",
+  "uom_name": "CWI-Hundredweight gb (50,802345 kg)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CWA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.370851",
+  "must_be_whole_number": 0,
+  "name": "CWA-Hundredweight us (45,3592 kg)",
+  "uom_name": "CWA-Hundredweight us (45,3592 kg)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CTM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.394263",
+  "must_be_whole_number": 0,
+  "name": "CTM-Metric carat (200 mg = 2.10-4 kg)",
+  "uom_name": "CTM-Metric carat (200 mg = 2.10-4 kg)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CNT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.417616",
+  "must_be_whole_number": 0,
+  "name": "CNT-Cental gb (45,359237 kg)",
+  "uom_name": "CNT-Cental gb (45,359237 kg)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CNP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.443492",
+  "must_be_whole_number": 0,
+  "name": "CNP-Hundred packs",
+  "uom_name": "CNP-Hundred packs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CLF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.462430",
+  "must_be_whole_number": 0,
+  "name": "CLF-Hundred leaves",
+  "uom_name": "CLF-Hundred leaves"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CGM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.492667",
+  "must_be_whole_number": 0,
+  "name": "CGM-Centigram",
+  "uom_name": "CGM-Centigram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CEN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.509980",
+  "must_be_whole_number": 0,
+  "name": "CEN-Hundred",
+  "uom_name": "CEN-Hundred"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BUI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.533012",
+  "must_be_whole_number": 0,
+  "name": "BUI-Bushel (36,36874 dm3)",
+  "uom_name": "BUI-Bushel (36,36874 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BUA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.556844",
+  "must_be_whole_number": 0,
+  "name": "BUA-Bushel (35,2391 dm3)",
+  "uom_name": "BUA-Bushel (35,2391 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BLL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.584354",
+  "must_be_whole_number": 0,
+  "name": "BLL-Barrel (petroleum) (158,987 dm3)",
+  "uom_name": "BLL-Barrel (petroleum) (158,987 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BLD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.605465",
+  "must_be_whole_number": 0,
+  "name": "BLD-Dry barrel (115,627 dm3)",
+  "uom_name": "BLD-Dry barrel (115,627 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BHX",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.629003",
+  "must_be_whole_number": 0,
+  "name": "BHX-Hundred boxes",
+  "uom_name": "BHX-Hundred boxes"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CCP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.653418",
+  "must_be_whole_number": 0,
+  "name": "CCP-ENGINE CAPACITY(c.c)",
+  "uom_name": "CCP-ENGINE CAPACITY(c.c)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "AGE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.680174",
+  "must_be_whole_number": 0,
+  "name": "AGE-YEAR OF MANUFACTURE",
+  "uom_name": "AGE-YEAR OF MANUFACTURE"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BFT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.704256",
+  "must_be_whole_number": 0,
+  "name": "BFT-Board foot",
+  "uom_name": "BFT-Board foot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ASV",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.750534",
+  "must_be_whole_number": 0,
+  "name": "ASV-Alcoholic strength by volume",
+  "uom_name": "ASV-Alcoholic strength by volume"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ASM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.814597",
+  "must_be_whole_number": 0,
+  "name": "ASM-Alcoholic strength by mass",
+  "uom_name": "ASM-Alcoholic strength by mass"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "APZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.848707",
+  "must_be_whole_number": 0,
+  "name": "APZ-Ounce gb, us (31,10348 g)",
+  "uom_name": "APZ-Ounce gb, us (31,10348 g)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "YRD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.897013",
+  "must_be_whole_number": 0,
+  "name": "YRD-Yard 0-9144 m",
+  "uom_name": "YRD-Yard 0-9144 m"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "WCD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.930309",
+  "must_be_whole_number": 0,
+  "name": "WCD-Cord  3-63 m3",
+  "uom_name": "WCD-Cord  3-63 m3"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TSD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:30.978493",
+  "must_be_whole_number": 0,
+  "name": "TSD-Tonne of substance 90 per cent dry",
+  "uom_name": "TSD-Tonne of substance 90 per cent dry"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "TPR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.005101",
+  "must_be_whole_number": 0,
+  "name": "TPR-Ten pairs",
+  "uom_name": "TPR-Ten pairs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "STN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.038971",
+  "must_be_whole_number": 0,
+  "name": "STN-Short ton gb, us (0,90718474 t)",
+  "uom_name": "STN-Short ton gb, us (0,90718474 t)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SHT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.098293",
+  "must_be_whole_number": 0,
+  "name": "SHT-Shipping ton",
+  "uom_name": "SHT-Shipping ton"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QRT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.142238",
+  "must_be_whole_number": 0,
+  "name": "QRT-Quarter_ gb -12.700586 kg",
+  "uom_name": "QRT-Quarter_ gb -12.700586 kg"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QTL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.182339",
+  "must_be_whole_number": 0,
+  "name": "QTL-Liquid quart (0,946353 dm3)",
+  "uom_name": "QTL-Liquid quart (0,946353 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QTI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.221007",
+  "must_be_whole_number": 0,
+  "name": "QTI-Quart (1,136523 dm3)",
+  "uom_name": "QTI-Quart (1,136523 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QTD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.250238",
+  "must_be_whole_number": 0,
+  "name": "QTD-Dry quart (1,101221 dm3)",
+  "uom_name": "QTD-Dry quart (1,101221 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PTL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.285721",
+  "must_be_whole_number": 0,
+  "name": "PTL-Liquid pint (0,473l76 dm3)",
+  "uom_name": "PTL-Liquid pint (0,473l76 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PTI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.320705",
+  "must_be_whole_number": 0,
+  "name": "PTI-Pint (0,568262 dm3)",
+  "uom_name": "PTI-Pint (0,568262 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PTD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.346749",
+  "must_be_whole_number": 0,
+  "name": "PTD-Dry pint (0,55061 dm3)",
+  "uom_name": "PTD-Dry pint (0,55061 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PGL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.375459",
+  "must_be_whole_number": 0,
+  "name": "PGL-Proof gallon",
+  "uom_name": "PGL-Proof gallon"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PCE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.410209",
+  "must_be_whole_number": 0,
+  "name": "PCE-Piece",
+  "uom_name": "PCE-Piece"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "ONZ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.434495",
+  "must_be_whole_number": 0,
+  "name": "ONZ-Ounce gb, us (28,349523 g)",
+  "uom_name": "ONZ-Ounce gb, us (28,349523 g)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NTT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.463728",
+  "must_be_whole_number": 0,
+  "name": "NTT-Net [register] ton",
+  "uom_name": "NTT-Net [register] ton"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NRL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.493251",
+  "must_be_whole_number": 0,
+  "name": "NRL-Number of rolls",
+  "uom_name": "NRL-Number of rolls"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NPT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.529417",
+  "must_be_whole_number": 0,
+  "name": "NPT-Number of parts",
+  "uom_name": "NPT-Number of parts"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NPR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.560635",
+  "must_be_whole_number": 0,
+  "name": "NPR-Number of pairs",
+  "uom_name": "NPR-Number of pairs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NPL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.624094",
+  "must_be_whole_number": 0,
+  "name": "NPL-Number of parcels",
+  "uom_name": "NPL-Number of parcels"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NMP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.669987",
+  "must_be_whole_number": 0,
+  "name": "NMP-Number of packs",
+  "uom_name": "NMP-Number of packs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NIU",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.728873",
+  "must_be_whole_number": 0,
+  "name": "NIU-Number of international units",
+  "uom_name": "NIU-Number of international units"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NBB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.754798",
+  "must_be_whole_number": 0,
+  "name": "NBB-Number of bobbins",
+  "uom_name": "NBB-Number of bobbins"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NAR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.787769",
+  "must_be_whole_number": 0,
+  "name": "NAR-Number of articles",
+  "uom_name": "NAR-Number of articles"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MTR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.831850",
+  "must_be_whole_number": 0,
+  "name": "MTR-Metre",
+  "uom_name": "MTR-Metre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MTQ",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.869881",
+  "must_be_whole_number": 0,
+  "name": "MTQ-Cubic metre",
+  "uom_name": "MTQ-Cubic metre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MTK",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.900407",
+  "must_be_whole_number": 0,
+  "name": "MTK-Square metre",
+  "uom_name": "MTK-Square metre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MIL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.939596",
+  "must_be_whole_number": 0,
+  "name": "MIL-Thousand",
+  "uom_name": "MIL-Thousand"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MBF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.977461",
+  "must_be_whole_number": 0,
+  "name": "MBF-Thousand board feet (2,36 m3)",
+  "uom_name": "MBF-Thousand board feet (2,36 m3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MAM",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.036477",
+  "must_be_whole_number": 0,
+  "name": "MAM-Megametre",
+  "uom_name": "MAM-Megametre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MAL",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.072494",
+  "must_be_whole_number": 0,
+  "name": "MAL-Megalitre",
+  "uom_name": "MAL-Megalitre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LTR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.101058",
+  "must_be_whole_number": 0,
+  "name": "LTR-Litre (1 dm3)",
+  "uom_name": "LTR-Litre (1 dm3)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LTN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.131443",
+  "must_be_whole_number": 0,
+  "name": "LTN-Long ton gb, us (1,0160469 t)",
+  "uom_name": "LTN-Long ton gb, us (1,0160469 t)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LPA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.180995",
+  "must_be_whole_number": 0,
+  "name": "LPA-Litre of pure alcohol",
+  "uom_name": "LPA-Litre of pure alcohol"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LEF",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.223046",
+  "must_be_whole_number": 0,
+  "name": "LEF-Leaf",
+  "uom_name": "LEF-Leaf"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "LBT",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.261001",
+  "must_be_whole_number": 0,
+  "name": "LBT-Troy pound, us (373,242 g)",
+  "uom_name": "LBT-Troy pound, us (373,242 g)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KUR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.285728",
+  "must_be_whole_number": 0,
+  "name": "KUR-Kilogram of uranium",
+  "uom_name": "KUR-Kilogram of uranium"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KSH",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.306336",
+  "must_be_whole_number": 0,
+  "name": "KSH-Kilogram of caustic soda",
+  "uom_name": "KSH-Kilogram of caustic soda"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KSD",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.327190",
+  "must_be_whole_number": 0,
+  "name": "KSD-Kilogram of substance 90 % dry",
+  "uom_name": "KSD-Kilogram of substance 90 % dry"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "QTR",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.344716",
+  "must_be_whole_number": 0,
+  "name": "Per quarter",
+  "uom_name": "Per quarter"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PEP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.360392",
+  "must_be_whole_number": 0,
+  "name": "Per Trip",
+  "uom_name": "Per Trip"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PS",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.380482",
+  "must_be_whole_number": 0,
+  "name": "Per person",
+  "uom_name": "Per person"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "203",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.396966",
+  "must_be_whole_number": 0,
+  "name": "Time of use",
+  "uom_name": "Time of use"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "204",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.414826",
+  "must_be_whole_number": 0,
+  "name": "Core",
+  "uom_name": "Core"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "205",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.436915",
+  "must_be_whole_number": 0,
+  "name": "Manhours",
+  "uom_name": "Manhours"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "208",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.453588",
+  "must_be_whole_number": 0,
+  "name": "Cost",
+  "uom_name": "Cost"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "201",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.471624",
+  "must_be_whole_number": 0,
+  "name": "Cycle",
+  "uom_name": "Cycle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "211",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.489993",
+  "must_be_whole_number": 0,
+  "name": "Tot",
+  "uom_name": "Tot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "209",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.506643",
+  "must_be_whole_number": 0,
+  "name": "MWh - Mega Watt Hour",
+  "uom_name": "MWh - Mega Watt Hour"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "212",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.524733",
+  "must_be_whole_number": 0,
+  "name": "Ream",
+  "uom_name": "Ream"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "213",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.546476",
+  "must_be_whole_number": 0,
+  "name": "Billing",
+  "uom_name": "Billing"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "214",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.565695",
+  "must_be_whole_number": 0,
+  "name": "Straw",
+  "uom_name": "Straw"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "215",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.587880",
+  "must_be_whole_number": 0,
+  "name": "Head",
+  "uom_name": "Head"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "216",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:32.603754",
+  "must_be_whole_number": 0,
+  "name": "Per Shift",
+  "uom_name": "Per Shift"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "NMB",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:07.118209",
+  "must_be_whole_number": 1,
+  "name": "Nos",
+  "uom_name": "Nos"
+ }
+]

@@ -1,0 +1,346 @@
+[
+ {
+  "commodity_code": "15121501",
+  "commodity_name": "Engine oil",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-11 16:06:10.476649",
+  "name": "15121501"
+ },
+ {
+  "commodity_code": "42271701",
+  "commodity_name": "Medical gas cylinders or related devices",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-23 10:50:54.630927",
+  "name": "42271701"
+ },
+ {
+  "commodity_code": "40101834",
+  "commodity_name": null,
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-29 15:06:21.157691",
+  "name": "40101834"
+ },
+ {
+  "commodity_code": "15121509",
+  "commodity_name": null,
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-29 15:06:32.345657",
+  "name": "15121509"
+ },
+ {
+  "commodity_code": "24111816",
+  "commodity_name": null,
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-29 15:06:42.990385",
+  "name": "24111816"
+ },
+ {
+  "commodity_code": "15121520",
+  "commodity_name": null,
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-29 15:06:53.991838",
+  "name": "15121520"
+ },
+ {
+  "commodity_code": "15121502",
+  "commodity_name": null,
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-29 15:07:08.740473",
+  "name": "15121502"
+ },
+ {
+  "commodity_code": "15121527",
+  "commodity_name": null,
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-29 15:07:19.985538",
+  "name": "15121527"
+ },
+ {
+  "commodity_code": "15121504",
+  "commodity_name": null,
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-29 15:07:33.784954",
+  "name": "15121504"
+ },
+ {
+  "commodity_code": "15121503",
+  "commodity_name": null,
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-29 15:07:39.557306",
+  "name": "15121503"
+ },
+ {
+  "commodity_code": "84131613",
+  "commodity_name": "Claims payment processing or administration",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-01 13:08:33.944749",
+  "name": "84131613"
+ },
+ {
+  "commodity_code": "96010101",
+  "commodity_name": "Reimbursements of Expense",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-01 13:09:26.140439",
+  "name": "96010101"
+ },
+ {
+  "commodity_code": "84131516",
+  "commodity_name": "Professional indemnity insurance",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-01 13:10:08.438625",
+  "name": "84131516"
+ },
+ {
+  "commodity_code": "10151609",
+  "commodity_name": "Maize",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-09-02 15:54:32.422374",
+  "name": "10151609"
+ },
+ {
+  "commodity_code": "50131704",
+  "commodity_name": "Powdered milk",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-09-02 16:11:04.432256",
+  "name": "50131704"
+ },
+ {
+  "commodity_code": "44111604",
+  "commodity_name": "Coin wrappers or bill straps",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-09-04 12:53:22.452940",
+  "name": "44111604"
+ },
+ {
+  "commodity_code": "14111530",
+  "commodity_name": "Self adhesive note paper",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-09-04 14:20:47.874350",
+  "name": "14111530"
+ },
+ {
+  "commodity_code": "44121702",
+  "commodity_name": "Pen or pencil sets",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-08-26 23:55:31.980923",
+  "name": "44121702"
+ },
+ {
+  "commodity_code": "14101501",
+  "commodity_name": "Paper pulp",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-08-26 23:55:31.992209",
+  "name": "14101501"
+ },
+ {
+  "commodity_code": "80101512",
+  "commodity_name": "Actuarial consulting services",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-08-26 23:55:32.001899",
+  "name": "80101512"
+ },
+ {
+  "commodity_code": "86101805",
+  "commodity_name": "Industrial sector manpower development",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-08-26 23:55:32.012249",
+  "name": "86101805"
+ },
+ {
+  "commodity_code": "10171614",
+  "commodity_name": "Potassium chloride for agricultural use",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-08-26 23:55:32.021989",
+  "name": "10171614"
+ },
+ {
+  "commodity_code": "14121801",
+  "commodity_name": "Clay coated papers",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-09-25 12:00:00",
+  "name": "14121801"
+ },
+ {
+  "commodity_code": "14111507",
+  "commodity_name": "Printer or copier paper",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-09-25 12:00:00",
+  "name": "14111507"
+ },
+ {
+  "commodity_code": "14111545",
+  "commodity_name": "Wide format printer paper",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-09-25 12:00:00",
+  "name": "14111545"
+ },
+ {
+  "commodity_code": "14121508",
+  "commodity_name": "Kaolin treated paperboard",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-09-25 12:00:00",
+  "name": "14121508"
+ },
+ {
+  "commodity_code": "15101502",
+  "commodity_name": "Kerosene",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101502"
+ },
+ {
+  "commodity_code": "15101503",
+  "commodity_name": "Naphtha",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101503"
+ },
+ {
+  "commodity_code": "15101504",
+  "commodity_name": "Aviation fuel",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101504"
+ },
+ {
+  "commodity_code": "15101505",
+  "commodity_name": "Diesel fuel",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101505"
+ },
+ {
+  "commodity_code": "15101506",
+  "commodity_name": "Gasoline or Petrol",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101506"
+ },
+ {
+  "commodity_code": "15101507",
+  "commodity_name": "Benzene",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101507"
+ },
+ {
+  "commodity_code": "15101508",
+  "commodity_name": "Crude oil",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101508"
+ },
+ {
+  "commodity_code": "15101509",
+  "commodity_name": "Marine fuel",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101509"
+ },
+ {
+  "commodity_code": "15101510",
+  "commodity_name": "Condensate",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101510"
+ },
+ {
+  "commodity_code": "15101512",
+  "commodity_name": "Petroleum coke or pet coke",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101512"
+ },
+ {
+  "commodity_code": "15101513",
+  "commodity_name": "Diesel fuel off road",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101513"
+ },
+ {
+  "commodity_code": "15101601",
+  "commodity_name": "Sub bituminous or weak coal",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101601"
+ },
+ {
+  "commodity_code": "15101602",
+  "commodity_name": "Lignite",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101602"
+ },
+ {
+  "commodity_code": "15101603",
+  "commodity_name": "Anthracite",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101603"
+ },
+ {
+  "commodity_code": "15101604",
+  "commodity_name": "Coal briquettes",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101604"
+ },
+ {
+  "commodity_code": "15101605",
+  "commodity_name": "Coke",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101605"
+ },
+ {
+  "commodity_code": "15101606",
+  "commodity_name": "Coking coal",
+  "docstatus": 0,
+  "doctype": "Efris Commodity Code",
+  "modified": "2024-10-22 00:00:00",
+  "name": "15101606"
+ }
+]

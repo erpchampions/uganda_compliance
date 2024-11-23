@@ -1,0 +1,1 @@
+uganda_compliance.patches.add_e_company_to_customer

@@ -1,0 +1,388 @@
+{
+ "actions": [],
+ "autoname": "field:invoice",
+ "creation": "2024-07-30 14:30:49.929314",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_1",
+  "status",
+  "irn_cancel_date",
+  "irn_cancelled",
+  "column_break_5",
+  "version",
+  "basic_information_section",
+  "qrcode_path",
+  "qrcode",
+  "column_break_6",
+  "invoice_type",
+  "invoice",
+  "irn",
+  "invoice_date",
+  "issued_time",
+  "column_break_12",
+  "seller_details_section",
+  "seller_gstin",
+  "seller_legal_name",
+  "seller_trade_name",
+  "column_break_20",
+  "seller_address",
+  "seller_nin_or_brn",
+  "seller_phone",
+  "seller_email",
+  "buyer_details_section",
+  "buyer_gstin",
+  "supply_type",
+  "buyer_legal_name",
+  "buyer_trade_name",
+  "buyer_address",
+  "column_break_33",
+  "buyer_phone",
+  "buyer_email",
+  "column_break_43",
+  "item_details_section",
+  "items",
+  "value_details_section",
+  "currency_code",
+  "country_code",
+  "additional_discounts_section",
+  "applied_discount_on",
+  "column_break_107",
+  "additional_discount_percentage",
+  "discount_amount",
+  "other_details_section",
+  "company",
+  "column_break_106",
+  "tax_scheme",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "1.1",
+   "fieldname": "version",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Version",
+   "precision": "1",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "default": "GST",
+   "fieldname": "tax_scheme",
+   "fieldtype": "Data",
+   "label": "Tax Scheme",
+   "read_only": 1,
+   "report_hide": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supply_type",
+   "fieldtype": "Select",
+   "label": "Buyer Type",
+   "options": "0\n1\n2\n3",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "E Invoice",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fetch_from": "invoice.posting_date",
+   "fieldname": "invoice_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Invoice Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "1:Invoice/Receipt \n5:Credit Memo/rebate \n4:Debit Note",
+   "fieldname": "invoice_type",
+   "fieldtype": "Select",
+   "label": "Invoice Type",
+   "options": "1\n4\n5"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "seller_details_section",
+   "fieldtype": "Section Break",
+   "label": "Seller Details"
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "seller_gstin",
+   "fieldtype": "Data",
+   "label": "GSTIN",
+   "reqd": 1
+  },
+  {
+   "fieldname": "seller_legal_name",
+   "fieldtype": "Data",
+   "label": "Legal Name",
+   "reqd": 1
+  },
+  {
+   "depends_on": "seller_trade_name",
+   "fieldname": "seller_trade_name",
+   "fieldtype": "Data",
+   "label": "Trade Name"
+  },
+  {
+   "depends_on": "seller_phone",
+   "fieldname": "seller_phone",
+   "fieldtype": "Data",
+   "label": "Phone"
+  },
+  {
+   "depends_on": "seller_email",
+   "fieldname": "seller_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "buyer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Buyer Details"
+  },
+  {
+   "fieldname": "column_break_33",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "buyer_legal_name",
+   "fieldtype": "Data",
+   "label": "Legal Name"
+  },
+  {
+   "depends_on": "buyer_trade_name",
+   "fieldname": "buyer_trade_name",
+   "fieldtype": "Data",
+   "label": "Trade Name"
+  },
+  {
+   "depends_on": "buyer_phone",
+   "fieldname": "buyer_phone",
+   "fieldtype": "Data",
+   "label": "Phone`"
+  },
+  {
+   "depends_on": "buyer_email",
+   "fieldname": "buyer_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "fieldname": "column_break_43",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "value_details_section",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "currency_code",
+   "fieldtype": "Data",
+   "label": "Currency Code"
+  },
+  {
+   "fieldname": "country_code",
+   "fieldtype": "Data",
+   "label": "Country Code"
+  },
+  {
+   "fieldname": "item_details_section",
+   "fieldtype": "Section Break",
+   "label": "Goods Details"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "E Invoice Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "other_details_section",
+   "fieldtype": "Section Break",
+   "label": "Other Details",
+   "print_hide": 1
+  },
+  {
+   "fetch_from": "invoice.company",
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_106",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Invoice Number",
+   "options": "Sales Invoice",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "irn",
+   "fieldtype": "Data",
+   "label": "FDN",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "qrcode_path",
+   "fieldtype": "Attach Image",
+   "hidden": 1,
+   "label": "QRCode File Path",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: !doc.irn_cancelled && doc.irn",
+   "fieldname": "qrcode",
+   "fieldtype": "Image",
+   "label": "QRCode",
+   "options": "qrcode_path"
+  },
+  {
+   "default": "0",
+   "depends_on": "irn_cancelled",
+   "fieldname": "irn_cancelled",
+   "fieldtype": "Check",
+   "label": "IRN Cancelled"
+  },
+  {
+   "depends_on": "irn_cancelled",
+   "fieldname": "irn_cancel_date",
+   "fieldtype": "Data",
+   "label": "IRN Cancellation Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "EFRIS Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "EFRIS Pending\nEFRIS Generated\nEFRIS Cancelled\nEFRIS Credit Note Pending",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "basic_information_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Information"
+  },
+  {
+   "fieldname": "buyer_gstin",
+   "fieldtype": "Data",
+   "label": "GSTIN"
+  },
+  {
+   "depends_on": "buyer_address_line_2",
+   "fieldname": "buyer_address",
+   "fieldtype": "Data",
+   "label": "Buyer Address"
+  },
+  {
+   "fieldname": "seller_address",
+   "fieldtype": "Data",
+   "label": "Seller Address"
+  },
+  {
+   "fieldname": "seller_nin_or_brn",
+   "fieldtype": "Data",
+   "label": "Seller NIN or BRN"
+  },
+  {
+   "fieldname": "issued_time",
+   "fieldtype": "Time",
+   "label": "Issued Time",
+   "reqd": 1
+  },
+  {
+    "fieldname": "additional_discounts_section",
+    "fieldtype": "Section Break",
+    "label": "Additional Discounts"
+   },
+   {
+    "fieldname": "applied_discount_on",
+    "fieldtype": "Data",
+    "label": "Apply Additional Discounts On"
+   },
+   {
+    "fieldname": "column_break_107",
+    "fieldtype": "Column Break"
+   },
+   {
+    "fieldname": "additional_discount_percentage",
+    "fieldtype": "Data",
+    "label": "Additional Discount Percentage"
+   },
+   {
+    "fieldname": "discount_amount",
+    "fieldtype": "Currency",
+    "label": "Additional Discounts Amount"
+   }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-09-02 20:46:43.515607",
+ "modified_by": "Administrator",
+ "module": "Efris",
+ "name": "E Invoice",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,450 @@
+<table class="main">
+    <tbody>
+        <tr class="top_left">
+            <td colspan="4">
+                <img src="/files/Logo_Transparent.png" alt="ERPChampions Logo" style="float: left; max-width: 5%; height: 10%;">
+            </td>
+            <td colspan="3">
+                <img src="/files/ura_logo.png" alt="URA Logo"  style="float: right; max-width: 19%; height: 24%;">
+            </td>
+        </tr>
+        <tr class="top_top">
+            <td colspan="7">
+                e-INVOICE/TAX INVOICE
+            </td>
+        </tr>
+        <tr class="section_head">
+            <td colspan="7">
+                Section A: Seller's Details
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                BRN:
+            </td>
+            <td colspan="5">
+                {% set buyer_nin_or_brn = doc.buyer_nin_or_brn %}
+                {% if buyer_nin_or_brn %}
+                    {{ buyer_nin_or_brn }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+         <tr class="table_data">
+            <td colspan="2">
+                TIN:
+            </td>
+            <td colspan="5">
+                {% set seller_nin_or_brn = doc.seller_gstin %}
+                {% if seller_nin_or_brn %}
+                    {{ seller_nin_or_brn }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Legal Name:
+            </td>
+            <td colspan="5">
+                {% set seller_legal_name = doc.seller_legal_name %}
+                {% if seller_legal_name %}
+                    {{ seller_legal_name }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Trade Name:
+            </td>
+            <td colspan="5">
+                {% set seller_trade_name = doc.seller_trade_name %}
+                {% if seller_trade_name %}
+                    {{ seller_trade_name }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Address:
+            </td>
+            <td colspan="5">
+                {% set seller_address = doc.seller_address %}
+                {% if seller_address %}
+                    {{ seller_address }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Seller's Reference Number:
+            </td>
+            <td colspan="5">
+                {% set seller_reference_no = doc.seller_reference_no %}
+                {% if seller_reference_no %}
+                    {{ seller_reference_no }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Served by:
+            </td>
+            <td colspan="5">
+                {% set served_by = doc.operator %}
+                {% if served_by %}
+                    {{ served_by }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="section_head">
+            <td colspan="7">
+                Section B: URA Information
+            </td>
+        </tr>
+          <tr class="table_data">
+            <td colspan="2">
+                Document Type:
+            </td>
+            <td colspan="5">
+                {% set document_type = doc.invoice_type %}
+                {% if document_type %}
+                    {{ document_type }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Issued Date:
+            </td>
+            <td colspan="5">
+                {% set issued_date = doc.invoice_date %}
+                {% if issued_date %}
+                    {{ issued_date }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Issued Time:
+            </td>
+            <td colspan="5">
+                {% set issued_time = doc.issued_time %}
+                {% if issued_time %}
+                    {{ issued_time }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Device Number:
+            </td>
+            <td colspan="5">
+                {% set device_no = doc.device_no %}
+                {% if device_no %}
+                    {{ device_no }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Fiscal Document Number:
+            </td>
+            <td colspan="5">
+                {% set fiscal_doc_no = doc.fiscal_doc_no %}
+                {% if fiscal_doc_no %}
+                    {{ fiscal_doc_no }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Verification Code:
+            </td>
+            <td colspan="5">
+                {% set ver_code = doc.ver_code %}
+                {% if ver_code %}
+                    {{ ver_code }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Credit Note No.:
+            </td>
+            <td colspan="5">
+                {% set credit_note_no = doc.credit_note_application_ref_no %}
+                {% if credeit_note_no %}
+                    {{ credit_note_no }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+         <tr class="section_head">
+            <td colspan="7">
+                Section C: Buyer's Details
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Name:
+            </td>
+            <td colspan="5">
+                {% set buyer_legal_name = doc.buyer_legal_name %}
+                {% if buyer_legal_name %}
+                    {{ buyer_legal_name }}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="section_head">
+            <td colspan="7">
+                Section D: Goods & Services Details
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td width="5%">
+                <b>No.</b>
+            </td>
+            <td width="20%">
+                <b>Item</b>
+            </td>
+            <td width="15%">
+                <b>Quantity</b>
+            </td>
+            <td width="15%">
+                <b>Unit Measure</b>
+            </td>
+            <td width="15%">
+                <b>Unit Price</b>
+            </td>
+            <td width="15%">
+                <b>Total</b>
+            </td>
+            <td width="15%">
+                <b>Tax Category</b>
+            </td>
+        </tr>
+        {% set items = doc.items %}
+        
+        
+        {% for item in items %}
+        
+            {% set item_name = item.item_name %}
+            {% set item_quantity = item.quantity %}
+            {% set item_unit = item.unit %}
+            {% set item_rate = item.rate %}
+            {% set item_amount = item.amount %}
+            {% set e_tax_category = item.e_tax_category%}
+            {% set e_tax_code = e_tax_category[3:4] %}
+            
+            <tr class="table_data">
+                <td width="5%">
+                    {{ loop.index }}
+                </td>
+                <td width="20%">
+                    {{ item_name }}
+                </td>
+                <td width="15%">
+                    {{ item_quantity }}
+                </td>
+                <td width="15%">
+                    {{ item_unit }}
+                </td>
+                <td width="15%">
+                    {% set formatted_item_rate = frappe.format(item_rate, {'fieldtype': 'Currency'}) %}
+                    {% set formatted_item_rate = formatted_item_rate.replace("Sh", '') %}
+                    {{ formatted_item_rate.replace(".00", '') }}
+                    
+                    
+                </td>
+                <td width="15%">
+                    {% set formatted_item_amount = frappe.format(item_amount, {'fieldtype': 'Currency'}) %}
+                    {% set formatted_item_amount = formatted_item_amount.replace("Sh", '') %}
+                    {{ formatted_item_amount.replace(".00", '') }}
+                </td>
+                <td width="15%">
+                    {{ e_tax_code }}
+                </td>
+            </tr>
+         {% endfor %}
+        <tr class="section_head">
+            <td colspan="7">
+                Section E: Tax Details
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2.5">
+                <b>Tax Category</b>
+            </td>
+            <td colspan="2.5">
+                <b>Net Amount</b>
+            </td>
+            <td colspan="2.5">
+                <b>Tax Amount</b>
+            </td>
+            <td colspan="2.5">
+                <b>Gross Amount</b>
+            </td>
+                
+        </tr>
+        {% set taxes = doc.taxes %}
+        {% for tax in taxes %}
+            {% set tax_cat_code = tax.tax_category_code %}
+            {% set tax_cat = tax_cat_code[3: ] %}
+            
+            {% set net_amount = tax.net_amount %}
+    
+            {% set tax_amount = tax.tax_amount %}
+            {% set tax_rate = tax.tax_rate %}
+            {% set formatted_tax_amount = doc.get_formatted("tax_amount") %}
+            
+            {% set gross_amount = tax.gross_amount %}
+            {# {% set formatted_gross_amount = doc.get_formatted("gross_amount") %} #}
+            
+            <tr class="table_data">
+                <td colspan="2.5">
+                    {{ tax_cat }}
+                </td>
+                <td colspan="2.5">
+                    <!-- tax net amount column -->
+                    {% set formatted_net_amount = frappe.format(net_amount, {'fieldtype': 'Currency'}) %}
+                    {% set formatted_net_amount = formatted_net_amount.replace("Sh", '') %}
+                    {{ formatted_net_amount.replace(".00", '') }}
+                </td>
+                <td colspan="2.5">
+                    <!-- tax_amount column -->
+                    {% if tax.tax_category_code == '03:C: Exempt (-)' %}
+                        {{ tax_rate }}
+                        
+                    {% else %}
+                    
+                        {% set formatted_tax_amount = frappe.format(tax_amount, {'fieldtype': 'Currency'}) %}
+                        {% set formatted_tax_amount = formatted_tax_amount.replace("Sh", '') %}
+                        {{ formatted_tax_amount.replace(".00", '') }}
+                       
+                    {% endif %}
+                </td>
+                <td colspan="2.5">
+                    <!-- tax_gross_amount column -->
+                    {% set formatted_gross_amount = frappe.format(gross_amount, {'fieldtype': 'Currency'}) %}
+                    {% set formatted_gross_amount = formatted_gross_amount.replace("Sh", '') %}
+                    {{ formatted_gross_amount.replace(".00", '') }} 
+                </td>
+            </tr>
+        {% endfor %}
+        <tr class="section_head">
+            <td colspan="7">
+                Section F: Summary
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Net Amount:
+            </td>
+            <td colspan="5">
+               {% set doc_net_amount = doc.net_amount %}
+               {% set formatted_net_amount = frappe.format(doc_net_amount, {'fieldtype': 'Currency'}) %}
+               {% set formatted_net_amount = formatted_net_amount.replace("Sh", '') %}
+               {{ formatted_net_amount }}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Tax Amount:
+            </td>
+            <td colspan="5">
+               {% set doc_tax_amount = doc.tax_amount %}
+               {% set formatted_tax_amount = frappe.format(doc_tax_amount, {'fieldtype': 'Currency'}) %}
+               {% set formatted_tax_amount = formatted_tax_amount.replace("Sh", '') %}
+               {{ formatted_tax_amount }}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Gross Amount:
+            </td>
+            <td colspan="5">
+               {% set doc_gross_amount = doc.gross_amount %}
+               {% set formatted_gross_amount = frappe.format(doc_gross_amount, {'fieldtype': 'Currency'}) %}
+               {% set formatted_gross_amount = formatted_gross_amount.replace("Sh", '') %}
+               {{ formatted_gross_amount }}
+               <br>
+               {% set gross_in_words = frappe.utils.money_in_words(doc.gross_amount) %}
+               {% set gross_words = gross_in_words.replace("UGX", '') %}
+               {{ gross_words.replace("only", 'shillings only') }} 
+            </td>
+        </tr>
+         <tr class="table_data">
+            <td colspan="2">
+                Currency:
+            </td>
+            <td colspan="5">
+               UGX
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Number of Items:
+            </td>
+            <td colspan="5">
+               {{ doc.items|length }}
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Mode:
+            </td>
+            <td colspan="5">
+               Online
+            </td>
+        </tr>
+        <tr class="table_data">
+            <td colspan="2">
+                Remarks:
+            </td>
+            <td colspan="5">
+              
+            </td>
+        </tr>
+        <tr>
+            <td colspan="7" class="qrcode">
+                <img src="{{ doc.qrcode_path}}" alt="URA Logo"  style="padding-top: 8px; padding-bottom: 8px; max-width: 100%; height: 100%;">
+            </td>
+        </tr>
+        <tr class="top_top">
+            <td colspan="7">
+                *** END OF e-INVOICE/TAX INVOICE ***
+            </td>
+        </tr>
+        
+    </tbody>
+</table>
+
+

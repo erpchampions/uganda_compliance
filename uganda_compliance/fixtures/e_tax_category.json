@@ -1,0 +1,30 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "E Tax Category",
+  "modified": "2024-07-30 18:55:26.656579",
+  "name": "01:A: Standard (18%)",
+  "tax_category_name": "01:A: Standard (18%)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "E Tax Category",
+  "modified": "2024-07-30 18:55:46.986192",
+  "name": "02:B: Zero (0%)",
+  "tax_category_name": "02:B: Zero (0%)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "E Tax Category",
+  "modified": "2024-07-30 18:56:02.459197",
+  "name": "03:C: Exempt (-)",
+  "tax_category_name": "03:C: Exempt (-)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "E Tax Category",
+  "modified": "2024-07-30 23:00:06.321728",
+  "name": "04:D: Deemed (18%)",
+  "tax_category_name": "04:D: Deemed (18%)"
+ }
+]
