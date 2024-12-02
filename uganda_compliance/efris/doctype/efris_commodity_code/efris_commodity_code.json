@@ -9,7 +9,8 @@
  "engine": "InnoDB",
  "field_order": [
   "commodity_code",
-  "commodity_name"
+  "commodity_name",
+  "e_tax_category"
  ],
  "fields": [
   {
@@ -25,7 +26,14 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Commodity Name"
-  }
+  },
+  {
+    "fieldname": "e_tax_category",
+    "fieldtype": "Link",
+    "in_list_view": 1,
+    "options":"E Tax Category",
+    "label": "E Tax Category"
+   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],

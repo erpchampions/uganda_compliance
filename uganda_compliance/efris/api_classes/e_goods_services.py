@@ -20,6 +20,11 @@ def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
 
 def before_save_item(doc, method):
     efris_log_info(f"The Created Item is: {doc}")
+    is_import = frappe.flags.in_import
+    is_registered_item = doc.get("is_efris_registered", 0)
+    if is_import and is_registered_item == 1:
+        efris_log_info(f"Excludes EFRIS registered Item {doc.get('item_code')}")        
+        return
 
     is_efris_item = doc.get('is_efris_item')
     if not is_efris_item:
@@ -52,12 +57,20 @@ def before_save_item(doc, method):
 
 def query_item_before_post(doc):
     e_company = doc.get('e_company', '')
+    item_code = ""
+    item_code = doc.get('item_code', '')
+    efris_log_info(f"Item Code :{item_code}") 
+    goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
+    efris_log_info(f"EFRIS Product Code is {goodsCode}")
+    if goodsCode:
+        item_code = goodsCode
     dn_batch_query_goods_T144 = {
-        "goodsCode": doc.get('item_code', ''),
+        "goodsCode": item_code,
         "tin": get_e_company_settings(e_company).tin
     }
     efris_log_info(f"Querying EFRIS with: {dn_batch_query_goods_T144}")
-    success, response = make_post("T144", dn_batch_query_goods_T144, e_company)
+    success, response = make_post(interfaceCode="T144", content=dn_batch_query_goods_T144, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+    
     if success and response:
         efris_log_info(f"Query successful, response: {response}")
         return response  # Assuming response contains information if item exists
@@ -73,11 +86,20 @@ def update_existing_item(doc, method, e_company):
 
 def prepare_and_upload_item(doc, method, operation_type, e_company):
     is_efris_item = doc.get('is_efris_item',0)
+    goodsCode = ""
+    item_code = ""
     if not is_efris_item:
         efris_log_info(f"Item Is Non Efris {is_efris_item}")
         return
-    goodsName = doc.get('item_name', '')
-    goodsCode = doc.get('item_code', '')
+    goodsName = doc.get('item_name', '')    
+    item_code = doc.get('item_code', '')
+    efris_log_info(f"Item Code :{item_code}") 
+    goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
+    efris_log_info(f"EFRIS Product Code is {goodsCode}")
+    if goodsCode and  len(goodsCode) > 50:
+        frappe.throw(f"The EFRIS Product Code cannot exceeds 50 characters.")
+    if goodsCode:
+        item_code = goodsCode
     hasOtherUnits = doc.get('has_multiple_uom', 0)
     efris_log_info(f"The Item Has Multiple UOM flag is set to: {hasOtherUnits}") 
     item_currency = doc.get('efris_currency','')
@@ -163,7 +185,7 @@ def prepare_and_upload_item(doc, method, operation_type, e_company):
     goodsUpload = [{
         "operationType": operation_type,
         "goodsName": goodsName,
-        "goodsCode": goodsCode,
+        "goodsCode": item_code,
         "measureUnit": measureUnit,
         "unitPrice": unitPrice,
         "currency": currency,
@@ -182,11 +204,12 @@ def prepare_and_upload_item(doc, method, operation_type, e_company):
     efris_log_info(f"The JSON item for Company {e_company} is: {goodsUpload}")
 
     # Upload the item to EFRIS
-    success, response = make_post("T130", goodsUpload, e_company)
+    success, response = make_post(interfaceCode="T130", content=goodsUpload, company_name=e_company,reference_doc_type=doc.doctype, reference_document=doc.name)
+    
     
     if success:
         efris_log_info(f"Item successfully uploaded to EFRIS for {e_company}")
-        frappe.msgprint(f"Item successfully uploaded to EFRIS for {e_company}")
+        frappe.msgprint(f"Item successfully uploaded to EFRIS for {e_company}")        
         
         if not doc.is_efris_registered:
             doc.is_efris_registered = 1
@@ -196,7 +219,7 @@ def prepare_and_upload_item(doc, method, operation_type, e_company):
         frappe.throw(f"Failed to upload item to EFRIS for {e_company}: {response}")
 
 
-import frappe
+
 
 @frappe.whitelist()
 def create_item_prices(item_code, uoms, currency):
@@ -244,14 +267,9 @@ def create_item_prices(item_code, uoms, currency):
                     item_price_doc.insert(ignore_permissions=True)
                     efris_log_info(f"Item Price for item {item_code} and UOM {uom} created.")
                 else:
-                    # # If an Item Price already exists, update it
-                    # item_price_doc = frappe.get_doc('Item Price', existing_item_price[0].name)
-                    # item_price_doc.price_list_rate = price
-                    # item_price_doc.save(ignore_permissions=True)
-                    # efris_log_info(f"Item Price for item {item_code} and UOM {uom} updated successfully.")
                     return
 
-        # return "Item Prices created/updated successfully."
+        
     
     except Exception as e:
         frappe.throw(f"Error creating/updating Item Prices: {str(e)}")
@@ -260,9 +278,9 @@ def create_item_prices(item_code, uoms, currency):
 def item_validations(doc, method):
     # Check if this is an import
     is_import = frappe.flags.in_import
-    if is_import:
-        efris_log_info("Validation Excludes Imported Item Data")
-        # Skip modifying `uoms` data during import
+    is_registered_item = doc.get("is_efris_registered", 0)
+    if is_import and is_registered_item == 1:
+        efris_log_info(f"Validation Excludes EFRIS registered Item {doc.get('item_code')}")        
         return
     
     try:
@@ -367,3 +385,29 @@ def item_validations(doc, method):
 
     except Exception as e:
         frappe.throw(f"Item Validations Failed: {str(e)}")
+
+
+@frappe.whitelist()
+def get_item_tax_template(company, e_tax_category):
+    """
+    Fetch the Item Tax Template linked to a specific company and e_tax_category
+    in the child table (Item Tax Template Detail).
+    """
+    try:
+        tax_templates = frappe.db.get_all("Item Tax Template",{"company":company})
+        if tax_templates:
+            efris_log_info(f"Tax Templates:{tax_templates}")
+            for doc in tax_templates:
+                item_tax = frappe.get_doc("Item Tax Template",{'name':doc.name})
+                efris_log_info(f" Template Doc {item_tax}")
+                taxes = item_tax.get("taxes",[])               
+                for tax in taxes:
+                    if tax.custom_e_tax_category == e_tax_category:
+                        # Match found, return this Item Tax Template
+                        return item_tax.name
+                
+        
+        return None
+    except Exception as e:
+        frappe.log_error(f"Error fetching Item Tax Template: {str(e)}")
+        return []

@@ -6,14 +6,16 @@ from datetime import datetime
 from .encryption_utils import encrypt_aes_ecb, decrypt_aes_ecb, get_AES_key, get_private_key, sign_data
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from .request_utils import fetch_data, post_req
+from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path
 
 
 
 ##############
 #def make_post(interfaceCode, content, company_name, tin, device_no, private_key_path):
-def make_post(interfaceCode, content, company_name):
+def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
     efris_log_info("make post called...")
+    
     try:
         
         e_settings = get_e_company_settings(company_name)
@@ -31,7 +33,7 @@ def make_post(interfaceCode, content, company_name):
 
         json_content = json.dumps(content)
         efris_log_info("Content converted to JSON successfully: " + json_content)
-
+       
         isAESEncrypted = encrypt_aes_ecb(json_content, aes_key)
         efris_log_info("Content encrypted with AES successfully")
 
@@ -62,6 +64,7 @@ def make_post(interfaceCode, content, company_name):
         efris_log_info("Request data converted to JSON successfully")
         efris_log_info("Request data:\n")
         efris_log_info(data_json)
+               
 
         json_resp = post_req(data_json, e_settings.sandbox_mode)
 
@@ -71,14 +74,31 @@ def make_post(interfaceCode, content, company_name):
         errorMsg = resp["returnStateInfo"]["returnMessage"]
         efris_log_info("returnStateInfoMsg: " + errorMsg)
         if errorMsg != "SUCCESS":
+            log_request_to_efris(
+                request_data=content,
+                request_full=data,
+                response_data={"error": errorMsg},
+                response_full=resp,
+                reference_doc_type=reference_doc_type,
+                reference_document=reference_document
+            )
             return False, errorMsg
 
         respcontent = resp["data"]["content"]
         efris_response = decrypt_aes_ecb(aes_key, respcontent)
         efris_log_info("Response content decrypted successfully")
+       
         resp_json = json.loads(efris_response)
         efris_log_info("Decrypted JSON Data:")
         efris_log_info(resp_json)
+        log_request_to_efris(
+             request_data=content,
+            request_full=data,
+            response_data=json.loads(efris_response),
+            response_full=resp_json,
+            reference_doc_type=reference_doc_type,
+            reference_document=reference_document
+        )
         return True, resp_json
 
     except Exception as e:

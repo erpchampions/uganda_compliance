@@ -13,7 +13,7 @@ class HandledException(frappe.ValidationError): pass
 
 # Get the default site path dynamically
 bench_path = get_bench_path()
-frappe.log_error(f"the  log file path is : {bench_path}")
+
 # Construct the path to the frappe-bench/logs folder
 log_folder_path = os.path.join(bench_path, 'logs')
 
@@ -88,7 +88,6 @@ def safe_load_json(message):
     return json_message
 
 def efris_log_info(message):
-    frappe.log_error(f"efris_log_info called...")
     logger.info(message)
 
 def efris_log_warning(message):
@@ -101,3 +100,8 @@ def format_amount(amount):
     amt_float = float(amount)    
     amt_string = "{:.2f}"
     return amt_string.format(amt_float)
+
+
+
+def test_job():
+    print("Test job executed!")

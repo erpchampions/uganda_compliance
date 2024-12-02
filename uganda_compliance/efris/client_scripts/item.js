@@ -43,9 +43,72 @@ frappe.ui.form.on("Item", {
                 }
             });
         }
+    },
+    efris_commodity_code: function(frm){
+        set_item_tax_template(frm)
+        frm.refresh_field("efris_commodity_code")
+    },
+    validate:function(frm){
+        set_item_tax_template(frm)
+        frm.refresh_field("taxes")
     }
-    
 });
+function set_item_tax_template(frm){
+   
+        console.log(`EFRIS Commodity Code Added...`);
+        let efris_commodity_code = frm.doc.efris_commodity_code;
+        if (efris_commodity_code) {
+            console.log(`The EFRIS commodity code is ${efris_commodity_code}`);
+            
+            // Fetch the E Tax Category from the Efris Commodity Code
+            frappe.call({
+                method: 'frappe.client.get_value',
+                args: {
+                    doctype: 'Efris Commodity Code',
+                    fieldname: "e_tax_category",
+                    filters: { name: efris_commodity_code }
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        let e_tax_category = r.message.e_tax_category;
+                        console.log(`The E Tax Category on ${efris_commodity_code} is ${e_tax_category}`);
+                        
+                        if (e_tax_category) {
+                            console.log(`E Tax Category is ${e_tax_category}`);
+                            const company = frm.doc.e_company;
+                            console.log(`Item E Company is ${company}`);
+                            
+                            // Fetch the Item Tax Template based on E Tax Category and Company
+                            frappe.call({
+                                method: 'uganda_compliance.efris.api_classes.e_goods_services.get_item_tax_template',
+                                args: {
+                                    company: company,
+                                    e_tax_category: e_tax_category
+                                },
+                                callback: function(r) {
+                                    if (r.message && r.message.length > 0) {
+                                        
+                                          frm.clear_table("taxes");
+                                          let row = frm.add_child("taxes");
+                                          row.item_tax_template = r.message
+                                          frm.refresh_field('taxes');
+                                        } else {
+                                            frappe.msgprint('No matching Item Tax Template found.');
+                                    }
+                                       
+                                        
+                            }
+
+                            });
+                        }
+                    } else {
+                        frappe.throw("Failed to fetch E Tax Category from the EFRIS Commodity Code.");
+                    }
+                }
+            });
+        }
+    }
+
        
 frappe.ui.form.on('Item', {
     after_save: function(frm) {
@@ -91,8 +154,14 @@ frappe.ui.form.on('Item', {
                 frappe.throw(`The Default Sales UOM (${sales_uom}) must be in the item's UOMs list.`);
             }
         }
+    },    
+    item_code: function(frm){
+        console.log(`listening to Item Code`)
+        let efris_product_code = frm.doc.item_code; 
+        frm.set_value('efris_product_code',frm.doc.item_code);         
+        frm.refresh_field("efris_product_code");
     }
-             
+         
 });
 
 frappe.ui.form.on('UOM Conversion Detail', {  // 'UOM Conversion Detail' is the correct child doctype name

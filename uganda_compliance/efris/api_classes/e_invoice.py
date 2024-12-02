@@ -3,7 +3,7 @@ import frappe
 import json
 from frappe import _
 from uganda_compliance.efris.api_classes.efris_api import make_post
-from uganda_compliance.efris.doctype.e_invoice.e_invoice import validate_company
+from uganda_compliance.efris.doctype.e_invoice.e_invoice import validate_company,decode_e_tax_rate
 from uganda_compliance.efris.utils.utils import efris_log_info, safe_load_json, efris_log_error
 from uganda_compliance.efris.api_classes.request_utils import get_ug_time_str
 from json import loads, dumps, JSONDecodeError
@@ -12,7 +12,7 @@ from pyqrcode import create as qrcreate
 import io
 import os
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
-
+from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 
 class EInvoiceAPI:
     @staticmethod
@@ -69,7 +69,20 @@ class EInvoiceAPI:
     def make_credit_note_return_application_request(einvoice, sale_invoice):
         efris_log_info("make_credit_note_return_application_request called")
         #
-        		
+        item_list = []
+        unique_items = set()
+        total_tax = 0.0
+        total_discount_tax = 0.0
+        orderNumber = 0
+        discount_percentage = einvoice.additional_discount_percentage if einvoice.additional_discount_percentage else 0
+        initial_tax = einvoice.tax_amount
+        item_code  = ""
+        goodsCode = ""
+        tax_rate = 0.0
+        discount_tax = 0.0
+        tax_on_discount = 0.0
+        discountTaxRate = ""
+       	
         remark = sale_invoice.efris_creditnote_remarks
         efris_log_info(f"Credit Note Remark for return Invoice is :{remark}")
         reason = sale_invoice.efris_creditnote_reasoncode 
@@ -106,17 +119,48 @@ class EInvoiceAPI:
             "sellersReferenceNo": einvoice.seller_reference_no
         }
         item_list = []
-        for item in einvoice.items:
+        discount_percentage = einvoice.additional_discount_percentage
+        efris_log_info(f"Additional Discount Percentage :{discount_percentage}")
+        
+        for item in einvoice.items: 
+            qty = item.quantity 
+            taxes = item.tax
+            taxRate = decode_e_tax_rate(str(item.gst_rate), item.e_tax_category) 
+            item_code = item.item_code
+            goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
+            efris_log_info(f"The EFRIS Product code is {goodsCode}")        
+            if goodsCode:
+                item_code = goodsCode
+            if discount_percentage > 0:
+                discount_amount = round((item.amount) * (discount_percentage / 100), 9) 
+                efris_log_info(f"Taxable Amount :{item.amount}")               
+                discountFlag = "1"                        
+                discounted_item = item.item_name + " (Discount)"
+                efris_log_info(f"tax_rate: {tax_rate}")
+                discountTaxRate = taxRate 
+                if taxRate == '0.18':
+                    tax_rate = float(taxRate) + 1
+                    efris_log_info(f"tax_rate after: {tax_rate}")
+                    taxes = round((item.amount - (item.amount / tax_rate)), 4)
+                    # tax = round((row.amount - (row.amount / tax_rate)), 4)
+                    efris_log_info(f"taxes: {taxes}")
+                    total_tax += taxes
+                if not taxRate or taxRate in ["-", "Exempt"]:
+                    # taxRate = "0.00"  # Convert exempt or invalid tax rates to zero
+                    discountTaxRate = "0.0"
             item_list.append({
                 "item": item.item_name,
-                "itemCode": item.item_code,
+                "itemCode": item_code,
                 "qty": str(item.quantity),
                 "unitOfMeasure": frappe.get_doc("UOM",item.unit).efris_uom_code,
                 "unitPrice": str(item.rate),
                 "total": str(item.amount),
-                "taxRate": str(item.gst_rate),
-                "tax": str(item.tax),
-                "orderNumber": str(item.order_number),
+                "taxRate": str(taxRate),
+                "tax": str(taxes),
+                "discountTotal": str((-1 * discount_amount)) if discount_percentage > 0 else "",
+                "discountTaxRate": str(discountTaxRate),
+                "orderNumber": str(orderNumber),
+                "discountFlag": discountFlag if discount_percentage > 0 else "2",
                 "deemedFlag": "2",
                 "exciseFlag": "2",
                 "categoryId": "",
@@ -133,8 +177,57 @@ class EInvoiceAPI:
                 "exciseRateName": "",
                 "vatApplicableFlag": "1"
             })
-   
-        credit_note.update({"goodsDetails": item_list})
+            orderNumber += 1
+            credit_note.update({"goodsDetails": item_list})
+            if discount_percentage > 0:
+               
+                if taxRate == '0.18':
+                    tax_on_discount = round((discount_amount / tax_rate), 4)
+                    discount_tax = round((discount_amount - tax_on_discount), 4) * -1
+                    total_discount_tax += (discount_tax)
+                else:
+                    discount_tax = taxes
+                    
+                discount_item = {
+                            "item": discounted_item,
+                            "itemCode": item_code,
+                            "qty": "",
+                            "unitOfMeasure": "",
+                            "unitPrice": "",
+                            "total": str((-1 * discount_amount)),
+                            "taxRate": str(taxRate),
+                            "tax": str((discount_tax)),
+                            "discountTotal": "",
+                            "discountTaxRate": str(discountTaxRate),
+                            "orderNumber": str(orderNumber),
+                            "discountFlag": "0",
+                            "deemedFlag": "2",
+                            "exciseFlag": "2",
+                            "categoryId": "",
+                            "categoryName": "",
+                            "goodsCategoryId": item.efris_commodity_code,
+                            "goodsCategoryName": "",
+                            "vatApplicableFlag": "1",
+                        }
+                item_list.append(discount_item)
+                credit_note.update({"goodsDetails": item_list})
+                orderNumber += 1
+             # Adjust for tax differences after the loop
+                if discount_percentage and discount_percentage > 0 :
+                    tax_difference = round(float(initial_tax) - (float(total_tax) + float(total_discount_tax)), 4)
+                    if tax_difference != 0.0:
+                        efris_log_info(f"Adjusting for tax difference: {tax_difference}")
+                        # Ensure the adjustment is made to the last discount item
+                        for item in reversed(item_list):
+                            if item["discountFlag"] == "0" and taxRate == '0.18':  # Identify the last discount line
+                                
+                                last_discount_item_tax = round((float(item["tax"]) + round(tax_difference,4)),4)
+                                item["tax"] = str(last_discount_item_tax)
+                                efris_log_info(f"The Discount Tax for Discount Item has been adjusted to {last_discount_item_tax}")
+                                
+                            elif item["discountFlag"] == "0" and taxRate != '0.18':
+                                    item["tax"] = str(taxes)
+                            break
 
         tax_list = []
         for tax in einvoice.taxes:
@@ -203,7 +296,7 @@ class EInvoiceAPI:
         company_name = einvoice.company
         
         status, response = make_post("T110", credit_note, company_name)
-            
+        
         return status, response
 
     @staticmethod
@@ -839,6 +932,7 @@ def check_efris_flag_for_sales_invoice(is_return,return_against):
 
 @frappe.whitelist()
 def Sales_invoice_is_efris_validation(doc,method):
+    efris_log_info(f"Before Save is called ...")
     try:
         if isinstance(doc, str):
             doc = json.loads(doc)
@@ -893,4 +987,3 @@ def sales_uom_validation(doc,mehtod):
             
             if not uom_exists:
                 frappe.throw(f"The Sales UOM ({sales_uom}) must be in the Item's UOMs list for item {item_code}.")
-

@@ -43,7 +43,8 @@ def stock_in_T131(doc, method):
                 supplier = ""
                 tax_Id = ""
                 stockInType = "102"
-
+                goodsCode = ""
+                item_code = ""
                 for data in items:
                     is_efris = data.get("is_efris")
                     efris_log_info(f"is_efris: {is_efris}")
@@ -52,6 +53,12 @@ def stock_in_T131(doc, method):
                     if is_efris:
                         item_uom = data.get("uom")
                         item_code = data.get("item_code")  # Ensure item_code is defined within this scope
+                        goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
+                        efris_log_info(f"EFRIS Product Code is {goodsCode}")
+                        if goodsCode and  len(goodsCode) > 50:
+                            frappe.throw(f"The Item Code exceeds required character length {len(goodsCode)}")
+                        if goodsCode:
+                            item_code = goodsCode
                         efris_log_info(f"UOM from items table: {item_uom}")
                         efris_uom_code = frappe.db.get_value('UOM', {'uom_name': item_uom}, 'efris_uom_code') or ''
                         efris_log_info(f"Efris UOM code is: {efris_uom_code}")
@@ -303,6 +310,8 @@ def stock_in_T131(doc, method):
             tax_Id = ""
             remark = ""
             stockIntype = "101"
+            item_code = ""
+            goodsCode = ""
 
             for item_stock in items:
                 adjustment_type = item_stock.adjustment_type
@@ -320,7 +329,12 @@ def stock_in_T131(doc, method):
                 if is_efris:
                     item = frappe.get_doc("Item", item_stock.get("item_code"))
                     standard_rate = item.standard_rate or 0
+                    item_code = item.item_code
                     efris_log_info(f"The Item fetched is: {item.item_code}")
+                    goodsCode = item.efris_product_code
+                    if goodsCode and len(goodsCode) > 50:
+                        item_code = goodsCode
+                    efris_log_info(f"The Item fetched is: {goodsCode}")
                     uom_code = frappe.db.get_value('UOM', {'uom_name': item.stock_uom}, 'efris_uom_code') or ''
                     efris_log_info(f"EFRIS UOM code is: {uom_code}")
                     accept_warehouse = item_stock.get("warehouse")
@@ -337,14 +351,14 @@ def stock_in_T131(doc, method):
 
                     # Skip positive adjustments for Stock Reconciliation
                     if purpose == "Stock Reconciliation" and item_stock.quantity_difference > 0:
-                        frappe.msgprint(f"EFRIS cannot adjust positive stock: {item_stock.item_code}. {item_stock.quantity_difference}")
-                        efris_log_error(f"EFRIS cannot adjust positive stock: {item_stock.item_code}, {item_stock.quantity_difference}")
+                        frappe.msgprint(f"EFRIS cannot adjust positive stock: {item_code}. {item_stock.quantity_difference}")
+                        efris_log_error(f"EFRIS cannot adjust positive stock: {item_code}, {item_stock.quantity_difference}")
                         continue
 
                     goodsStockInItem.append(
                         {
                             "commodityGoodsId": "",
-                            "goodsCode": item_stock.get("item_code"),
+                            "goodsCode": item_code,
                             "measureUnit": uom_code,
                             "quantity": quantity_variance,
                             "unitPrice": str(standard_rate),

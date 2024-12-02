@@ -64,6 +64,7 @@ app_license = "MIT"
 # before_install = "uganda_compliance.install.before_install"
 # after_install = "uganda_compliance.install.after_install"
 
+
 # Uninstallation
 # ------------
 
@@ -248,14 +249,15 @@ doc_events = {
         "before_save":"uganda_compliance.efris.api_classes.stock_in.before_save_on_stock_entry"
     },
     "E Invoicing Settings":{
-        "before_save":"uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save"
+        "before_save":["uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save",
+                       "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.create_item_tax_templates"]
     },
     "Stock Reconciliation":{
         "on_submit":"uganda_compliance.efris.api_classes.stock_in.stock_in_T131"
     },
     "Customer":{
-        "before_save":"uganda_compliance.efris.api_classes.e_customer.before_save_query_customer",
-        # "after_save":"uganda_compliance.efris.api_classes.e_customer.after_save_create_address"
+        "before_save":"uganda_compliance.efris.api_classes.e_customer.before_save_query_customer"
+        
     },
     "Company":{
        "before_save":"uganda_compliance.efris.api_classes.e_company.before_save_query_company"
@@ -304,23 +306,8 @@ doctype_list_js = {
 
 }
    
-# doctype_js = {
-#     "Stock Entry": [
-#         "efris/client_scripts/stock_entry.js"
-#     ]
-# }
 
-scheduler_events = {
-    "cron": {
-        "0 2 * * *": [
-            "uganda_compliance.efris.api_classes.efris_invoice_sync.efris_invoice_sync",
-        ],        
-    }
-}
 
-patches = [
-    "uganda_compliance.patches.add_e_company_to_customer"
-]
 
 fixtures = [
     "E Tax Category", 

@@ -7,66 +7,95 @@
  "engine": "InnoDB",
  "field_order": [
   "user",
-  "url",
-  "headers",
-  "response",
-  "column_break_7",
   "timestamp",
-  "reference_invoice",
-  "data"
+  "column_break_yuehm",
+  "reference_doc_type",
+  "reference_document",
+  "section_break_hc9fl",
+  "request_full",
+  "request_data",
+  "response_full",
+  "response_data"
  ],
  "fields": [
   {
    "fieldname": "user",
    "fieldtype": "Link",
    "label": "User",
-   "options": "User"
+   "options": "User",
+   "read_only": 1
   },
   {
-   "fieldname": "url",
-   "fieldtype": "Data",
-   "label": "URL"
-  },
-  {
-   "fieldname": "headers",
+   "fieldname": "request_full",
    "fieldtype": "Code",
-   "label": "Headers",
-   "options": "JSON"
+   "label": "Request Full",
+   "options": "JSON",
+   "read_only": 1
   },
   {
-   "fieldname": "response",
+   "fieldname": "request_data",
    "fieldtype": "Code",
-   "label": "Response",
-   "options": "JSON"
+   "label": "Request Data",
+   "options": "JSON",
+   "read_only": 1
   },
   {
-   "fieldname": "column_break_7",
-   "fieldtype": "Column Break"
+   "fieldname": "response_full",
+   "fieldtype": "Code",
+   "label": "Response Full",
+   "options": "JSON",
+   "read_only": 1
   },
   {
+   "fieldname": "response_data",
+   "fieldtype": "Code",
+   "label": "Response Data",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "columns": 4,
    "default": "Now",
    "fieldname": "timestamp",
    "fieldtype": "Datetime",
+   "in_list_view": 1,
    "label": "Timestamp"
   },
   {
-   "fieldname": "reference_invoice",
-   "fieldtype": "Data",
-   "label": "Reference Invoice"
+   "columns": 2,
+   "fieldname": "reference_doc_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Reference Doctype",
+   "options": "DocType",
+   "read_only": 1
   },
   {
-   "fieldname": "data",
-   "fieldtype": "Code",
-   "label": "Data",
-   "options": "JSON"
+   "columns": 2,
+   "fieldname": "reference_document",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Reference Document",
+   "options": "reference_doc_type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_yuehm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_hc9fl",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-30 13:04:26.673650",
+ "modified": "2024-12-02 03:04:46.382001",
  "modified_by": "Administrator",
  "module": "Efris",
  "name": "E Invoice Request Log",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
@@ -98,5 +127,6 @@
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "states": []
 }

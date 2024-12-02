@@ -106,5 +106,54 @@ class EInvoicingSettings(Document):
 
         self.output_vat_account = taxes[0].account_head
         efris_log_info(f"Sales Tax is OK, VAT account is: {self.output_vat_account}")
-        
+
+@frappe.whitelist()
+def create_item_tax_templates(doc,method):
+    efris_log_info(f"Create Item Tax Templates called ...")
+    if not doc.sales_taxes_and_charges_template and doc.purchase_taxes_and_charges_template:
+        return
+    output_vat_account = doc.get("output_vat_account")
+    e_company = doc.get("company")
+    efris_log_info(f"E Company is {e_company}")
+    efris_log_info(f" VAT Account Head is {output_vat_account}")
+    e_tax_category = frappe.db.get_all("E Tax Category")
+    efris_log_info(f"E Tax Categories data:{e_tax_category}")
+    for tax in e_tax_category:
+        tax_category = tax.name
+        efris_log_info(f"The E Tax category is {tax_category}")
+        if tax_category == '04:D: Deemed (18%)':
+            efris_log_info("This E Tax Category is Deemed Tax :{tax_category}")
+            continue
+        #  Extract the part after the last colon and trim any extra spaces
+        tax_name = tax_category.split(':').pop()
+        efris_log_error(f"The Tax Name is {tax_name}")
+        tax_category_code = tax_category.split(':')[0]
+        efris_log_info(f"The E Tax Category Code is {tax_category_code}")
+        tax_rate_map = {'01':'18',
+                        '02':'0',
+                        '03':'-'}
+        tax_rate = tax_rate_map.get(tax_category_code)
+        efris_log_info(f"The Tax Rate is {tax_rate}")
+        item_tax_name = "EFRIS"+tax_name
+        efris_log_error(f"The Tax category is {tax_category}")
+        item_tax_template = frappe.get_all('Item Tax Template', filters={
+                    'title': item_tax_name,
+                    'company':e_company
+                    })
+        if item_tax_template:
+            efris_log_info(f"Item Tax Template Exists")
+            return
+        item_tax_template = frappe.new_doc("Item Tax Template")
+        item_tax_template.title = item_tax_name
+        item_tax_template.company = e_company
+        item_tax_template.append("taxes", {
+        "tax_type": output_vat_account,
+        "tax_rate": tax_rate,
+        "custom_e_tax_category": tax_category
+        })
+        item_tax_template.insert(ignore_permissions=True)
+        frappe.db.commit() 
+        efris_log_info(f"Item Tax Template Created successfully {item_tax_template.name}")
+        # frappe.throw(f"Item Tax Template Created successfully {item_tax_template.name}")
+
 

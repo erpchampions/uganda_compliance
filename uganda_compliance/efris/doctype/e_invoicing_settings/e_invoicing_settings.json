@@ -23,11 +23,6 @@
   "output_vat_account",
   "column_break_4",
   "column_break_5",
-  "e_invoice_print_settings_section",
-  "e_company_logo",
-  "ura_logo",
-  "column_break_rc6p6",
-  "column_break_jnc85",
   "e_invoice_price_list_section",
   "efris_price_list"
  ],
@@ -146,45 +141,21 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "e_invoice_print_settings_section",
-   "fieldtype": "Section Break",
-   "label": "E invoice Print Settings",
-   "depends_on":  "eval:doc.enabled == 1"
-  },
-  {
-   "fieldname": "e_company_logo",
-   "fieldtype": "Attach",
-   "label": "E Company Logo"
-  },
-  {
-   "fieldname": "ura_logo",
-   "fieldtype": "Attach",
-   "label": "Ura Logo"
-  },
-  {
-   "fieldname": "column_break_rc6p6",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "column_break_jnc85",
-   "fieldtype": "Column Break"
-  },
-  {
+   "depends_on": "eval:doc.enabled == 1",
    "fieldname": "e_invoice_price_list_section",
    "fieldtype": "Section Break",
-   "label": "E invoice Price List",
-   "depends_on":  "eval:doc.enabled == 1"
+   "label": "E invoice Price List"
   },
   {
+   "depends_on": "eval:doc.company",
    "fieldname": "efris_price_list",
    "fieldtype": "Table",
    "label": "E invoice Price List",
-   "options": "EFRIS Price List",
-   "depends_on":"eval:doc.company"
+   "options": "EFRIS Price List"
   }
  ],
  "links": [],
- "modified": "2024-11-12 08:27:13.490093",
+ "modified": "2024-12-02 00:03:25.570684",
  "modified_by": "Administrator",
  "module": "Efris",
  "name": "E Invoicing Settings",
