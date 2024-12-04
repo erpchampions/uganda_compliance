@@ -45,19 +45,20 @@ class EInvoice(Document):
         self.update_sales_invoice()
 
     def update_sales_invoice(self):
-        efris_log_info("Updating Sales Invoice")
-        
-        # Prepare fields to update
-        update_fields = {
+        efris_log_info("Updating Sales Invoice")       
+
+        # Update main fields of Sales Invoice
+        frappe.db.set_value("Sales Invoice", self.invoice, {
             'einvoice_status': self.status,
             'qrcode_image': self.qrcode_path,
             'irn_cancel_date': self.irn_cancel_date,
             'irn': self.irn
-        }       
+        })          
              
-        # Update the Sales Invoice
-        frappe.db.set_value('Sales Invoice', self.invoice, update_fields, update_modified=False)
+              
+
         efris_log_info(f"Sales Invoice {self.invoice} updated successfully.")
+
     
 
     def on_cancel(self):
@@ -369,6 +370,12 @@ class EInvoice(Document):
                 'amount': round(item.amount, 2),
                 'order_number': i,
                 'e_tax_category': efris_tax_category,
+                'efris_dsct_discountTotal':round(item.efris_dsct_discountTotal,4),
+                'efris_dsct_discount_tax' : round(item.efris_dsct_discount_tax,4),
+                'efris_dsct_discount_tax_rate' : item.efris_dsct_discount_tax_rate,
+                'efris_dsct_item_tax' : item.efris_dsct_item_tax,
+                'efris_dsct_taxable_amount' : round(item.efris_dsct_taxable_amount,4),
+                'efris_dsct_item_discount' : item.efris_dsct_item_discount,
                 'commodity_code_description': frappe.get_doc("Efris Commodity Code", item.efris_commodity_code).commodity_name
             })
             self.append('items', einvoice_item)
@@ -525,11 +532,10 @@ class EInvoice(Document):
             discount_amount = 0.0
             discountFlag = "0"
             tax = row.tax
-            discounted_item = row.item_name
-            
+            discounted_item = row.item_name            
 
             if discount_percentage > 0:
-                discount_amount = round(-row.amount * (discount_percentage / 100), 9)
+                discount_amount = row.efris_dsct_discountTotal
                 discountFlag = "1"
                 discounted_item = row.item_name + " (Discount)"
                 discountTaxRate = taxRate 
@@ -537,7 +543,7 @@ class EInvoice(Document):
                 
                 if taxRate == '0.18':
                     tax_rate = float(taxRate) + 1
-                    tax = round((row.amount - (row.amount / tax_rate)), 4)
+                    tax = row.efris_dsct_item_tax
                     total_tax += tax
                 if not taxRate or taxRate in ["-", "Exempt"]:
                     # taxRate = "0.00"  # Convert exempt or invalid tax rates to zero
@@ -572,8 +578,8 @@ class EInvoice(Document):
             # Add a discount line if applicable
             if discount_percentage > 0:
                 if taxRate == '0.18':
-                    tax_on_discount = round((discount_amount / tax_rate), 4)
-                    discount_tax = round((discount_amount - tax_on_discount), 4)
+                    # tax_on_discount = round((discount_amount / tax_rate), 4)
+                    discount_tax = row.efris_dsct_discount_tax
                     total_discount_tax += discount_tax
                 else:
                     discount_tax = tax
@@ -602,24 +608,7 @@ class EInvoice(Document):
                 item_list.append(discount_item)
                 orderNumber += 1
 
-        # Adjust for tax differences after the loop
-        if discount_percentage and discount_percentage > 0 :
-            tax_difference = round(float(initial_tax) - (float(total_tax) + float(total_discount_tax)), 4)
-            if tax_difference != 0.0:
-                efris_log_info(f"Adjusting for tax difference: {tax_difference}")
-                # Ensure the adjustment is made to the last discount item
-                for item in reversed(item_list):
-                    if item["discountFlag"] == "0" and taxRate == '0.18':  # Identify the last discount line
-                        
-                        last_discount_item_tax = round((float(item["tax"]) + round(tax_difference,4)),4)
-                        item["tax"] = str(last_discount_item_tax)
-                        efris_log_info(f"The Discount Tax for Discount Item has been adjusted to {last_discount_item_tax}")
-                        
-                    elif item["discountFlag"] == "0" and taxRate != '0.18':
-                            item["tax"] = str(tax)
-                    break
-                                         
-                        
+      
 
         return {"goodsDetails": item_list}
 

@@ -2257,6 +2257,7 @@
     "unique": 0,
     "width": null
    }
+   
  ],
  "custom_perms": [],
  "doctype": "E Invoice",
@@ -2790,7 +2791,7 @@
    "property_type": "Data",
    "row_name": null,
    "value": "eval: !doc.irn_cancelled && doc.irn"
-  }
+  }  
   
  ],
  "sync_on_migrate": 1

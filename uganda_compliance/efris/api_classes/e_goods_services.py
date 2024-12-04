@@ -94,7 +94,8 @@ def prepare_and_upload_item(doc, method, operation_type, e_company):
     goodsName = doc.get('item_name', '')    
     item_code = doc.get('item_code', '')
     efris_log_info(f"Item Code :{item_code}") 
-    goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
+    goodsCode = doc.get('efris_product_code')
+   
     efris_log_info(f"EFRIS Product Code is {goodsCode}")
     if goodsCode and  len(goodsCode) > 50:
         frappe.throw(f"The EFRIS Product Code cannot exceeds 50 characters.")
@@ -247,8 +248,61 @@ def create_item_prices(item_code, uoms, currency):
                 existing_item_price = frappe.get_all('Item Price', filters={
                     'item_code': item_code,
                     'uom': uom,
-                    'price_list': price_list,
-                    'price_list_rate':price
+                    'price_list': price_list                   
+                }, fields=['name', 'price_list_rate'])
+
+                if existing_item_price:
+                    # Update the existing Item Price if the price has changed
+                    existing_price = existing_item_price[0]['price_list_rate']
+                    if existing_price != price:
+                        item_price_doc = frappe.get_doc('Item Price', existing_item_price[0]['name'])
+                        item_price_doc.price_list_rate = price
+                        item_price_doc.save(ignore_permissions=True)
+                        efris_log_info(f"Item Price for item {item_code} and UOM {uom} updated to {price}.")
+                else:
+                    # Create a new Item Price record if it doesn't exist
+                    item_price_doc = frappe.get_doc({
+                        'doctype': 'Item Price',
+                        'item_code': item_code,
+                        'uom': uom,
+                        'price_list': price_list,
+                        'currency': currency,
+                        'price_list_rate': price,
+                        'selling': 1
+                    })
+                    item_price_doc.insert(ignore_permissions=True)
+                    efris_log_info(f"Item Price for item {item_code} and UOM {uom} created.")
+    
+    except Exception as e:
+        frappe.throw(f"Error creating/updating Item Prices: {str(e)}")
+
+@frappe.whitelist()
+def create_item_prices_2(item_code, uoms, currency):
+    try:
+        # Ensure uoms is in the correct format (list)
+        if isinstance(uoms, str):
+            uoms = json.loads(uoms)
+
+        # Log the currency for debugging
+        price_list = frappe.get_value('Price List', {'currency': currency, 'selling': 1}, 'name')
+        efris_log_info(f"The Price List is {price_list}")
+        if not price_list:
+            frappe.throw(f"No Price List found for currency {currency}")
+
+        # Loop through the UOMs and create/update Item Price records
+        for uom_row in uoms:
+            uom = uom_row.get('uom')
+            price = uom_row.get('efris_unit_price')
+            
+            efris_log_info(f"The uom is {uom}")
+            efris_log_info(f"The Standard Price is {price}")
+
+            if price:
+                # Check if an Item Price already exists for this item and UOM
+                existing_item_price = frappe.get_all('Item Price', filters={
+                    'item_code': item_code,
+                    'uom': uom,
+                    'price_list': price_list                   
                     })
 
                 efris_log_info(f"The price list exists: {existing_item_price}")
