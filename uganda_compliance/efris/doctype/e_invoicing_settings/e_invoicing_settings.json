@@ -8,6 +8,7 @@
   "enabled",
   "section_break_1",
   "company",
+  "company_name",
   "sandbox_mode",
   "column_break_1",
   "tin",
@@ -59,6 +60,7 @@
   },
   {
    "columns": 2,
+   "fetch_from": "company.tax_id",
    "fieldname": "tin",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -152,10 +154,18 @@
    "fieldtype": "Table",
    "label": "E invoice Price List",
    "options": "EFRIS Price List"
+  },
+  {
+   "fetch_from": "company.company_name",
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Company Name",
+   "read_only": 1
   }
  ],
  "links": [],
- "modified": "2024-12-02 00:03:25.570684",
+ "modified": "2024-12-04 17:15:47.444092",
  "modified_by": "Administrator",
  "module": "Efris",
  "name": "E Invoicing Settings",

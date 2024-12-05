@@ -107,6 +107,7 @@ class EInvoicingSettings(Document):
         self.output_vat_account = taxes[0].account_head
         efris_log_info(f"Sales Tax is OK, VAT account is: {self.output_vat_account}")
 
+
 @frappe.whitelist()
 def create_item_tax_templates(doc,method):
     efris_log_info(f"Create Item Tax Templates called ...")

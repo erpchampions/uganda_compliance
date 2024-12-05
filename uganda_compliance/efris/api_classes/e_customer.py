@@ -20,14 +20,24 @@ def before_save_query_customer(doc, method):
         efris_log_info(f"Customer {doc.name} is being updated with EFRIS sync.")
         
         # Check for E Company when syncing with EFRIS
-        company_name = doc.get("company")
-        if not company_name:
-            frappe.throw("E Company Field Should Not Be Blank when syncing from EFRIS")
+      # Fetch an enabled company from e_invoicing_settings
+        enabled_e_company = frappe.get_all(
+            "E Invoicing Settings",
+            filters={"enabled": 1},
+            fields=["company_name"],
+            limit_page_length=1
+        )
 
-        e_company = get_e_company_settings(company_name).company
-        if not e_company:
-            efris_log_error("No E Invoicing Settings found.")
-            frappe.throw("No E Invoicing Settings found.")
+        # Ensure there is at least one enabled company
+        if not enabled_e_company:
+            efris_log_error("No enabled E Invoicing Settings found.")
+            frappe.throw("No enabled E Invoicing Settings found.")
+
+        # Access the first company's name
+        e_company_name = enabled_e_company[0]["company_name"]
+
+        # Log the company name for debugging
+        efris_log_info(f"Company Name: {e_company_name}")
 
         # Proceed to query the customer if tax_id or NIN/BRN is provided
         tax_id = doc.get('tax_id')
@@ -40,7 +50,7 @@ def before_save_query_customer(doc, method):
             }
 
             # Make the post request to EFRIS
-            success, response = make_post("T119", query_customer_details_T119, e_company)
+            success, response = make_post("T119", query_customer_details_T119, e_company_name)
             if success:
                 efris_log_info(f"Customer details successfully fetched for {doc.customer_name}")
 

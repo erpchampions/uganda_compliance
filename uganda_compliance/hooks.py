@@ -252,7 +252,8 @@ doc_events = {
     },
     "E Invoicing Settings":{
         "before_save":["uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save",
-                       "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.create_item_tax_templates"]
+                       "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.create_item_tax_templates"                       
+                       ]        
     },
     "Stock Reconciliation":{
         "on_submit":"uganda_compliance.efris.api_classes.stock_in.stock_in_T131"

@@ -241,28 +241,26 @@ class EInvoice(Document):
     def set_seller_details(self):
         efris_log_info("Setting seller details")
         company_address = self.sales_invoice.company_address
-        # if not company_address:
-        #     efris_log_error("Company address must be set to be able to generate e-invoice.")
-        #     frappe.throw(_('Company address must be set to be able to generate e-invoice.'))
+       
+           
+        self.seller_email = self.sales_invoice.custom_efris_seller_email
         if company_address:
             seller_address = frappe.get_all('Address', {'name': company_address}, ['*'])[0]
             efris_log_info(f"Address is {seller_address}")
-            self.seller_phone = seller_address.phone
-            self.seller_email = seller_address.email_id.strip()
-            #self.seller_address =' '.join(filter(None,[seller_address.address_line2,seller_address.address_line1,seller_address.county,seller_address.city,seller_address.country,seller_address.email_id]))
+            self.seller_phone = seller_address.phone           
             self.seller_address = ' '.join(filter(None, [
                                                         seller_address.address_line2,
                                                         seller_address.address_line1,
                                                         seller_address.county,
                                                         seller_address.city,
                                                         seller_address.country,
-                                                        seller_address.email_id
+                                                        self.seller_email
                                                     ]))[:140]
 
             efris_log_info(f"The Address is {self.seller_address}")
-            if not seller_address:
+            if not self.seller_address:
                 frappe.throw(f"Seller Address is not set")
-            #TODO throw error for missing seller address
+            
             
                 efris_log_info(f"The BRN or NIN for {self.company} is {self.seller_nin_or_brn}")
         self.seller_legal_name = self.company

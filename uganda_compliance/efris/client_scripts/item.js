@@ -51,6 +51,17 @@ frappe.ui.form.on("Item", {
     validate:function(frm){
         set_item_tax_template(frm)
         frm.refresh_field("taxes")
+    },
+    item_code:function(frm){
+        // console.log(`On Item Code Change...`)
+        let item_code = frm.doc.item_code;
+        // console.log(`Item Code ${item_code} is ${item_code.length} characters long`)
+        if (item_code && item_code !== ''){
+            item_code = item_code.trim()
+            // console.log(`Trimmed Item Code :${item_code} is ${item_code.length} characters long`)
+            frm.set_value('item_code',item_code);
+            frm.refresh_field('item_code');
+        }
     }
 });
 function set_item_tax_template(frm){
