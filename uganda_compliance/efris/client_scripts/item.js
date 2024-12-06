@@ -1,19 +1,6 @@
 frappe.ui.form.on("Item", {
   
-       stock_uom: function(frm) {
-        console.log("on stock_uom change");
-        if (frm.doc.stock_uom) {
-            add_default_uom_to_uoms(frm);  // Add default UOM row when stock_uom is changed
-            frm.refresh_field("uoms");
-        }
-    },
-    standard_rate: function(frm) {
-        console.log("on standard_rate change");
-        if (frm.doc.stock_uom) {
-            add_default_uom_to_uoms(frm);  // Add default UOM row when standard_rate is changed
-            frm.refresh_field("uoms");
-        }
-    },
+  
     efris_currency: function(frm) {
         let efris_currency = frm.doc.efris_currency;
         if (efris_currency) {
@@ -46,6 +33,7 @@ frappe.ui.form.on("Item", {
     },
     efris_commodity_code: function(frm){
         set_item_tax_template(frm)
+        frm.refresh_field("taxes");
         frm.refresh_field("efris_commodity_code")
     },
     validate:function(frm){
@@ -175,112 +163,129 @@ frappe.ui.form.on('Item', {
          
 });
 
-frappe.ui.form.on('UOM Conversion Detail', {  // 'UOM Conversion Detail' is the correct child doctype name
-    uoms_add: function(frm, cdt, cdn) {
-        console.log("Adding UOM");
-        //add_default_uom_to_uoms(frm);
+frappe.ui.form.on('UOM Conversion Detail', { 
+
+    uoms_add: function(frm, cdt, cdn) {   
+             if (frm.doc.has_multiple_uom) {
+            console.log("Row added to UOMs table.");
+            update_default_uom_row(frm);
+            frm.refresh_field("uoms"); 
+        }
     },
     uoms_remove: function(frm, cdt, cdn) {
-        console.log("Removing UOM");
-        add_default_uom_to_uoms(frm);
+        if (frm.doc.has_multiple_uom) {
+            console.log("Row removed from UOMs table.");
+            update_default_uom_row(frm);
+            frm.refresh_field("uoms"); 
+        }
     },
-    uom: function(frm, cdt, cdn) {
-        console.log("Checking UOM");
-        add_default_uom_to_uoms(frm);
+    uom: function(frm, cdt, cdn){
+        if (frm.doc.has_multiple_uom) {
+        console.log("UOM changed on table.");
+            update_default_uom_row(frm);
+            frm.refresh_field("uoms"); 
+        }
+    }
+ });
 
-        frm.doc.uoms.forEach((data) => {
-            let uom = data.uom;
-            console.log(`UOM is ${uom}`);
-
-            frappe.call({
-                method: "frappe.client.get_value",
-                args: {
-                    doctype: "UOM",
-                    fieldname: "efris_uom_code",
-                    filters: { name: uom }
-                },
-                callback: function(r) {
-                    if (r.message) {
-                        let uom_code = r.message.efris_uom_code;
-                        console.log(`The Efris UOM Code is ${uom_code}`);
-
-                        if (!uom_code) {
-                            frappe.throw("The Selected UOM is an Invalid Efris UOM");
-                        } else {
-                            console.log(`The UOM Code is ${uom_code}`);
-                        }
-                    } else {
-                        frappe.throw("Failed to fetch Efris UOM Code.");
-                    }
-                }
-            });
-        });
+frappe.ui.form.on("Item", {
+    stock_uom: function(frm) {
+        handle_stock_uom_change(frm);
+    },
+    standard_rate: function(frm) {
+        handle_standard_rate_change(frm);
+    },
+    validate: function(frm) {
+        frm.refresh_field("uoms");
+        if (frm.doc.has_multiple_uom) {
+            validate_uoms_table(frm);
+        }
     }
 });
 
-const add_default_uom_to_uoms = function(frm) {
-    // Ensure both stock_uom and standard_rate are provided before proceeding
+// Handles changes to `stock_uom`
+function handle_stock_uom_change(frm) {
+    if (frm.doc.has_multiple_uom) {
+        update_default_uom_row(frm);
+        frm.refresh_field("uoms"); 
+    }
+}
+
+// Handles changes to `standard_rate`
+function handle_standard_rate_change(frm) {
+    if (frm.doc.has_multiple_uom) {
+        update_default_uom_row(frm);
+        frm.refresh_field("uoms"); 
+    }
+}
+
+// Updates or resets rows in the `uoms` table based on the default UOM
+function update_default_uom_row(frm) {
     const default_uom = frm.doc.stock_uom;
     const default_rate = frm.doc.standard_rate;
-    const efris_item = frm.doc.is_efris_item;
-    console.log(`Is Efris Item ${efris_item}`);
-    if (efris_item == 1){
 
-        if (!default_uom || default_rate == null) {
-            console.log("Either stock_uom or standard_rate is not set, skipping UOM update.");
-            return;  // Exit the function if either field is not set
-        }
-    
-        console.log(`Default UOM: ${default_uom}, Standard Rate: ${default_rate}`);
-    
-        // Initialize the uoms child table if it doesn't exist
-        if (!frm.doc.uoms) {
-            frm.doc.uoms = [];
-        }
-    
-        // Remove any default 'Nos' UOM if it exists and doesn't match the selected stock_uom
-        frm.doc.uoms = frm.doc.uoms.filter(row => {
-            if (row.conversion_factor === 0) {
-                console.log("Removing invalid UOM row.");
-                return false;  // This will remove the row
-            }
-            return true;  // Keep all other rows
-        });
-    
-        const existing_row = frm.doc.uoms.find(row => row.uom === default_uom);
-    
-        if (existing_row) {
-            // Update existing row if it already exists
-            console.log(`Updating existing UOM row for UOM: ${default_uom}`);
-            existing_row.conversion_factor = 1;        
-            existing_row.is_efris_uom = 1;       
-           
-            existing_row.efris_unit_price = default_rate;
-        } else {
-            // Add a new row if it does not exist
-            console.log(`Adding new UOM row for UOM: ${default_uom}`);
-            const new_row = frm.add_child("uoms");
-            new_row.uom = default_uom;
-            new_row.conversion_factor = 1;      
-                new_row.is_efris_uom = 1; 
-            
-            // new_row.is_efris_uom = 1;  // Assuming is_efris_uom is a checkbox field (boolean in JS)
-            new_row.efris_unit_price = default_rate;
-        }
-    
-        // Reset conversion factor for other rows if more than one row has conversion factor 1
-        const rows_with_conversion_factor_one = frm.doc.uoms.filter(row => row.conversion_factor === 1);
-        if (rows_with_conversion_factor_one.length > 1) {
-            rows_with_conversion_factor_one.forEach(row => {
-                if (row.uom !== default_uom) {
-                    row.conversion_factor = 0;
-                    console.log(`Resetting conversion factor for UOM: ${row.uom}`);                
-                }
-            });
-        }
-
-        frm.refresh_field("uoms");
-    
+    if (!default_uom || default_rate == null) {
+        console.log("Stock UOM or Standard Rate is not set. Skipping UOM update.");
+        return;
     }
-   
-};
+
+    console.log(`Updating UOM rows: Default UOM = ${default_uom}, Standard Rate = ${default_rate}`);
+
+    if (!frm.doc.uoms) frm.doc.uoms = [];
+
+    // Filter out rows that are outdated (not matching default_uom and with conversion_factor = 1)
+    frm.doc.uoms = frm.doc.uoms.filter(row => {
+        if (row.uom !== default_uom && row.conversion_factor === 1) {
+            console.log(`Removing outdated UOM row: ${row.uom}`);
+            return false; // Remove this row
+        }
+        return true; // Keep this row
+    });
+
+    // Check if the default UOM exists in the table
+    const existing_row = frm.doc.uoms.find(row => row.uom === default_uom);
+
+    if (existing_row) {
+        // Update the existing row
+        existing_row.conversion_factor = 1;
+        existing_row.is_efris_uom = 1;
+        existing_row.efris_unit_price = default_rate;
+    } else {
+        // Add a new row for the default UOM
+        const new_row = frm.add_child("uoms");
+        new_row.uom = default_uom;
+        new_row.conversion_factor = 1;
+        new_row.is_efris_uom = 1;
+        new_row.efris_unit_price = default_rate;
+    }
+
+    // Refresh the table to reflect the updates
+    frm.refresh_field("uoms");
+}
+
+// Validates the `uoms` table for multiple UOM scenarios
+function validate_uoms_table(frm) {
+    const uoms = frm.doc.uoms;
+
+    if (!uoms || uoms.length === 0) {
+        frappe.throw("Please configure the UOMs table for this item.");
+    }
+
+    // Ensure only one row has conversion_factor = 1
+    const default_rows = uoms.filter(row => row.conversion_factor === 1);
+    if (default_rows.length > 1) {
+        frappe.throw("Only one UOM can have a conversion factor of 1.");
+    }
+
+    // Validate required fields for EFRIS-specific UOMs
+    uoms.forEach(row => {
+        if (row.is_efris_uom) {
+            if (!row.efris_unit_price) {
+                frappe.throw(`Please set the EFRIS Unit Price for UOM: ${row.uom}`);
+            }
+            if (!row.custom_package_scale_value) {
+                frappe.throw(`Please set the Package Scale Value for UOM: ${row.uom}`);
+            }
+        }
+    });
+}

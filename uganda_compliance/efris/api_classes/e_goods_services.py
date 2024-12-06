@@ -276,171 +276,99 @@ def create_item_prices(item_code, uoms, currency):
     except Exception as e:
         frappe.throw(f"Error creating/updating Item Prices: {str(e)}")
 
-@frappe.whitelist()
-def create_item_prices_2(item_code, uoms, currency):
-    try:
-        # Ensure uoms is in the correct format (list)
-        if isinstance(uoms, str):
-            uoms = json.loads(uoms)
 
-        # Log the currency for debugging
-        price_list = frappe.get_value('Price List', {'currency': currency, 'selling': 1}, 'name')
-        efris_log_info(f"The Price List is {price_list}")
-        if not price_list:
-            frappe.throw(f"No Price List found for currency {currency}")
 
-        # Loop through the UOMs and create/update Item Price records
-        for uom_row in uoms:
-            uom = uom_row.get('uom')
-            price = uom_row.get('efris_unit_price')
-            
-            efris_log_info(f"The uom is {uom}")
-            efris_log_info(f"The Standard Price is {price}")
+#######################
+def validate_efris_uom(uom, label):
+    uom_code = frappe.get_value('UOM', {'uom_name': uom}, 'efris_uom_code')
+    if not uom_code:
+        frappe.throw(f"The Selected {label} UOM ({uom}) is not a valid EFRIS UOM")
+    efris_log_info(f"{label} UOM ({uom}) has EFRIS Code {uom_code}")
 
-            if price:
-                # Check if an Item Price already exists for this item and UOM
-                existing_item_price = frappe.get_all('Item Price', filters={
-                    'item_code': item_code,
-                    'uom': uom,
-                    'price_list': price_list                   
-                    })
+#####################
+def validate_efris_item(doc):
+    efris_log_info(f"Validating EFRIS Item: {doc.get('item_code')}")
+    validate_item_tax_template(doc)
+    validate_uoms(doc)
 
-                efris_log_info(f"The price list exists: {existing_item_price}")
+def validate_item_tax_template(doc):
+    if not doc.get('taxes'):
+        frappe.throw("Please select an Item Tax Template for an EFRIS ITEM.")
 
-                if not existing_item_price:
-                    # Create a new Item Price record if it doesn't exist
-                    item_price_doc = frappe.get_doc({
-                        'doctype': 'Item Price',
-                        'item_code': item_code,
-                        'uom': uom,
-                        'price_list': price_list,
-                        'currency': currency,
-                        'price_list_rate': price,
-                        'selling': 1
-                    })
-                    item_price_doc.insert(ignore_permissions=True)
-                    efris_log_info(f"Item Price for item {item_code} and UOM {uom} created.")
-                else:
-                    return
+def validate_uoms(doc):
+    uoms = doc.get("uoms", [])
+    has_multiple_uom = doc.get("has_multiple_uom")
 
-        
-    
-    except Exception as e:
-        frappe.throw(f"Error creating/updating Item Prices: {str(e)}")
+    # Defaults for single UOM
+    if not has_multiple_uom and len(uoms) == 1:
+        single_uom_row = uoms[0]
+        single_uom_row.efris_unit_price = doc.get('standard_rate')
+        single_uom_row.is_efris_uom = 1
+        single_uom_row.custom_package_scale_value = 1
+        single_uom_row.custom_efris_package_unit = 1
+        doc.purchase_uom = single_uom_row.get('uom')
+        doc.sales_uom = single_uom_row.get('uom')
 
+        efris_log_info(f"Defaults set for single UOM: {single_uom_row.get('uom')}")
+
+    # Validation logic
+    piece_unit_count = 0
+    package_unit_count = 0
+    is_efris_uom_count = 0
+
+    for row in uoms:
+        piece_unit = row.get("is_piece_unit")
+        package_unit = row.get("custom_efris_package_unit")
+        efris_unit_price = row.get("efris_unit_price")
+        custom_package_scale_value = row.get("custom_package_scale_value")
+        is_efris_uom = row.get("is_efris_uom")
+
+        if is_efris_uom:
+            is_efris_uom_count += 1
+        if piece_unit:
+            piece_unit_count += 1
+        if package_unit:
+            package_unit_count += 1
+
+        if is_efris_uom and (not efris_unit_price or not custom_package_scale_value):
+            frappe.throw("EFRIS UOMs must have a unit price and scale value.")
+
+    validate_uom_counts(has_multiple_uom, piece_unit_count, package_unit_count, is_efris_uom_count)
+
+def validate_uom_counts(has_multiple_uom, piece_count, package_count, efris_count):
+    if has_multiple_uom:
+        if efris_count <= 1:
+            frappe.throw("You must have additional UOMs if 'Has Multiple UOMs' is True.")
+        if piece_count == 0:
+            frappe.throw("EFRIS Piece Unit must be set if 'Has Multiple UOMs' is True.")
+        if piece_count > 1:
+            frappe.throw("Only one EFRIS Piece Measure Unit can be set.")
+    else:
+        if piece_count > 0:
+            frappe.throw("EFRIS Piece Unit should not be set if 'Has Multiple UOMs' is False.")
+    if package_count == 0:
+        frappe.throw("EFRIS Package Measure Unit must be set.")
+    if package_count > 1:
+        frappe.throw("Only one EFRIS Package Measure Unit can be set.")
+
+
+###################
 @frappe.whitelist()
 def item_validations(doc, method):
-    # Check if this is an import
-    is_import = frappe.flags.in_import
-    is_registered_item = doc.get("is_efris_registered", 0)
-    if is_import and is_registered_item == 1:
-        efris_log_info(f"Validation Excludes EFRIS registered Item {doc.get('item_code')}")        
-        return
-    
     try:
-        if isinstance(doc, str):
-            doc = json.loads(doc)
+        if frappe.flags.in_import and doc.get("is_efris_registered"):
+            efris_log_info(f"Validation Excludes EFRIS registered Item {doc.get('item_code')}")
+            return
 
-        is_efris_item = doc.get('is_efris_item')
+        if not doc.get("is_efris_item"):
+            efris_log_info("Non EFRIS Item")
+            return
 
-        if is_efris_item:
-            efris_log_info(f"Is An Efris Item: {is_efris_item}")
-            hasotherUnit = doc.get('has_multiple_uom')
-            efris_log_info(f"Item's Has Multiple UOMs Flag: {hasotherUnit}")
-
-            # Validate item tax template
-            item_template = doc.get('taxes', [])
-            if len(item_template) == 0:
-                frappe.throw("Please select an Item Tax Template for an EFRIS ITEM.")
-            
-            # Counters for validation
-            piece_unit_count = 0
-            package_unit_count = 0
-            uoms_count = 0
-            uoms = doc.get('uoms', [])
-            is_efris_uom_count = 0
-
-            # Only set default values in `uoms` if not imported
-            if not is_import and not hasotherUnit:
-                for row in uoms:
-                    # Set default fields for non-imported items only
-                    row.custom_efris_package_unit = 1
-                    row.custom_package_scale_value = 1
-                    doc.purchase_uom = row.get('uom')
-                    doc.sales_uom = row.get('uom')
-                    efris_log_info(f"Default Package Unit and Scale Value set for {row.get('name')}")
-                    if row.get('uom'):
-                        uoms_count += 1
-                    if uoms_count > 1:
-                        frappe.throw("You can't set more than one EFRIS UOM if 'Has Multiple UOMs' is False.")
-                    if doc.purchase_uom:
-                        uom_efris_code = frappe.get_value('UOM',{'uom_name':doc.purchase_uom},'efris_uom_code')
-                        efris_log_info(f"The Default Purchase Unit Of Measure is ({doc.purchase_uom}) and EFRIS Code is {uom_efris_code}")
-                        if not uom_efris_code:
-                            frappe.throw(f"The Selected Purchase UOM ({doc.purchase_uom}) is not a valid EFRIS UOM")
-                    if doc.sales_uom:
-                        uom_efris_code = frappe.get_value('UOM',{'uom_name':doc.sales_uom},'efris_uom_code')
-                        efris_log_info(f"The Default Purchase Unit Of Measure is ({doc.sales_uom}) and EFRIS Code is {uom_efris_code}")
-                        if not uom_efris_code:
-                            frappe.throw(f"The Selected Sales UOM ({doc.sales_uom}) is not a valid EFRIS UOM")
-
-
-            # Loop to validate each `uom` row
-            for row in uoms:
-                piece_unit = row.get('is_piece_unit')
-                package_unit = row.get('custom_efris_package_unit')
-                efris_unit_price = row.get('efris_unit_price')
-                custom_package_scale_value = row.get('custom_package_scale_value')
-                is_efris_uom = row.get('is_efris_uom')
-
-                # Count UOM types for validations
-                if is_efris_uom:
-                    is_efris_uom_count += 1
-                if piece_unit:
-                    piece_unit_count += 1
-                    efris_log_info(f"Piece Unit Flag: {piece_unit}")
-                if package_unit:
-                    package_unit_count += 1
-                    efris_log_info(f"Package Unit Flag: {package_unit}")
-
-                # Immediate field validation
-                if not efris_unit_price:
-                    frappe.throw("Please set the Efris Unit Price for UOM.")
-                if not custom_package_scale_value:
-                    frappe.throw("EFRIS Package Scale Value cannot be empty.")
-                if package_unit and piece_unit:
-                    frappe.throw("EFRIS Package Unit cannot also be set as EFRIS Piece Unit.")
-
-            if hasotherUnit:
-                 for row in uoms:
-                    if row.custom_efris_package_unit:
-                        efris_log_info(f"The Default Package Unit of Measure is {row.custom_efris_package_unit:}")                    
-                        doc.purchase_uom = row.get('uom')
-                        doc.sales_uom = row.get('uom')
-                        efris_log_info(f"The Default Purchase Unit Of Measure is set to {row.get('uom')}")
-
-            # Validate counts based on `hasotherUnit`
-            if is_efris_uom_count <= 1 and hasotherUnit:
-                frappe.throw("You must have additional Units of measure if 'Has Multiple UOMs' is True.")
-            if package_unit_count == 0:
-                frappe.throw("EFRIS Package Measure unit must be set.")
-            if piece_unit_count == 0 and hasotherUnit:
-                frappe.throw("EFRIS Piece Unit must be set if 'Has Multiple UOMs' is True.")
-            if package_unit_count > 1:
-                frappe.throw("Only one EFRIS Package Measure Unit can be set.")
-            if piece_unit_count > 1 and hasotherUnit:
-                frappe.throw("Only one EFRIS Piece Measure Unit can be set.")
-            if piece_unit_count > 0 and not hasotherUnit:
-                frappe.throw("Efris Piece Unit should not be set if 'Has Multiple UOMs' is False.")
-            if not doc.purchase_uom:
-                frappe.throw("Default Purchase Unit Of Measure must be set ")
-        else:
-            efris_log_info("Non Efris Item")
+        validate_efris_item(doc)
 
     except Exception as e:
-        frappe.throw(f"Item Validations Failed: {str(e)}")
-
-
+        frappe.log_error(frappe.get_traceback(), "Item Validation Error")
+        frappe.throw(f"Item Validations Failed!")
 @frappe.whitelist()
 def get_item_tax_template(company, e_tax_category):
     """
