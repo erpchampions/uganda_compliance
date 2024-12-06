@@ -50,7 +50,7 @@ def before_save_query_customer(doc, method):
             }
 
             # Make the post request to EFRIS
-            success, response = make_post("T119", query_customer_details_T119, e_company_name)
+            success, response = make_post(interfaceCode="T119", content=query_customer_details_T119, company_name=e_company_name, reference_doc_type=doc.doctype, reference_document=doc.name)
             if success:
                 efris_log_info(f"Customer details successfully fetched for {doc.customer_name}")
 

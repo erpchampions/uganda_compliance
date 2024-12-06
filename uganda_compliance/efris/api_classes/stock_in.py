@@ -123,7 +123,8 @@ def stock_in_T131(doc, method):
                 }
 
                 # Make the post request to EFRIS for the current purchase receipt
-                success, response = make_post("T131", goods_Stock_upload_T131, e_company)
+                success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+                
 
                 if success:
                     efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company} under Purchase Receipt {reference_purchase}")
@@ -147,6 +148,8 @@ def stock_in_T131(doc, method):
             exchange_rate = 0.0
             item_currency = 'UGX'
             unitPrice = 0
+            goodsCode = ""
+            item_code = ""
 
             for efris_item in doc.get("items", []):
                 is_efris = efris_item.get('is_efris')                
@@ -177,7 +180,12 @@ def stock_in_T131(doc, method):
                 efris_log_info(f"Efris UOM code is: {stock_uom_code}")
                 unitPrice = item_stock.get("rate")
                 is_efris_item = item.is_efris_item
+                item_code = item_stock.get("item_code")
                 efris_log_info(f"The Item {item.item_code} 's is Efris Item State is {is_efris_item}")
+                goodsCode = item.efris_product_code
+                efris_log_info(f"The EFRIS Product code is {goodsCode}")        
+                if goodsCode:
+                    item_code = goodsCode
                 # Get the accept warehouse from the doc
                 item_currency = frappe.get_value('Item',{'item_code':item_stock.item_code},'efris_currency')
                 efris_log_info(f"The Item Currency is {item_currency}")
@@ -203,7 +211,7 @@ def stock_in_T131(doc, method):
                         goodsStockInItem.append(
                             {
                                 "commodityGoodsId": "",
-                                "goodsCode": item_stock.get("item_code"),
+                                "goodsCode": item_code,
                                 "measureUnit": purchase_uom_code ,
                                 "quantity": item_stock.get("qty"),
                                 "unitPrice": round(unit_price_in_ugx,0) ,
@@ -249,7 +257,8 @@ def stock_in_T131(doc, method):
 
 
             # Make the post request to EFRIS
-            success, response = make_post("T131", goods_Stock_upload_T131, e_company)
+            success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+            
 
             if success:
                 efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company}")
@@ -423,7 +432,8 @@ def stock_in_T131(doc, method):
                 }
 
             # Make the post request to EFRIS for the current group
-            success, response = make_post("T131", goods_Stock_Reconciliation_T131, e_company)
+            success, response = make_post(interfaceCode="T131", content=goods_Stock_Reconciliation_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+            
 
             if success:
                 efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company}")
@@ -543,7 +553,8 @@ def query_currency_exchange_rate(doc):
     "issueDate": today
     }
     efris_log_info(f"Querying EFRIS with: {exchange_rate_T121}")
-    success, response = make_post("T121", exchange_rate_T121, e_company)
+    success, response = make_post(interfaceCode="T121", content=exchange_rate_T121, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+    
     if success and response:
        efris_log_info(f"Query successful, response: {response}")   
        exchange_rate_exists = frappe.get_all('Currency Exchange',filters ={

@@ -111,7 +111,8 @@ def stock_in_T131(doc, method):
             }
 
             # Make the post request to EFRIS for the current purchase receipt
-            success, response = make_post("T131", goods_Stock_upload_T131, e_company)
+            success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+
 
             if success:
                 efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company} under Purchase Receipt {reference_purchase}")

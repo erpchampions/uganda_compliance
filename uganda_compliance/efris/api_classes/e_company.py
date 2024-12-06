@@ -47,7 +47,8 @@ def before_save_query_company(doc, method):
             }
 
             # Make the post request to EFRIS
-            success, response = make_post("T119", query_customer_details_T119, company)
+            success, response = make_post(interfaceCode="T119", content=query_customer_details_T119, company_name=company, reference_doc_type=doc.doctype, reference_document=doc.name)
+                                 
 
             if success:
                 efris_log_info(f"Company details successfully fetched for {doc.name}")
@@ -59,15 +60,13 @@ def before_save_query_company(doc, method):
                 efris_log_info(f"Fetched data: {json.dumps(company_data, indent=2)}")
                 
                 # Extract details from the response
-                legal_name = company_data.get('legalName')
-                # business_Name = company_data.get('businessName')
-                address = company_data.get('address')
-                contact_mobile = company_data.get('contactMobile')
-                contact_email = company_data.get('contactEmail')
-                contact_number = company_data.get('contactNumber')
-                # taxpayer_type = company_data.get('taxpayerType')  
-                tin = company_data.get('tin')
-                ninBrn = company_data.get('ninBrn')
+                legal_name = company_data.get('legalName')                
+                address = company_data.get('address') or ""                contact_mobile = company_data.get('contactMobile') or ""
+                contact_email = company_data.get('contactEmail') or ""
+                contact_number = company_data.get('contactNumber') or ""
+               
+                tin = company_data.get('tin') or ""
+                ninBrn = company_data.get('ninBrn') or ""
                              
 
                 if legal_name:

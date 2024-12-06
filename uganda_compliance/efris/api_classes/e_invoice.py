@@ -275,7 +275,7 @@ class EInvoiceAPI:
 
         company_name = einvoice.company
         
-        status, response = make_post("T110", credit_note, company_name, reference_doc_type=sale_invoice.doctype, reference_document=sale_invoice.name)
+        status, response = make_post(interfaceCode="T110", content=credit_note, company_name=company_name, reference_doc_type=sale_invoice.doctype, reference_document=sale_invoice.name)
         
         return status, response
 
@@ -292,8 +292,8 @@ class EInvoiceAPI:
         
         company_name = sales_invoice.company
         
-        status, response = make_post("T109", einvoice_json, company_name, reference_doc_type=sales_invoice.doctype, reference_document=sales_invoice.name)
-
+        status, response = make_post(interfaceCode="T109", content=einvoice_json, company_name=company_name, reference_doc_type= sales_invoice.doctype, reference_document=sales_invoice.name)
+    
         if status:
             EInvoiceAPI.handle_successful_irn_generation(einvoice, response)
             efris_log_info(f"EFRIS Generated Successfully. :{einvoice}")
@@ -506,7 +506,8 @@ class EInvoiceAPI:
 
         company_name = einvoice.company
    
-        status, response = make_post("T110", credit_note, company_name, reference_doc_type=einvoice.doctype, reference_document=einvoice.name)
+        status, response = make_post(interfaceCode="T110", content=credit_note, company_name=company_name, reference_doc_type=einvoice.doctype, reference_document=einvoice.name)
+                
             
         if status:
             EInvoiceAPI.handle_successful_irn_cancellation(einvoice, response)
@@ -577,7 +578,9 @@ class EInvoiceAPI:
         
         company_name = einvoice.company
         
-        status, response = make_post("T111", credit_note_application_query, company_name, reference_doc_type=einvoice.doctype, reference_document=einvoice.name)
+        status, response = make_post(interfaceCode="T111", content=credit_note_application_query, company_name=company_name, reference_doc_type=einvoice.doctype, reference_document=einvoice.name)
+        
+        
         #status, response = make_post("T111", credit_note_application_query)
         if status:
             status, response = EInvoiceAPI.handle_successful_confirm_irn_cancellation(einvoice, response)
@@ -659,7 +662,8 @@ class EInvoiceAPI:
 
             # call T108 with credit_invoice_no - this returns the fdn_invoice_details
             company_name = einvoice.company        
-            status, response = make_post("T108", credit_note_no_query, company_name, reference_doc_type=einvoice.doctype, reference_document=einvoice.name)
+            status, response = make_post(interfaceCode="T108", content=credit_note_no_query, company_name=company_name, reference_doc_type=einvoice.doctype, reference_document=einvoice.name)
+            
             
             if not status:
                 frappe.throw(f"Failed to get credit note invoice details, status:{status}")
