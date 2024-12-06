@@ -19,9 +19,25 @@ from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings i
 def efris_invoice_sync():
     # Fetch the E Invoicing Settings (assuming it's single doctype or use limit=1)
     efris_log_info("efris_invoice_sync called...")
+    enable_sync_from_efris = ""
+    is_enabled = ""
+    company_name = ""
+    enabled_e_company = frappe.get_all(
+        "E Invoicing Settings",
+        filters=[{"enabled": 1},{"enable_sync_from_efris":1}],
+        fields=["*"],
+        limit_page_length=1
+    )
     
-    company_name = "Ezzy Company Group Ltd"
+    # Ensure there is at least one enabled company
+    if not enabled_e_company:
+        efris_log_error("No enabled E Invoicing Settings found.")
+        return
+
+    # Access the first company's name
+    company_name = enabled_e_company[0]["company_name"]
     efris_log_info(f"The Fetched Company is {company_name}")
+    is_enabled = enabled_e_company[0]['enabled']
     # device_No = esettings.device_no
     efris_log_info(f"The Fetched Device No is ")
     

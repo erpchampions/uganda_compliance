@@ -61,7 +61,8 @@ def before_save_query_company(doc, method):
                 
                 # Extract details from the response
                 legal_name = company_data.get('legalName')                
-                address = company_data.get('address') or ""                contact_mobile = company_data.get('contactMobile') or ""
+                address = company_data.get('address') or ""                
+                contact_mobile = company_data.get('contactMobile') or ""
                 contact_email = company_data.get('contactEmail') or ""
                 contact_number = company_data.get('contactNumber') or ""
                
