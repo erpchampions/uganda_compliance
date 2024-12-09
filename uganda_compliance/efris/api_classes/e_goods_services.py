@@ -298,7 +298,7 @@ def validate_item_tax_template(doc):
 def validate_uoms(doc):
     uoms = doc.get("uoms", [])
     has_multiple_uom = doc.get("has_multiple_uom")
-
+    package_uom = ""
     # Defaults for single UOM
     if not has_multiple_uom and len(uoms) == 1:
         single_uom_row = uoms[0]
@@ -328,11 +328,16 @@ def validate_uoms(doc):
         if piece_unit:
             piece_unit_count += 1
         if package_unit:
+            package_uom = row.get("uom")
             package_unit_count += 1
+            
 
         if is_efris_uom and (not efris_unit_price or not custom_package_scale_value):
             frappe.throw("EFRIS UOMs must have a unit price and scale value.")
-
+    
+    doc.purchase_uom = package_uom
+    doc.sales_uom = package_uom
+    efris_log_info(f"Defaults Purchase Unit of Measure : {doc.purchase_uom}")
     validate_uom_counts(has_multiple_uom, piece_unit_count, package_unit_count, is_efris_uom_count)
 
 def validate_uom_counts(has_multiple_uom, piece_count, package_count, efris_count):

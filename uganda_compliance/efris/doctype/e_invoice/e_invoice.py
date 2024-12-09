@@ -243,7 +243,7 @@ class EInvoice(Document):
         company_address = self.sales_invoice.company_address
        
            
-        self.seller_email = self.sales_invoice.custom_efris_seller_email
+        self.seller_email = self.sales_invoice.efris_seller_email
         if company_address:
             seller_address = frappe.get_all('Address', {'name': company_address}, ['*'])[0]
             efris_log_info(f"Address is {seller_address}")

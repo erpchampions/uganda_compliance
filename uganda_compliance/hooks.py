@@ -319,7 +319,7 @@ fixtures = [
     {
         "doctype": "Print Format",
         "filters": {
-            "name": ["in", ["Efris E Invoice", "Sales-Invoice-Efris","POS EFRIS Invoice"]]
+            "name": ["in", ["EFRIS E Invoice", "EFRIS Sales Invoice","POS EFRIS Invoice"]]
         }
     },
     {
@@ -332,6 +332,12 @@ fixtures = [
         "doctype": "Currency",
         "filters": {
             "efris_currency_code": ["!=", None]
+        }
+    },
+    {
+        "doctype": "File",
+        "filters": {
+            "file_name": ["=","ura_efris_logo.png"]
         }
     }
 ]
