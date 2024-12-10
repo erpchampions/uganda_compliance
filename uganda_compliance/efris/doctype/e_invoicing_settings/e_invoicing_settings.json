@@ -12,9 +12,10 @@
   "sandbox_mode",
   "column_break_1",
   "tin",
-  "sandbox_private_key",
+  "sandbox_private_key",  
   "column_break_2",
   "device_no",
+  "enable_sync_from_efris",
   "live_private_key",
   "section_break_2",
   "purchase_taxes_and_charges_template",
@@ -54,6 +55,12 @@
    "fieldtype": "Check",
    "label": "Sandbox Mode"
   },
+  {
+    "default": "0",
+    "fieldname": "enable_sync_from_efris",
+    "fieldtype": "Check",
+    "label": "Enable Sync From EFRIS"
+   },
   {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"

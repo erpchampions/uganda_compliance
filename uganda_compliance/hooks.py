@@ -333,12 +333,12 @@ fixtures = [
         "filters": {
             "efris_currency_code": ["!=", None]
         }
-    },
-    {
-        "doctype": "File",
-        "filters": {
-            "file_name": ["=","ura_efris_logo.png"]
-        }
     }
+    # {
+    #     "doctype": "File",
+    #     "filters": {
+    #         "file_name": ["=","ura_efris_logo.png"]
+    #     }
+    # }
 ]
 
