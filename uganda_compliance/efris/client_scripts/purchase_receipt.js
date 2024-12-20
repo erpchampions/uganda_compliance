@@ -52,8 +52,8 @@ function check_efris_stockin(frm, cdt, cdn) {
             },
             callback: function(r) {
                 if (r.message) {
-                    frappe.model.set_value(cdt, cdn, 'is_efris', r.message.is_efris);
-                    console.log(`The is_efris flag is set to: ${r.message.is_efris}`);
+                    frappe.model.set_value(cdt, cdn, 'efris_receipt', r.message.is_efris);
+                    console.log(`The efris_receipt flag is set to: ${r.message.is_efris}`);
                 }
             }
         });

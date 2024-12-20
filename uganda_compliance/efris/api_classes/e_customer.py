@@ -6,14 +6,14 @@ from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings i
 
 @frappe.whitelist()
 def before_save_query_customer(doc, method):
-    sync_from_efris = doc.get('sync_from_efris')
-    efris_log_info(f"The sync Efris Data Flag is {sync_from_efris}")
+    sync_from_efris = doc.get('efris_sync')
+    efris_log_info(f"The sync EFRIS Data Flag is {sync_from_efris}")
     
     # Scenario 1: Handling new customer creation
     if doc.is_new():
-        efris_log_info(f"Creating new customer: {doc.name}")
-        if not doc.tax_id and not doc.nin_or_brn:
-            return  # Skip if neither tax_id nor NIN/BRN is provided
+        efris_log_info(f"Please Save Customer: {doc.name}")        
+        # if not doc.tax_id and not doc.efris_nin_or_brn:
+        return  # Skip if neither tax_id nor NIN/BRN is provided
 
     # Scenario 2: Handling customer update with sync_from_efris checked
     if sync_from_efris:
@@ -41,7 +41,7 @@ def before_save_query_customer(doc, method):
 
         # Proceed to query the customer if tax_id or NIN/BRN is provided
         tax_id = doc.get('tax_id')
-        ninBrn = doc.get('nin_or_brn')
+        ninBrn = doc.get('efris_nin_or_brn')
 
         if tax_id or ninBrn:
             query_customer_details_T119 = {
@@ -73,7 +73,7 @@ def before_save_query_customer(doc, method):
                 if tin:
                     doc.tax_id = tin
                 if ninBrn:
-                    doc.nin_or_brn = ninBrn
+                    doc.efris_nin_or_brn = ninBrn
 
                 if taxpayer_type:
                     doc.customer_type = map_taxpayer_type(taxpayer_type)  # Map EFRIS taxpayer type to ERPNext
@@ -85,7 +85,7 @@ def before_save_query_customer(doc, method):
                 elif governmentTIN == 1:
                     doc.efris_customer_type = "B2G"
 
-                doc.sync_from_efris = 0    
+                doc.efris_sync = 0    
 
                 # Create or update Address
                 address_title = f"{legal_name} - Address"

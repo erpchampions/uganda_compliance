@@ -39,8 +39,8 @@
  "links": [],
  "modified": "2024-10-06 22:38:17.065164",
  "modified_by": "Administrator",
- "module": "Efris",
- "name": "Efris Commodity Code",
+ "module": "EFRIS",
+ "name": "EFRIS Commodity Code",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

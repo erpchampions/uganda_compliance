@@ -13,6 +13,7 @@ from datetime import datetime
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from frappe.utils.data import cint, format_date, getdate, flt, get_link_to_form
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
+from uganda_compliance.efris.api_classes.e_invoice import EInvoiceAPI, decode_e_tax_rate, validate_company
 
 
 class DateTimeEncoder(JSONEncoder):
@@ -29,6 +30,11 @@ class EInvoice(Document):
 
     def before_submit(self):
         efris_log_info("Before submit EInvoice")
+        original_invoice = frappe.get_doc('Sales Invoice',{'name':self.name})
+        efris_log_info(f"Sales Invoice IRN :{original_invoice}")
+        fdn = original_invoice.efris_irn
+        if fdn:
+            self.irn = fdn
         
         if not self.irn :
             msg = _("Cannot submit e-invoice without EFRIS.") + ' '
@@ -46,13 +52,22 @@ class EInvoice(Document):
 
     def update_sales_invoice(self):
         efris_log_info("Updating Sales Invoice")       
-
+        dataSource = self.data_source
+        data_source_map = {"101":"EFD",
+                            "102":"Windows Client APP",
+                            "103":"WebService API",
+                            "104":"Mis",
+                            "105":"Webportal",
+                            "106":"Offline Mode Enabler"
+                            }
+        data_source = data_source_map.get(dataSource,"")
         # Update main fields of Sales Invoice
         frappe.db.set_value("Sales Invoice", self.invoice, {
-            'einvoice_status': self.status,
-            'qrcode_image': self.qrcode_path,
-            'irn_cancel_date': self.irn_cancel_date,
-            'irn': self.irn
+            'efris_einvoice_status': self.status,
+            'efris_qrcode_image': self.qrcode_path,
+            'efris_irn_cancel_date': self.irn_cancel_date,
+            'efris_irn': self.irn,
+            'efris_data_source':f"{dataSource}:{data_source}"
         })          
              
               
@@ -63,7 +78,7 @@ class EInvoice(Document):
 
     def on_cancel(self):
         efris_log_info("Cancelling EInvoice")
-        frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', self.name, update_modified=False)
+        frappe.db.set_value('Sales Invoice', self.invoice, 'efris_e_invoice', self.name, update_modified=False)
 
     @frappe.whitelist()
     def fetch_invoice_details(self):
@@ -89,6 +104,9 @@ class EInvoice(Document):
         
         self.set_tax_details()
         efris_log_info("Set tax details OK")
+
+        self.set_payment_details()
+        efris_log_info("Set Payment details OK")
         
         self.set_summary_details()
         efris_log_info("Set summary details OK")
@@ -142,7 +160,7 @@ class EInvoice(Document):
         self.oriInvoiceId = ""
         self.invoiceType = self.set_invoice_type()
         self.invoiceKind = 1 
-        self.dataSource = 101 
+        self.dataSource = 103 
         self.invoiceIndustryCode = 101 
         self.isBatch = 0 
         self.is_return = self.sales_invoice.is_return
@@ -238,6 +256,61 @@ class EInvoice(Document):
                     })
                     self.append("taxes", taxes)
 
+    def set_payment_details(self):
+        efris_log_info("Setting Payment details")
+
+        paid_amount = 0.0
+        payment_mode = ""
+        self.e_payments = [] 
+        credit = ""  
+        total_payment = ""   
+        payments = ""    
+        if self.sales_invoice.is_return:
+            orignal_einvoice = EInvoiceAPI.get_einvoice(self.sales_invoice.return_against)
+            credit = orignal_einvoice.credit_amount
+        else:
+            total_payment = self.sales_invoice.paid_amount or 0.0
+            
+            if total_payment != 0.0:
+                credit = self.sales_invoice.outstanding_amount or 0.0
+
+            else:
+                credit = self.sales_invoice.grand_total or 0.0
+        
+        payments = self.sales_invoice.payments
+        if not payments:
+                     
+            payment_mode = self.sales_invoice.efris_payment_mode 
+            efris_log_info(f"The Payment Mode is {payment_mode}")
+        for pay_amount in self.sales_invoice.payments:
+            paid_amount = pay_amount.amount                
+            payment_mode = pay_amount.mode_of_payment
+            efris_log_info(f"Payment Amount for Mode {payment_mode} is {paid_amount}")
+            e_payments =frappe._dict(
+                {
+                     "amount":paid_amount,
+                    "mode_of_payment":payment_mode
+            }
+            ) 
+            efris_log_info(f"Payment List {e_payments}")
+            self.append('e_payments', e_payments)
+            self.paid_amount = total_payment
+        self.credit_amount = credit
+        efris_log_info("done with payments loop")
+        # Add "Credit" line if credit amount exists
+        if abs(credit) > 0:
+            if not self.sales_invoice.efris_payment_mode:
+                payment_mode = "Credit"
+            credit_payment = frappe._dict({
+                "amount": credit,
+                "mode_of_payment": payment_mode,
+            })
+            efris_log_info(f"Adding credit line to e_payments: {credit_payment}")
+            self.append('e_payments', credit_payment)
+        self.credit_amount = credit
+
+                
+
     def set_seller_details(self):
         efris_log_info("Setting seller details")
         company_address = self.sales_invoice.company_address
@@ -264,13 +337,13 @@ class EInvoice(Document):
             
                 efris_log_info(f"The BRN or NIN for {self.company} is {self.seller_nin_or_brn}")
         self.seller_legal_name = self.company
-        brn = frappe.get_doc('Company', {'name': self.seller_legal_name})
-        self.seller_nin_or_brn  =brn.nin_or_brn
+        company = frappe.get_doc('Company', {'name': self.seller_legal_name})
+        self.seller_nin_or_brn  = company.efris_nin_or_brn
         efris_log_info(f"The BRN is {self.seller_nin_or_brn}")
 
         self.seller_gstin = self.sales_invoice.company_tax_id       
 
-        self.seller_reference_no = self.sales_invoice.seller_reference_no
+        self.seller_reference_no = self.sales_invoice.efris_seller_reference_no
         if not self.seller_reference_no:
             self.seller_reference_no = self.sales_invoice.name
         self.seller_trade_name = self.company
@@ -290,7 +363,7 @@ class EInvoice(Document):
         efris_log_info(f"efris_customer_type:{efris_customer_type}")
         
         if not efris_customer_type:
-            frappe.throw(_('Efris Customer Type must be set on on the Customer Details page.'))
+            frappe.throw(_('EFRIS Customer Type must be set on on the Customer Details page.'))
         
         if efris_customer_type == 'B2B' and not self.buyer_gstin:
             efris_log_error("TaxID/TIN must be set for B2B Customer (GST Category). See Tax tab on Customer profile.")
@@ -300,7 +373,7 @@ class EInvoice(Document):
         efris_log_info("Set supply type OK - {self.supply_type}")
 
         self.buyer_legal_name = customer.customer_name
-        self.buyer_nin_or_brn = customer.nin_or_brn         
+        self.buyer_nin_or_brn = customer.efris_nin_or_brn         
         self.buyer_citizenship = ""
         self.buyer_sector = ""
         self.buyer_reference_no = ""
@@ -321,6 +394,8 @@ class EInvoice(Document):
         efris_log_info("Fetching items from invoice")
         # efris_log_info(f"Fetching item document for item_code: {item.item_code}")
        
+        if not self.sales_invoice.taxes:
+            frappe.throw("taxes table can't be empty")
         item_taxes = loads(self.sales_invoice.taxes[0].item_wise_tax_detail)
         conversion_rate = self.sales_invoice.conversion_rate
         
@@ -330,8 +405,8 @@ class EInvoice(Document):
         for i, item in enumerate(self.sales_invoice.items):
             efris_log_info(f"Looping through item: {i}, {item}")
             if not item.efris_commodity_code:
-                efris_log_error(f"Row # {item.idx}: Item {item.item_code} must have Efris Commodity code set to be able to generate e-invoice.")
-                frappe.throw(_('Row #{}: Item {} must have Efris Commodity code set to be able to generate e-invoice.').format(item.idx, item.item_code))
+                efris_log_error(f"Row # {item.idx}: Item {item.item_code} must have EFRIS Commodity code set to be able to generate e-invoice.")
+                frappe.throw(_('Row #{}: Item {} must have EFRIS Commodity code set to be able to generate e-invoice.').format(item.idx, item.item_code))
             is_service_item = item.efris_commodity_code[:2] == "99"
             item_doc = frappe.get_doc("Item", item.item_code)
             efris_log_info(f"Item Code :{item_doc}")
@@ -342,7 +417,7 @@ class EInvoice(Document):
             else:
                 efris_log_error(f"Row # {item.idx}: Item {item.item_code} must have Tax Template set under Tax tab.")
                 frappe.throw(_('Row #{}: Item {} must have Tax Template set under Tax tab').format(item.idx, item.item_code))
-            efris_tax_category = tax_template.taxes[0].custom_e_tax_category
+            efris_tax_category = tax_template.taxes[0].efris_e_tax_category
             if not efris_tax_category:
                 efris_log_error(f"Missing EFRIS Tax Category on Row # {item.idx}: Item {item.item_code}. Ensure all Items have E Tax Category set under Item Tax Template Detail.")
                 frappe.throw(_("Missing EFRIS Tax Category on Row #{}: Item {}. Ensure all Items have E Tax Category set under Item Tax Template Detail").format(item.idx, item.item_code))
@@ -353,7 +428,7 @@ class EInvoice(Document):
 
             item_tax_amount = round(item_tax_amount,2)
             
-            #rate = abs(item.taxable_value / item.qty) if flt(item.qty) != 0.0 else abs(item.taxable_value)
+            
             einvoice_item = frappe._dict({
                 'si_item_ref': item.item_code,
                 'item_code': item.item_code,
@@ -374,7 +449,7 @@ class EInvoice(Document):
                 'efris_dsct_item_tax' : item.efris_dsct_item_tax,
                 'efris_dsct_taxable_amount' : round(item.efris_dsct_taxable_amount,4),
                 'efris_dsct_item_discount' : item.efris_dsct_item_discount,
-                'commodity_code_description': frappe.get_doc("Efris Commodity Code", item.efris_commodity_code).commodity_name
+                'commodity_code_description': frappe.get_doc("EFRIS Commodity Code", item.efris_commodity_code).commodity_name
             })
             self.append('items', einvoice_item)
             efris_log_info(f"Appended item: {einvoice_item}")
@@ -405,6 +480,7 @@ class EInvoice(Document):
         einvoice_json.update(self.get_good_details())
         einvoice_json.update(self.get_tax_details())
         einvoice_json.update(self.get_summary())
+        einvoice_json.update(self.get_payment_details())
         return einvoice_json
 
     def get_seller_details_json(self):
@@ -493,19 +569,15 @@ class EInvoice(Document):
     def get_good_details(self):
         efris_log_info("Getting good details JSON")
         item_list = []
-        unique_items = set()
-        total_tax = 0.0
-        total_discount_tax = 0.0
+        unique_items = set()    
+        
         orderNumber = 0
         discount_percentage = self.additional_discount_percentage if self.additional_discount_percentage else 0
-        initial_tax = self.tax_amount
+        
         item_code  = ""
-        goodsCode = ""
-        tax_rate = 0.0
-        discount_tax = 0.0
-        tax_on_discount = 0.0
+        goodsCode = ""      
+        discount_tax = 0.0    
         discountTaxRate = ""
-
         for row in self.items:
             efris_log_info(f"item: {row}")
             taxRate = decode_e_tax_rate(str(row.gst_rate), row.e_tax_category)
@@ -513,8 +585,6 @@ class EInvoice(Document):
             efris_log_info(f"Item Code :{item_code}") 
             goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
             efris_log_info(f"EFRIS Product Code is {goodsCode}")
-            if goodsCode and  len(goodsCode) > 50:
-                frappe.throw(f"The Item Code exceeds required character length {len(goodsCode)}")
             if goodsCode:
                 item_code = goodsCode
             # Create a unique identifier for the item
@@ -541,8 +611,7 @@ class EInvoice(Document):
                 
                 if taxRate == '0.18':
                     tax_rate = float(taxRate) + 1
-                    tax = row.efris_dsct_item_tax
-                    total_tax += tax
+                    tax = row.efris_dsct_item_tax                   
                 if not taxRate or taxRate in ["-", "Exempt"]:
                     # taxRate = "0.00"  # Convert exempt or invalid tax rates to zero
                     discountTaxRate = "0.0"
@@ -577,8 +646,7 @@ class EInvoice(Document):
             if discount_percentage > 0:
                 if taxRate == '0.18':
                     # tax_on_discount = round((discount_amount / tax_rate), 4)
-                    discount_tax = row.efris_dsct_discount_tax
-                    total_discount_tax += discount_tax
+                    discount_tax = row.efris_dsct_discount_tax                    
                 else:
                     discount_tax = tax
 
@@ -629,6 +697,27 @@ class EInvoice(Document):
             }
             tax_details_list.append(tax_details)
         return {"taxDetails": tax_details_list}
+    
+    def get_payment_details(self):
+        efris_log_info("Getting Payment details JSON")
+        payment_list = []      
+        payment_code = ""
+       
+        for row in self.e_payments:
+             # Map mode_of_payment to the corresponding EFRIS code
+            mode_of_payment = row.mode_of_payment
+            if mode_of_payment:
+                payment_method_code  = frappe.db.get_value('Mode of Payment',{'name':mode_of_payment},'efris_payment_mode') 
+                payment_code = payment_method_code.split(':')[0] 
+                efris_log_info(f"The EFRIS Payment code is {payment_code}")        
+            
+            payments = {
+                "paymentMode": str(payment_code),
+                "paymentAmount": str(row.amount),
+                "orderNumber": "a"
+            }
+            payment_list.append(payments)
+        return {"payWay": payment_list}
 
     def get_summary(self):
         efris_log_info("Getting summary JSON")
@@ -648,50 +737,6 @@ class EInvoice(Document):
         return {"additional_discount_percentage":self.additional_discount_percentage}
 
 
-def decode_e_tax_rate(tax_rate, e_tax_category):
-    e_tax_code = e_tax_category.split(':')[0]
-    if e_tax_code == '01':
-        return '0.18' 
-    if e_tax_code == '02':
-        return '0'
-    if e_tax_code == '03':
-        return '-'
-    return str(tax_rate)
-
-
-def validate_company(doc):
-    company_name = doc.get('company', '')
-    efris_log_info(f"The Company name is {company_name}")
-
-    # Initialize valid as False
-    valid = False
-
-    if not company_name:
-        efris_log_error("No company provided in the document.")
-        return valid
-
-    try:        
-        
-        einvoicing_settings = frappe.get_all(
-            "E Invoicing Settings",
-            fields=["*"],  # Fetch all fields
-            filters={"company": company_name}
-        )
-    
-        if not einvoicing_settings:
-            efris_log_error(f"No E Invoicing Settings found for company: {company_name}")
-            valid = False
-            efris_log_info(f"The e-Company: {company_name} is not found")
-        else:
-            valid = True
-            efris_log_info(f"Found Efris settings found for Company: {company_name}")
-
-    
-    except Exception as e:
-        efris_log_error(f"Unexpected error while validating company '{company_name}': {e}")
-        valid = False
-
-    return valid
 
 
 

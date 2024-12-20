@@ -1,5 +1,4 @@
-frappe.ui.form.on("Item", {
-  
+frappe.ui.form.on("Item", {  
   
     efris_currency: function(frm) {
         let efris_currency = frm.doc.efris_currency;
@@ -16,16 +15,16 @@ frappe.ui.form.on("Item", {
                 },
                 callback: function(r) {
                     if (r.message) {
-                        let efris_code = r.message.efris_currency_code;
-                        console.log(`The Efris Currency Code is ${efris_code}`);
+                        let efris_currency_code = r.message.efris_currency_code;
+                        console.log(`The EFRIS Currency Code is ${efris_currency_code}`);
                         
-                        if (!efris_code) {
-                            frappe.throw("The Selected Currency is an Invalid Efris Currency");
+                        if (!efris_currency_code) {
+                            frappe.throw("The Selected Currency is an Invalid EFRIS Currency");
                         } else {
-                            console.log(`The Currency Code is ${efris_code}`);
+                            console.log(`The Currency Code is ${efris_currency_code}`);
                         }
                     } else {
-                        frappe.throw("Failed to fetch Efris Currency Code.");
+                        frappe.throw("Failed to fetch EFRIS Currency Code.");
                     }
                 }
             });
@@ -59,11 +58,11 @@ function set_item_tax_template(frm){
         if (efris_commodity_code) {
             console.log(`The EFRIS commodity code is ${efris_commodity_code}`);
             
-            // Fetch the E Tax Category from the Efris Commodity Code
+            // Fetch the E Tax Category from the EFRIS Commodity Code
             frappe.call({
                 method: 'frappe.client.get_value',
                 args: {
-                    doctype: 'Efris Commodity Code',
+                    doctype: 'EFRIS Commodity Code',
                     fieldname: "e_tax_category",
                     filters: { name: efris_commodity_code }
                 },
@@ -74,7 +73,7 @@ function set_item_tax_template(frm){
                         
                         if (e_tax_category) {
                             console.log(`E Tax Category is ${e_tax_category}`);
-                            const company = frm.doc.e_company;
+                            const company = frm.doc.efris_e_company;
                             console.log(`Item E Company is ${company}`);
                             
                             // Fetch the Item Tax Template based on E Tax Category and Company
@@ -166,21 +165,21 @@ frappe.ui.form.on('Item', {
 frappe.ui.form.on('UOM Conversion Detail', { 
 
     uoms_add: function(frm, cdt, cdn) {   
-             if (frm.doc.has_multiple_uom) {
+             if (frm.doc.efris_has_multiple_uom) {
             console.log("Row added to UOMs table.");
             update_default_uom_row(frm);
             frm.refresh_field("uoms"); 
         }
     },
     uoms_remove: function(frm, cdt, cdn) {
-        if (frm.doc.has_multiple_uom) {
+        if (frm.doc.efris_has_multiple_uom) {
             console.log("Row removed from UOMs table.");
             update_default_uom_row(frm);
             frm.refresh_field("uoms"); 
         }
     },
     uom: function(frm, cdt, cdn){
-        if (frm.doc.has_multiple_uom) {
+        if (frm.doc.efris_has_multiple_uom) {
         console.log("UOM changed on table.");
             update_default_uom_row(frm);
             frm.refresh_field("uoms"); 
@@ -190,14 +189,18 @@ frappe.ui.form.on('UOM Conversion Detail', {
 
 frappe.ui.form.on("Item", {
     stock_uom: function(frm) {
+        console.log(`Listening to Stock UOM ${frm.doc.stock_uom}`)
+        update_default_uom_row(frm)
         handle_stock_uom_change(frm);
     },
     standard_rate: function(frm) {
+        console.log(`Listening to Standard rate ${frm.doc.standard_rate}`)
+        update_default_uom_row(frm)
         handle_standard_rate_change(frm);
     },
     validate: function(frm) {
         frm.refresh_field("uoms");
-        if (frm.doc.has_multiple_uom) {
+        if (frm.doc.efris_has_multiple_uom) {
             validate_uoms_table(frm);
         }
     }
@@ -205,7 +208,7 @@ frappe.ui.form.on("Item", {
 
 // Handles changes to `stock_uom`
 function handle_stock_uom_change(frm) {
-    if (frm.doc.has_multiple_uom) {
+    if (frm.doc.efris_has_multiple_uom) {
         update_default_uom_row(frm);
         frm.refresh_field("uoms"); 
     }
@@ -213,7 +216,7 @@ function handle_stock_uom_change(frm) {
 
 // Handles changes to `standard_rate`
 function handle_standard_rate_change(frm) {
-    if (frm.doc.has_multiple_uom) {
+    if (frm.doc.efris_has_multiple_uom) {
         update_default_uom_row(frm);
         frm.refresh_field("uoms"); 
     }
@@ -248,14 +251,14 @@ function update_default_uom_row(frm) {
     if (existing_row) {
         // Update the existing row
         existing_row.conversion_factor = 1;
-        existing_row.is_efris_uom = 1;
+        existing_row.efris_uom = 1;
         existing_row.efris_unit_price = default_rate;
     } else {
         // Add a new row for the default UOM
         const new_row = frm.add_child("uoms");
         new_row.uom = default_uom;
         new_row.conversion_factor = 1;
-        new_row.is_efris_uom = 1;
+        new_row.efris_uom = 1;
         new_row.efris_unit_price = default_rate;
     }
 
@@ -279,11 +282,11 @@ function validate_uoms_table(frm) {
 
     // Validate required fields for EFRIS-specific UOMs
     uoms.forEach(row => {
-        if (row.is_efris_uom) {
+        if (row.efris_uom) {
             if (!row.efris_unit_price) {
                 frappe.throw(`Please set the EFRIS Unit Price for UOM: ${row.uom}`);
             }
-            if (!row.custom_package_scale_value) {
+            if (!row.efris_package_scale_value) {
                 frappe.throw(`Please set the Package Scale Value for UOM: ${row.uom}`);
             }
         }

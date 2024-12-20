@@ -21,17 +21,17 @@ frappe.ui.form.on('Warehouse', {
                         // If the company exists in E Invoicing Settings, proceed with showing/hiding the field
                         console.log(`The Company ${frm.doc.company} exists in E Invoicing Settings`);
                        
-                        frm.set_df_property('is_efris_warehouse', 'hidden', 0);  // Show field
+                        frm.set_df_property('efris_warehouse', 'hidden', 0);  // Show field
                        
                     } else {
                         // If the company does not exist in E Invoicing Settings, don't display the field
                         console.log(`The company ${frm.doc.name} does not have E Invoicing Settings.`);
-                        frm.set_df_property('is_efris_warehouse', 'hidden', 1);  // Hide field
+                        frm.set_df_property('efris_warehouse', 'hidden', 1);  // Hide field
                     }
                 }
             });
         
-           // Check If Warehouse has any Transactions. If Yes, set is_efris_warehouse to ready_only.
+           // Check If Warehouse has any Transactions. If Yes, set efris_warehouse to ready_only.
            frappe.call({
                 method:'frappe.client.get_list',
                 args:{
@@ -46,16 +46,16 @@ frappe.ui.form.on('Warehouse', {
                     if (r.message && r.message.length > 0)
                     {
                         console.log(`The Warehouse ${r.message[0].warehouse} has Transactions`)
-                        frm.set_df_property('is_efris_warehouse', 'read_only', 1);
+                        frm.set_df_property('efris_warehouse', 'read_only', 1);
                     } else {
                         console.log(`The Warehouse ${frm.doc.name} has no Transactions`)
-                        frm.set_df_property('is_efris_warehouse', 'read_only', 0);
+                        frm.set_df_property('efris_warehouse', 'read_only', 0);
                     }
                           
                 }
            }); 
         }else {
-            frm.set_df_property('is_efris_warehouse', 'read_only', 1);
+            frm.set_df_property('efris_warehouse', 'read_only', 1);
         }
        
     }

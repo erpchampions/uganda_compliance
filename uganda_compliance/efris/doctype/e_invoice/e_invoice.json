@@ -51,6 +51,12 @@
   "column_break_107",
   "additional_discount_percentage",
   "discount_amount",
+  "e_invoice_payments_section",
+  "e_payments",
+  "section_break_jgqis",
+  "paid_amount",
+  "column_break_clp0w",
+  "credit_amount",
   "other_details_section",
   "company",
   "column_break_106",
@@ -333,36 +339,65 @@
    "reqd": 1
   },
   {
-    "fieldname": "additional_discounts_section",
-    "fieldtype": "Section Break",
-    "label": "Additional Discounts"
-   },
-   {
-    "fieldname": "applied_discount_on",
-    "fieldtype": "Data",
-    "label": "Apply Additional Discounts On"
-   },
-   {
-    "fieldname": "column_break_107",
-    "fieldtype": "Column Break"
-   },
-   {
-    "fieldname": "additional_discount_percentage",
-    "fieldtype": "Data",
-    "label": "Additional Discount Percentage"
-   },
-   {
-    "fieldname": "discount_amount",
-    "fieldtype": "Currency",
-    "label": "Additional Discounts Amount"
-   }
+   "fieldname": "additional_discounts_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Discounts"
+  },
+  {
+   "fieldname": "applied_discount_on",
+   "fieldtype": "Data",
+   "label": "Apply Additional Discounts On"
+  },
+  {
+   "fieldname": "column_break_107",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "additional_discount_percentage",
+   "fieldtype": "Data",
+   "label": "Additional Discount Percentage"
+  },
+  {
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "label": "Additional Discounts Amount"
+  },
+  {
+   "fieldname": "e_invoice_payments_section",
+   "fieldtype": "Section Break",
+   "label": "E Invoice Payments"
+  },
+  {
+   "fieldname": "e_payments",
+   "fieldtype": "Table",
+   "label": "E Payments",
+   "options": "E Invoice Payment"
+  },
+  {
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Amount"
+  },
+  {
+   "fieldname": "column_break_clp0w",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_jgqis",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "credit_amount",
+   "fieldtype": "Currency",
+   "label": "Credit Amount"
+  }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-02 20:46:43.515607",
+ "modified": "2024-12-13 14:50:19.584032",
  "modified_by": "Administrator",
- "module": "Efris",
+ "module": "EFRIS",
  "name": "E Invoice",
  "naming_rule": "By fieldname",
  "owner": "Administrator",

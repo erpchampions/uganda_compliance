@@ -17,7 +17,7 @@
         "in_list_view": 0,
         "insert_after": "fraction_units",
         "label": "EFRIS Currency Code",
-        "module": "Efris",
+        "module": "EFRIS",
         "name": "Currency-efris_currency_code",
         "no_copy": 0,
         "owner": "Administrator",

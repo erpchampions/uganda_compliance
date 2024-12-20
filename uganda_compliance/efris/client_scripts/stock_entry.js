@@ -39,16 +39,16 @@ async function set_efris_stockin(frm, cdt, cdn) {
     if (frm.doc.purpose === "Material Transfer") {
         console.log("Handling Material Transfer");
         if (row.s_warehouse && row.t_warehouse) {
-            let s_warehouse_res = await frappe.db.get_value('Warehouse', row.s_warehouse, 'is_efris_warehouse');
-            let t_warehouse_res = await frappe.db.get_value('Warehouse', row.t_warehouse, 'is_efris_warehouse');
+            let s_warehouse_res = await frappe.db.get_value('Warehouse', row.s_warehouse, 'efris_warehouse');
+            let t_warehouse_res = await frappe.db.get_value('Warehouse', row.t_warehouse, 'efris_warehouse');
 
             if (s_warehouse_res?.message && t_warehouse_res?.message) {
-                let s_is_efris = s_warehouse_res.message.is_efris_warehouse;
-                let t_is_efris = t_warehouse_res.message.is_efris_warehouse;
+                let s_is_efris = s_warehouse_res.message.efris_warehouse;
+                let t_is_efris = t_warehouse_res.message.efris_warehouse;
 
                 // Check conditions and handle accordingly
                 if (!s_is_efris && t_is_efris) {
-                    frappe.model.set_value(cdt, cdn, 'is_efris', 1);
+                    frappe.model.set_value(cdt, cdn, 'efris_transfer', 1);
                     frappe.meta.get_docfield(cdt, 'efris_purchase_receipt_no', frm.doc.name).reqd = 1;
                     console.log("Is EFRIS flag set to true.");
                 } else if (s_is_efris && !t_is_efris) {
@@ -58,16 +58,16 @@ async function set_efris_stockin(frm, cdt, cdn) {
                     frappe.msgprint("Stock Transfer From EFRIS warehouse to EFRIS warehouse doesnot Stock In")
                     return;
                 } else {
-                    frappe.model.set_value(cdt, cdn, 'is_efris', 0);
+                    frappe.model.set_value(cdt, cdn, 'efris_transfer', 0);
                     frappe.meta.get_docfield(cdt, 'efris_purchase_receipt_no', frm.doc.name).reqd = 0;
                 }
             }
         }
     } else if (frm.doc.purpose === "Material Receipt" && row.t_warehouse) {
         console.log("Handling Material Receipt");                
-            let t_warehouse_res = await frappe.db.get_value('Warehouse', row.t_warehouse, 'is_efris_warehouse');
+            let t_warehouse_res = await frappe.db.get_value('Warehouse', row.t_warehouse, 'efris_warehouse');
             if (t_warehouse_res?.message) {
-                let t_is_efris = t_warehouse_res.message.is_efris_warehouse;
+                let t_is_efris = t_warehouse_res.message.efris_warehouse;
                 if (t_is_efris) {
                     frappe.throw("EFRIS stock-in via Material Receipt not allowed");
                 }

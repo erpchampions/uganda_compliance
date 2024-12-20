@@ -49,7 +49,7 @@ def stock_in_T131(doc, method):
                     item_code = data.get("item_code")  # Ensure item_code is defined within this scope
                     efris_log_info(f"UOM from items table: {item_uom}")
                     efris_uom_code = frappe.db.get_value('UOM', {'uom_name': item_uom}, 'efris_uom_code') or ''
-                    efris_log_info(f"Efris UOM code is: {efris_uom_code}")
+                    efris_log_info(f"EFRIS UOM code is: {efris_uom_code}")
                     efris_unit_price = data.get("efris_unit_price")
                     if efris_unit_price:
                        efris_unit_price = round(efris_unit_price,2) 
@@ -118,8 +118,8 @@ def stock_in_T131(doc, method):
                 efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company} under Purchase Receipt {reference_purchase}")
                 frappe.msgprint(f"Stock is successfully uploaded to EFRIS for {e_company} under Purchase Receipt {reference_purchase}")
                 for item in items:
-                    frappe.db.set_value('Stock Entry Detail', item.name, 'is_efris_registered', 1)
-                    efris_log_info(f"The Efris Registered flag for item_code: {item.item_code} is set to true")
+                    frappe.db.set_value('Stock Entry Detail', item.name, 'efris_registered', 1)
+                    efris_log_info(f"The EFRIS Registered flag for item_code: {item.item_code} is set to true")
             else:
                 efris_log_error(f"Failed to upload Stock to EFRIS for {e_company} under Purchase Receipt {reference_purchase}: {response}")
                 frappe.throw(f"Failed to upload Stock to EFRIS for {e_company} under Purchase Receipt {reference_purchase}: {response}")

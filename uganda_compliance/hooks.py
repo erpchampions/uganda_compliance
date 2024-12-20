@@ -129,25 +129,25 @@ app_license = "MIT"
 # ---------------
 
 
-# scheduler_events = {
-# 	"all": [
-# 		"uganda_compliance.tasks.all"
-# 	],
-# 	"daily": [
-# 		"uganda_compliance.tasks.daily",
-#         "uganda_compliance.efris.api_classes.e_invoice.check_credit_note_approval_status",
-#         "uganda_compliance.efris.api_classes.efris_invoice_sync.efris_invoice_sync"
-# 	],
-# 	"hourly": [
-# 		"uganda_compliance.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"uganda_compliance.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"uganda_compliance.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	# "all": [
+	# 	"uganda_compliance.tasks.all"
+	# ],
+	"daily": [
+    #   "uganda_compliance.tasks.daily",
+        "uganda_compliance.efris.api_classes.e_invoice.check_credit_note_approval_status",
+        "uganda_compliance.efris.api_classes.efris_invoice_sync.efris_invoice_sync"
+	],
+	# "hourly": [
+	# 	"uganda_compliance.tasks.hourly"
+	# ],
+	# "weekly": [
+	# 	"uganda_compliance.tasks.weekly"
+	# ],
+	# "monthly": [
+	# 	"uganda_compliance.tasks.monthly"
+	# ],
+}
 
 # Testing
 # -------
@@ -219,7 +219,7 @@ app_license = "MIT"
 # ]
 # Installation
 # ------------
-# before_install = "uganda_compliance.patches.add_e_company_to_customer"
+# before_install = "uganda_compliance.before_install"
 
 app_include_js = "/assets/uganda_compliance/js/item_custom.js"
 
@@ -252,8 +252,10 @@ doc_events = {
     },
     "E Invoicing Settings":{
         "before_save":["uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save",
-                       "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.create_item_tax_templates"                       
-                       ]        
+                       "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.create_item_tax_templates" ,
+                       "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.update_efris_company"                      
+                       ],
+       
     },
     "Stock Reconciliation":{
         "on_submit":"uganda_compliance.efris.api_classes.stock_in.stock_in_T131"
@@ -314,7 +316,7 @@ doctype_list_js = {
 
 fixtures = [
     "E Tax Category", 
-    "Efris Commodity Code",
+    "EFRIS Commodity Code",
     "UOM",
     {
         "doctype": "Print Format",
@@ -333,12 +335,8 @@ fixtures = [
         "filters": {
             "efris_currency_code": ["!=", None]
         }
-    }
-    # {
-    #     "doctype": "File",
-    #     "filters": {
-    #         "file_name": ["=","ura_efris_logo.png"]
-    #     }
-    # }
+    },
+    "EFRIS Payment Mode",
+    "Mode of Payment"
 ]
 

@@ -115,7 +115,7 @@ def create_item_tax_templates(doc,method):
         return
     output_vat_account = doc.get("output_vat_account")
     e_company = doc.get("company")
-    efris_log_info(f"E Company is {e_company}")
+    efris_log_info(f"E Company is {e_company}")    
     efris_log_info(f" VAT Account Head is {output_vat_account}")
     e_tax_category = frappe.db.get_all("E Tax Category")
     efris_log_info(f"E Tax Categories data:{e_tax_category}")
@@ -150,11 +150,18 @@ def create_item_tax_templates(doc,method):
         item_tax_template.append("taxes", {
         "tax_type": output_vat_account,
         "tax_rate": tax_rate,
-        "custom_e_tax_category": tax_category
+        "efris_e_tax_category": tax_category
         })
         item_tax_template.insert(ignore_permissions=True)
-        frappe.db.commit() 
         efris_log_info(f"Item Tax Template Created successfully {item_tax_template.name}")
-        # frappe.throw(f"Item Tax Template Created successfully {item_tax_template.name}")
-
+   
+def update_efris_company(doc,mehtod):
+    efris_log_info(f"Update EFRIS Company called...")
+    company = frappe.get_doc("Company",{"name":doc.company})
+    if company:
+        efris_log_info(f"The Comopany Doc is fetched... {company}")
+        if not company.efris_company:
+            company.efris_company = 1 
+            efris_log_info(f"EFRIS Company is true...")
+            company.save()
 

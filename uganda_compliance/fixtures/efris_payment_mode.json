@@ -1,0 +1,82 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 1,
+  "modified": "2024-12-20 09:38:55.118834",
+  "name": "102:Cash",
+  "payment_mode": "102:Cash"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 1,
+  "modified": "2024-12-20 12:10:56.970418",
+  "name": "103:Cheque",
+  "payment_mode": "103:Cheque"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 0,
+  "modified": "2024-12-20 09:43:45.505024",
+  "name": "104:Demand draft",
+  "payment_mode": "104:Demand draft"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 1,
+  "modified": "2024-12-20 09:45:40.962155",
+  "name": "105:Mobile money",
+  "payment_mode": "105:Mobile money"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 0,
+  "modified": "2024-12-20 09:44:25.917309",
+  "name": "106:Visa/Master card",
+  "payment_mode": "106:Visa/Master card"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 0,
+  "modified": "2024-12-20 09:44:40.549096",
+  "name": "107:EFT",
+  "payment_mode": "107:EFT"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 0,
+  "modified": "2024-12-20 09:44:51.907069",
+  "name": "108:POS",
+  "payment_mode": "108:POS"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 0,
+  "modified": "2024-12-20 09:45:08.211952",
+  "name": "109:RTGS",
+  "payment_mode": "109:RTGS"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 0,
+  "modified": "2024-12-20 09:45:30.420115",
+  "name": "110:Swift transfer",
+  "payment_mode": "110:Swift transfer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "EFRIS Payment Mode",
+  "include_payment": 0,
+  "modified": "2024-12-20 14:01:04.631785",
+  "name": "101: Credit",
+  "payment_mode": "101: Credit"
+ }
+]

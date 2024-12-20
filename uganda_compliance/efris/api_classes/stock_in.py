@@ -46,8 +46,8 @@ def stock_in_T131(doc, method):
                 goodsCode = ""
                 item_code = ""
                 for data in items:
-                    is_efris = data.get("is_efris")
-                    efris_log_info(f"is_efris: {is_efris}")
+                    is_efris = data.get("efris_transfer")
+                    efris_log_info(f"efris_transfer: {is_efris}")
 
                     
                     if is_efris:
@@ -55,14 +55,12 @@ def stock_in_T131(doc, method):
                         item_code = data.get("item_code")  # Ensure item_code is defined within this scope
                         goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
                         efris_log_info(f"EFRIS Product Code is {goodsCode}")
-                        if goodsCode and  len(goodsCode) > 50:
-                            frappe.throw(f"The Item Code exceeds required character length {len(goodsCode)}")
                         if goodsCode:
                             item_code = goodsCode
                         efris_log_info(f"UOM from items table: {item_uom}")
                         efris_uom_code = frappe.db.get_value('UOM', {'uom_name': item_uom}, 'efris_uom_code') or ''
-                        efris_log_info(f"Efris UOM code is: {efris_uom_code}")
-                        efris_unit_price = data.get("efris_unit_price")
+                        efris_log_info(f"EFRIS UOM code is: {efris_uom_code}")
+                        efris_unit_price = data.get("basic_rate")
                         if efris_unit_price:
                             efris_unit_price = round(efris_unit_price,2) 
 
@@ -130,8 +128,8 @@ def stock_in_T131(doc, method):
                     efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company} under Purchase Receipt {reference_purchase}")
                     frappe.msgprint(f"Stock is successfully uploaded to EFRIS for {e_company} under Purchase Receipt {reference_purchase}")
                     for item in items:
-                        frappe.db.set_value('Stock Entry Detail', item.name, 'is_efris_registered', 1)
-                        efris_log_info(f"The Efris Registered flag for item_code: {item.item_code} is set to true")
+                        frappe.db.set_value('Stock Entry Detail', item.name, 'efris_registered', 1)
+                        efris_log_info(f"The EFRIS Registered flag for item_code: {item.item_code} is set to true")
                 else:
                     efris_log_error(f"Failed to upload Stock to EFRIS for {e_company} under Purchase Receipt {reference_purchase}: {response}")
                     frappe.throw(f"Failed to upload Stock to EFRIS for {e_company} under Purchase Receipt {reference_purchase}: {response}")
@@ -152,14 +150,14 @@ def stock_in_T131(doc, method):
             item_code = ""
 
             for efris_item in doc.get("items", []):
-                is_efris = efris_item.get('is_efris')                
+                is_efris = efris_item.get('efris_receipt')                
             
             
                 if is_efris:
                     is_efris_count +=1
                     efris_log_info(f"The number of efris Items in Items table is {is_efris_count}")
             if not is_efris_count:
-                efris_log_info(f"Purchase Receipt List Items are Non Efris")
+                efris_log_info(f"Purchase Receipt List Items are Non EFRIS")
                 return
             # Initialize goodsStockInItem list outside the loop
             goodsStockInItem = []
@@ -177,11 +175,11 @@ def stock_in_T131(doc, method):
                     purchase_uom_code = frappe.db.get_value('UOM',{'uom_name':item_stock.get('uom')},'efris_uom_code')
                     efris_log_info(f"Package Uom is {purchase_uom_code}")
                 stock_uom_code = frappe.db.get_value('UOM', {'uom_name': item.stock_uom}, 'efris_uom_code') or ''
-                efris_log_info(f"Efris UOM code is: {stock_uom_code}")
+                efris_log_info(f"EFRIS UOM code is: {stock_uom_code}")
                 unitPrice = item_stock.get("rate")
-                is_efris_item = item.is_efris_item
+                is_efris_item = item.efris_item
                 item_code = item_stock.get("item_code")
-                efris_log_info(f"The Item {item.item_code} 's is Efris Item State is {is_efris_item}")
+                efris_log_info(f"The Item {item.item_code} 'is EFRIS Item: {is_efris_item}")
                 goodsCode = item.efris_product_code
                 efris_log_info(f"The EFRIS Product code is {goodsCode}")        
                 if goodsCode:
@@ -201,7 +199,7 @@ def stock_in_T131(doc, method):
                 accept_warehouse = item_stock.get("warehouse")
                 efris_log_info(f"The Accept Warehouse is: {accept_warehouse}")
                 if is_efris_item:
-                    is_efris = item_stock.get("is_efris")
+                    is_efris = item_stock.get("efris_receipt")
                     efris_log_info(f"The Item added to the table is efris")
 
                     if is_efris:
@@ -264,11 +262,11 @@ def stock_in_T131(doc, method):
                 efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company}")
                 frappe.msgprint(f"Stock is successfully uploaded to EFRIS for {e_company}")
                 for item in doc.items:
-                    if item.is_efris == 1:
-                        frappe.db.set_value('Purchase Receipt Item', item.name, 'is_efris_registered', 1)
-                        efris_log_info(f"The Efris Registered flag for :{item.item_code} is set to true")
+                    if item.efris_receipt == 1:
+                        frappe.db.set_value('Purchase Receipt Item', item.name, 'efris_registered', 1)
+                        efris_log_info(f"The EFRIS Registered flag for :{item.item_code} is set to true")
                     else:
-                        efris_log_info(f"The is efris flag for :{item.item_code} is not updated:{item.is_efris_registered}")
+                        efris_log_info(f"The is efris flag for :{item.item_code} is not updated:{item.efris_registered}")
                 
             else:
                 efris_log_error(f"Failed to upload Stock to EFRIS for {e_company}: {response}")
@@ -281,12 +279,12 @@ def stock_in_T131(doc, method):
         efris_log_info(f"The Selected Stock Reconciliation Purpose is {purpose}")
         is_efris_count = 0
         for efris_item in doc.get("items", []):
-            is_efris = efris_item.get('is_efris')
+            is_efris = efris_item.get('efris_reconcilliation')
             if is_efris:
                 is_efris_count +=1
                 efris_log_info(f"The number of efris Items in Items table is {is_efris_count}")
         if not is_efris_count:
-            efris_log_info(f"Purchase Receipt List Items are Non Efris")
+            efris_log_info(f"Purchase Receipt List Items are Non EFRIS")
             return
 
         # Get the company from the doc
@@ -299,7 +297,7 @@ def stock_in_T131(doc, method):
         for item_stock in doc.get("items", []):
             if purpose == "Opening Stock":
                 # Group by efris_purchase_receipt_no and adjustment_type for Opening Stock
-                key = (item_stock.get("efris_purchase_receipt_no"))
+                key = doc.name 
             elif purpose == "Stock Reconciliation":
                 # Group by adjustment_type only for Stock Reconciliation
                 key = (item_stock.get("adjustment_type"))
@@ -323,16 +321,16 @@ def stock_in_T131(doc, method):
             goodsCode = ""
 
             for item_stock in items:
-                adjustment_type = item_stock.adjustment_type
+                adjustment_type = item_stock.efris_adjustment_type
                 efris_log_info(f"The Adjustment type is: {adjustment_type}")
                 adjustment_code = adjustment_type.split(":")[0]
                 
                 quantity_variance = str(round(abs(item_stock.quantity_difference),3))
                 efris_log_info(f"The Stock Adjustment variance is: {quantity_variance}")
-                remark = item_stock.get("remarks")
+                remark = item_stock.get("efris_remarks")
                 efris_log_info(f"The Adjustment Remark is: {remark}")
 
-                is_efris = item_stock.get("is_efris")
+                is_efris = item_stock.get("efris_reconcilliation")
                 efris_log_info(f"The Item added to the table is EFRIS relevant: {is_efris}")
 
                 if is_efris:
@@ -341,7 +339,7 @@ def stock_in_T131(doc, method):
                     item_code = item.item_code
                     efris_log_info(f"The Item fetched is: {item.item_code}")
                     goodsCode = item.efris_product_code
-                    if goodsCode and len(goodsCode) > 50:
+                    if goodsCode: 
                         item_code = goodsCode
                     efris_log_info(f"The Item fetched is: {goodsCode}")
                     uom_code = frappe.db.get_value('UOM', {'uom_name': item.stock_uom}, 'efris_uom_code') or ''
@@ -350,13 +348,12 @@ def stock_in_T131(doc, method):
                     efris_log_info(f"The Accept Warehouse is: {accept_warehouse}")
                     if purpose == "Opening Stock":
                         # Fetch purchase receipt details
-                        efris_log_info(f"The target Purchase Receipt is: {key}")                
-                        purchase_rec = frappe.get_doc("Purchase Receipt", key)
-                        supplier = purchase_rec.supplier_name
-                        stockIntype = purchase_rec.efris_stockin_type.split(":")[0]
-                        efris_log_info(f"The Efris Stock In Type for {purchase_rec} is {stockIntype}")
+                        efris_log_info(f"The target Purchase Receipt is: {key}")               
+                      
+                        supplier = "Opening Balance"
+                        stockIntype = "102"                        
                         efris_log_info(f"The supplier name is: {supplier}")
-                        tax_Id = frappe.db.get_value("Supplier", {'supplier_name': supplier}, "tax_id")
+                        tax_Id = ""
 
                     # Skip positive adjustments for Stock Reconciliation
                     if purpose == "Stock Reconciliation" and item_stock.quantity_difference > 0:
@@ -439,7 +436,7 @@ def stock_in_T131(doc, method):
                 efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company}")
                 frappe.msgprint(f"Stock is successfully uploaded to EFRIS for {e_company}")
                 for item in items:
-                    frappe.db.set_value('Stock Reconciliation Item', item.name, 'is_efris_registered', 1)
+                    frappe.db.set_value('Stock Reconciliation Item', item.name, 'efris_registered', 1)
                     efris_log_info(f"The EFRIS Registered flag for item: {item.item_code} is set to true")
             else:
                 efris_log_error(f"Failed to upload Stock to EFRIS for {e_company} under key {key}: {response}")
@@ -459,13 +456,13 @@ def before_save_on_stock_entry(doc, method):
     for item in doc.get("items", []):
         efris_log_info(f"Processing item: {item.item_code}")     
             
-        is_efris = item.get('is_efris')
+        is_efris = item.get('efris_transfer')
         item_code = item.get('item_code')
-        item_company = frappe.db.get_value('Item',{'item_code':item_code},'e_company')
+        item_company = frappe.db.get_value('Item',{'item_code':item_code},'efris_e_company')
         efris_log_info(f"The Item Company is {item_company}")
         t_warehouse = item.get('t_warehouse')
         efris_log_info(f"The Target warehouse is {t_warehouse}")
-        is_efris_warehouse = frappe.db.get_value('Warehouse',{'warehouse_name':t_warehouse},'is_efris_warehouse')
+        is_efris_warehouse = frappe.db.get_value('Warehouse',{'warehouse_name':t_warehouse},'efris_warehouse')
         efris_log_info(f"The Target warehouse {t_warehouse} is IS EFRIS Warehouse {is_efris_warehouse}")
     
         if is_efris:
@@ -476,7 +473,7 @@ def before_save_on_stock_entry(doc, method):
     if purpose == 'Material Receipt' and is_efris_warehouse:
         return
     if not is_efris_count:
-        efris_log_info(f"Purchase Receipt List Items are Non Efris")
+        efris_log_info(f"Purchase Receipt List Items are Non EFRIS")
         return        
     # Fetch the corresponding Purchase Receipt based on the item.efris_purchase_receipt_no
     if item.efris_purchase_receipt_no:
@@ -519,12 +516,12 @@ def before_save_on_purchase_receipt(doc,method):
     for item in doc.get("items", []):
         efris_log_info(f"Processing item: {item.item_code}")     
             
-        is_efris = item.get('is_efris')
+        is_efris = item.get('efris_receipt')
         if not is_efris:
-            efris_log_info(f"The Purchase {doc.name} is non Efris")
+            efris_log_info(f"The Purchase {doc.name} is non EFRIS")
             return
         item_code = item.get('item_code')
-        item_company = frappe.db.get_value('Item',{'item_code':item_code},'e_company')
+        item_company = frappe.db.get_value('Item',{'item_code':item_code},'efris_e_company')
         efris_log_info(f"The Item Company is {item_company}") 
         company = doc.get('company')
         efris_log_info(f"The Purchase Receipt Company is {company}") 

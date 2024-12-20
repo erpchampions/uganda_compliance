@@ -7,10 +7,10 @@ from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings i
 @frappe.whitelist()
 def before_save_query_company(doc, method):
     
-    company_sync_efris = doc.get('company_sync_efris')
-    efris_log_info(f"The sync Efris Data Flag is {company_sync_efris}")
-    if not company_sync_efris:
-        efris_log_info('The Sync Efris Data flag is not Set {company_sync_efris}')
+    efris_company_sync = doc.get('efris_company_sync')
+    efris_log_info(f"The sync EFRIS Data Flag is {efris_company_sync}")
+    if not efris_company_sync:
+        efris_log_info('The Sync EFRIS Data flag is not Set {efris_company_sync}')
         return
 
     try:
@@ -34,7 +34,7 @@ def before_save_query_company(doc, method):
 
         # Customer details from the document
         tax_id = doc.get('tax_id')
-        ninBrn = doc.get('nin_or_brn')
+        ninBrn = doc.get('efris_nin_or_brn')
 
         efris_log_info(f"Company: {doc.name}, Tax ID: {tax_id}, NIN/BRN: {ninBrn}")
 
@@ -79,17 +79,17 @@ def before_save_query_company(doc, method):
                     efris_log_info(f"The Address is {doc.address_html}")
 
                 if contact_number:
-                    doc.seller_mobile = contact_number
+                    doc.efris_seller_mobile = contact_number
                     doc.phone_no = contact_number
                 if tin:
                     doc.tax_id = tin
                 if ninBrn:
-                    doc.nin_or_brn = ninBrn
+                    doc.efris_nin_or_brn = ninBrn
 
                 if contact_email:
                     doc.email = contact_email   
 
-                doc.company_sync_efris = 0   
+                doc.efris_company_sync = 0   
 
                 # Now, handle Address creation or updating
                 address_title = f"{legal_name} - Address"               

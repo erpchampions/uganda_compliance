@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestEfrisCommodityCode(FrappeTestCase):
+class TestEFRISCommodityCode(FrappeTestCase):
 	pass
