@@ -336,7 +336,6 @@ fixtures = [
             "efris_currency_code": ["!=", None]
         }
     },
-    "EFRIS Payment Mode",
-    "Mode of Payment"
+    "EFRIS Payment Mode"
 ]
 
