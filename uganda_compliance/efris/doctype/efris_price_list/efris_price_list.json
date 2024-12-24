@@ -7,11 +7,11 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "efris_price_list"
+  "price_list"
  ],
  "fields": [
   {
-   "fieldname": "efris_price_list",
+   "fieldname": "price_list",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Price List",
@@ -21,7 +21,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-11-12 08:26:24.806782",
+ "modified": "2024-12-24 20:47:16.969680",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "EFRIS Price List",

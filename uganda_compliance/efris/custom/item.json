@@ -477,7 +477,7 @@
    "property": "collapsible_depends_on",
    "property_type": "Check",
    "row_name": null,
-   "value": "eval:doc.efris_has_multiple_uom == 0"
+   "value": "eval:doc.efris_has_multiple_uom == 1"
   },
   {
    "_assign": null,

@@ -4,6 +4,7 @@ from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from uganda_compliance.efris.api_classes.efris_api import make_post
 from json import loads, dumps, JSONDecodeError
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
+from functools import lru_cache
 
 @frappe.whitelist()
 def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
@@ -220,45 +221,86 @@ def prepare_and_upload_item(doc, method, operation_type, e_company):
 
 
 
+
+# Cache price lists for the session
+@lru_cache(maxsize=1)
+def get_cached_price_lists(company, currency):
+    """
+    Fetch configured price lists for a given company and fallback to default selling price list.
+    """
+    efris_log_info(f"Fetching and caching price lists for company: {company}")
+    settings = get_e_company_settings(company)
+
+    # Get configured price lists
+    price_lists = [
+        pl['price_list'] for pl in frappe.get_all(
+            'EFRIS Price List',
+            filters={'parent': settings.name},
+            fields=['price_list']
+        )
+    ]
+
+    # Fallback to default selling price list if none are configured
+    if not price_lists:
+        default_price_list = frappe.get_value(
+            'Price List', {'currency': currency, 'selling': 1}, 'name'
+        )
+        if default_price_list:
+            price_lists.append(default_price_list)
+            efris_log_info(f"Using default selling price list: {default_price_list}")
+        else:
+            efris_log_info("No valid price lists found.")
+
+    return price_lists
+
+
+
 @frappe.whitelist()
-def create_item_prices(item_code, uoms, currency):
+def create_item_prices(item_code, uoms, currency, company):
     try:
-        # Ensure uoms is in the correct format (list)
         if isinstance(uoms, str):
             uoms = json.loads(uoms)
 
-        # Log the currency for debugging
-        price_list = frappe.get_value('Price List', {'currency': currency, 'selling': 1}, 'name')
-        efris_log_info(f"The Price List is {price_list}")
-        if not price_list:
-            frappe.throw(f"No Price List found for currency {currency}")
+        price_lists = get_cached_price_lists(company, currency)
+        if not price_lists:
+            efris_log_info("No valid price lists found. Skipping price updates.")
+            return
 
-        # Loop through the UOMs and create/update Item Price records
-        for uom_row in uoms:
-            uom = uom_row.get('uom')
-            price = uom_row.get('efris_unit_price')
-            
-            efris_log_info(f"The uom is {uom}")
-            efris_log_info(f"The Standard Price is {price}")
+        existing_prices = frappe.get_all(
+            'Item Price',
+            filters={
+                'item_code': item_code,
+                'price_list': ['in', price_lists]
+            },
+            fields=['name', 'uom', 'price_list', 'price_list_rate']
+        )
 
-            if price:
-                # Check if an Item Price already exists for this item and UOM
-                existing_item_price = frappe.get_all('Item Price', filters={
-                    'item_code': item_code,
-                    'uom': uom,
-                    'price_list': price_list                   
-                }, fields=['name', 'price_list_rate'])
+        existing_price_map = {
+            (ep['uom'], ep['price_list']): ep for ep in existing_prices
+        }
 
-                if existing_item_price:
-                    # Update the existing Item Price if the price has changed
-                    existing_price = existing_item_price[0]['price_list_rate']
-                    if existing_price != price:
-                        item_price_doc = frappe.get_doc('Item Price', existing_item_price[0]['name'])
-                        item_price_doc.price_list_rate = price
-                        item_price_doc.save(ignore_permissions=True)
-                        efris_log_info(f"Item Price for item {item_code} and UOM {uom} updated to {price}.")
+        for price_list in price_lists:
+            if not price_list:
+                efris_log_error("Invalid price_list encountered. Skipping entry.")
+                continue
+
+            for uom_row in uoms:
+                uom = uom_row.get('uom')
+                price = uom_row.get('efris_unit_price')
+                if not uom or not price:
+                    continue
+
+                key = (uom, price_list)
+                if key in existing_price_map:
+                    if existing_price_map[key]['price_list_rate'] != price:
+                        frappe.db.set_value('Item Price', existing_price_map[key]['name'], 'price_list_rate', price)
+                        efris_log_info(f"Updated Item Price: {existing_price_map[key]['name']} to rate {price}")
                 else:
-                    # Create a new Item Price record if it doesn't exist
+                    # Explicit check before creation
+                    if not price_list:
+                        efris_log_error(f"Cannot create Item Price without a valid price_list.")
+                        continue
+
                     item_price_doc = frappe.get_doc({
                         'doctype': 'Item Price',
                         'item_code': item_code,
@@ -269,8 +311,10 @@ def create_item_prices(item_code, uoms, currency):
                         'selling': 1
                     })
                     item_price_doc.insert(ignore_permissions=True)
-                    efris_log_info(f"Item Price for item {item_code} and UOM {uom} created.")
-    
+                    efris_log_info(f"Created Item Price for {uom} in {price_list} at rate {price}")
+
+        efris_log_info("Item Prices processed successfully.")
+
     except Exception as e:
         frappe.throw(f"Error creating/updating Item Prices: {str(e)}")
 

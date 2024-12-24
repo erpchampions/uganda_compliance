@@ -252,7 +252,6 @@ doc_events = {
     },
     "E Invoicing Settings":{
         "before_save":["uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save",
-                       "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.create_item_tax_templates" ,
                        "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.update_efris_company"                      
                        ],
        

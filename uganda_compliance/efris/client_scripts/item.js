@@ -110,22 +110,31 @@ function set_item_tax_template(frm){
        
 frappe.ui.form.on('Item', {
     after_save: function(frm) {
-        console.log("After Save is called...")
-        frappe.call({
-            method: 'uganda_compliance.efris.api_classes.e_goods_services.create_item_prices',
-            args: {
-                item_code: frm.doc.item_code,
-                uoms: frm.doc.uoms,
-                currency: frm.doc.efris_currency
-            },
-            callback: function(r) {
-                if (r.message) {
-                    frappe.msgprint(r.message);
-                    console.log(r.message.currency)
+        console.log("After Save is called...");
+
+        // Check if the item is EFRIS tracked and registered
+        if (frm.doc.efris_item && frm.doc.efris_registered) {
+            console.log("Item is EFRIS tracked and registered. Proceeding to create item prices...");
+
+            frappe.call({
+                method: 'uganda_compliance.efris.api_classes.e_goods_services.create_item_prices',
+                args: {
+                    item_code: frm.doc.item_code,
+                    uoms: frm.doc.uoms,
+                    currency: frm.doc.efris_currency,
+                    company: frm.doc.efris_e_company
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        frappe.msgprint(r.message);
+                        console.log(r.message.currency);
+                    }
                 }
-            }
-        });
-    },
+            });
+        } else {
+            console.log("Item is not EFRIS tracked or not registered. Skipping create_item_prices call.");
+        }
+    },    
     purchase_uom: function(frm) {
         if (frm.doc.purchase_uom) {
             console.log(`Purchase UOM listener called ...`);

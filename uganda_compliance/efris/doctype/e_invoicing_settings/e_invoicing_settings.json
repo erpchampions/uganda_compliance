@@ -9,24 +9,29 @@
   "section_break_1",
   "company",
   "company_name",
-  "sandbox_mode",
-  "column_break_1",
   "tin",
-  "sandbox_private_key",  
-  "column_break_2",
+  "column_break_1",
   "device_no",
-  "enable_sync_from_efris",
+  "column_break_2",
+  "sandbox_mode",
+  "sandbox_private_key",
   "live_private_key",
+  "tax_accounts_tab",
   "section_break_2",
-  "purchase_taxes_and_charges_template",
-  "sales_taxes_and_charges_template",
-  "column_break_3",
-  "input_vat_account",
   "output_vat_account",
+  "input_vat_account",
+  "column_break_3",
+  "sales_taxes_and_charges_template",
+  "purchase_taxes_and_charges_template",
   "column_break_4",
-  "column_break_5",
+  "advanced_tab",
   "e_invoice_price_list_section",
-  "efris_price_list"
+  "efris_price_list",
+  "efris_synchronization_section",
+  "enable_sync_from_efris",
+  "logging_settings_section",
+  "enable_integration_logging",
+  "enable_efris_file_logging"
  ],
  "fields": [
   {
@@ -56,11 +61,11 @@
    "label": "Sandbox Mode"
   },
   {
-    "default": "0",
-    "fieldname": "enable_sync_from_efris",
-    "fieldtype": "Check",
-    "label": "Enable Sync From EFRIS"
-   },
+   "default": "0",
+   "fieldname": "enable_sync_from_efris",
+   "fieldtype": "Check",
+   "label": "Enable Invoice Sync From EFRIS"
+  },
   {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
@@ -103,7 +108,7 @@
    "depends_on": "eval:doc.enabled == 1",
    "fieldname": "section_break_2",
    "fieldtype": "Section Break",
-   "label": "Tax Account Defaults"
+   "label": "Tax Accounts & Templates"
   },
   {
    "fieldname": "purchase_taxes_and_charges_template",
@@ -111,7 +116,7 @@
    "in_list_view": 1,
    "label": "Purchase Taxes and Charges Template",
    "options": "Purchase Taxes and Charges Template",
-   "reqd": 1
+   "read_only": 1
   },
   {
    "fieldname": "sales_taxes_and_charges_template",
@@ -119,7 +124,7 @@
    "in_list_view": 1,
    "label": "Sales Taxes and Charges Template",
    "options": "Sales Taxes and Charges Template",
-   "reqd": 1
+   "read_only": 1
   },
   {
    "fieldname": "column_break_3",
@@ -129,37 +134,34 @@
    "fieldname": "input_vat_account",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Input VAT Account",
-   "options": "Account",
-   "read_only": 1
+   "label": "Input VAT Account (for Purchases)",
+   "options": "Account"
   },
   {
    "fieldname": "output_vat_account",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Output VAT Account",
+   "label": "Output VAT Account (for Sales)",
    "options": "Account",
-   "read_only": 1
+   "reqd": 1
   },
   {
    "fieldname": "column_break_4",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "column_break_5",
-   "fieldtype": "Column Break"
-  },
-  {
+   "collapsible": 1,
    "depends_on": "eval:doc.enabled == 1",
    "fieldname": "e_invoice_price_list_section",
    "fieldtype": "Section Break",
-   "label": "E invoice Price List"
+   "label": "E invoice Price Lists"
   },
   {
    "depends_on": "eval:doc.company",
+   "description": "This table contains price lists you wish to be kept updated whenever you update EFRIS item purchase or selling prices.",
    "fieldname": "efris_price_list",
    "fieldtype": "Table",
-   "label": "E invoice Price List",
+   "label": "Price Lists",
    "options": "EFRIS Price List"
   },
   {
@@ -169,10 +171,43 @@
    "hidden": 1,
    "label": "Company Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "tax_accounts_tab",
+   "fieldtype": "Tab Break",
+   "label": "Tax Accounts"
+  },
+  {
+   "depends_on": "eval:doc.enabled",
+   "fieldname": "advanced_tab",
+   "fieldtype": "Tab Break",
+   "label": "Optional Settings"
+  },
+  {
+   "fieldname": "efris_synchronization_section",
+   "fieldtype": "Section Break",
+   "label": "EFRIS Synchronization"
+  },
+  {
+   "fieldname": "logging_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Logging Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_efris_file_logging",
+   "fieldtype": "Check",
+   "label": "Enable EFRIS File Logging"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_integration_logging",
+   "fieldtype": "Check",
+   "label": "Enable Integration Logging"
   }
  ],
  "links": [],
- "modified": "2024-12-04 17:15:47.444092",
+ "modified": "2024-12-24 21:37:31.419905",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",

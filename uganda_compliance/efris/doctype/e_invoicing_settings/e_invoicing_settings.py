@@ -68,92 +68,102 @@ class EInvoicingSettings(Document):
         self.validate()
 
     def validate(self):
+        """
+        Validate E Invoicing Settings before saving.
+        """
         efris_log_info("validate called")
-        self.validate_set_vat_accounts()        
-  
+        self.create_tax_templates()
+
     
-    def validate_set_vat_accounts(self):
-        efris_log_info(f"sel validate_vat_accounts called, doc:{self}")
-        doc_json = frappe.as_json(self)
-        doc_dict = json.loads(doc_json)
-        efris_log_info("doc parsed OK")
+    def create_tax_templates(self):
+        efris_log_info("Creating Tax Templates...")
 
-        required_flags = ["included_in_print_rate", "included_in_paid_amount", "account_head"]
-
-        purchase_tax_template = doc_dict.get('purchase_taxes_and_charges_template')
-        sales_tax_template = doc_dict.get('sales_taxes_and_charges_template')
-            
-        # Fetch child table entries and check both flags are true
+        # Sales Tax Template (Mandatory)
+        if not self.sales_taxes_and_charges_template:
+            sales_template = frappe.new_doc("Sales Taxes and Charges Template")
+            sales_template.title = f"EFRIS Sales VAT Taxes"
+            sales_template.company = self.company
+            sales_template.append("taxes", {
+                "charge_type": "On Net Total",
+                "account_head": self.output_vat_account,
+                "rate": 18,
+                "description": "VAT@18.0",
+                "included_in_print_rate": 1,
+                "included_in_paid_amount": 1,
+            })
+            sales_template.insert(ignore_permissions=True)
+            self.sales_taxes_and_charges_template = sales_template.name
+            efris_log_info(f"Sales Tax Template created: {sales_template.name}")
         
-        doctype = "Purchase Taxes and Charges" 
-        taxes = frappe.get_all(doctype, filters={'parent': purchase_tax_template}, fields=required_flags)
+        # Purchase Tax Template (Optional)
+        if self.input_vat_account and not self.purchase_taxes_and_charges_template:
+            purchase_template = frappe.new_doc("Purchase Taxes and Charges Template")
+            purchase_template.title = f"EFRIS Purchase VAT Taxes"
+            purchase_template.company = self.company
+            purchase_template.append("taxes", {
+                "category": "Total",
+                "add_deduct_tax": "Add",
+                "charge_type": "On Net Total",
+                "account_head": self.input_vat_account,
+                "rate": 18,
+                "description": "VAT@18.0",
+                "included_in_print_rate": 1,
+                "included_in_paid_amount": 1,
+            })
+            purchase_template.insert(ignore_permissions=True)
+            self.purchase_taxes_and_charges_template = purchase_template.name
+            efris_log_info(f"Purchase Tax Template created: {purchase_template.name}")
+        else:
+            efris_log_info("No Input VAT Account provided; skipping Purchase Tax Template creation.")
 
-        if not all(taxes[0].get(flag) for flag in required_flags):  # Check first entry's flags
-            frappe.throw(_(
-                f"The selected template for Purchase Tax must have both 'included_in_print_rate' and 'included_in_paid_amount' set to true."
-            ))
-
-        self.input_vat_account = taxes[0].account_head
-        efris_log_info(f"Purchase Tax is OK, VAT account is: {self.input_vat_account}")
-
-        doctype = "Sales Taxes and Charges"
-        taxes = frappe.get_all(doctype, filters={'parent': sales_tax_template}, fields=required_flags)
-
-        if not all(taxes[0].get(flag) for flag in required_flags):  # Check first entry's flags
-            frappe.throw(_(
-                f"The selected template for Sales Tax  must have both 'included_in_print_rate' and 'included_in_paid_amount' set to true."
-            ))
-
-        self.output_vat_account = taxes[0].account_head
-        efris_log_info(f"Sales Tax is OK, VAT account is: {self.output_vat_account}")
+        # Create Item Tax Templates after ensuring at least Sales Template exists
+        create_item_tax_templates(self, "validate")
 
 
+#@frappe.whitelist()
 @frappe.whitelist()
-def create_item_tax_templates(doc,method):
-    efris_log_info(f"Create Item Tax Templates called ...")
-    if not doc.sales_taxes_and_charges_template and doc.purchase_taxes_and_charges_template:
-        return
+def create_item_tax_templates(doc, method=None):
+    efris_log_info("Create Item Tax Templates called ...")
     output_vat_account = doc.get("output_vat_account")
     e_company = doc.get("company")
-    efris_log_info(f"E Company is {e_company}")    
-    efris_log_info(f" VAT Account Head is {output_vat_account}")
+    
+    if not output_vat_account:
+        efris_log_error("Output VAT Account is missing. Cannot create Item Tax Templates.")
+        return
+    
     e_tax_category = frappe.db.get_all("E Tax Category")
-    efris_log_info(f"E Tax Categories data:{e_tax_category}")
+
     for tax in e_tax_category:
         tax_category = tax.name
-        efris_log_info(f"The E Tax category is {tax_category}")
-        if tax_category == '04:D: Deemed (18%)':
-            efris_log_info("This E Tax Category is Deemed Tax :{tax_category}")
-            continue
-        #  Extract the part after the last colon and trim any extra spaces
         tax_name = tax_category.split(':').pop()
-        efris_log_error(f"The Tax Name is {tax_name}")
         tax_category_code = tax_category.split(':')[0]
-        efris_log_info(f"The E Tax Category Code is {tax_category_code}")
-        tax_rate_map = {'01':'18',
-                        '02':'0',
-                        '03':'-'}
+        tax_rate_map = {'01': '18', '02': '0', '03': '-', '04': '18'}  # Added 04:D: Deemed (18%)
         tax_rate = tax_rate_map.get(tax_category_code)
-        efris_log_info(f"The Tax Rate is {tax_rate}")
-        item_tax_name = "EFRIS"+tax_name
-        efris_log_error(f"The Tax category is {tax_category}")
+        item_tax_name = f"EFRIS {tax_name}"
+
+        efris_log_info(f"Processing Tax Category: {tax_category} | Tax Name: {tax_name} | Rate: {tax_rate}")
+        
+        # Check if Item Tax Template already exists
         item_tax_template = frappe.get_all('Item Tax Template', filters={
-                    'title': item_tax_name,
-                    'company':e_company
-                    })
+            'title': item_tax_name,
+            'company': e_company
+        })
+
         if item_tax_template:
-            efris_log_info(f"Item Tax Template Exists")
-            return
+            efris_log_info(f"Item Tax Template already exists: {item_tax_name}")
+            continue
+
+        # Create a new Item Tax Template
         item_tax_template = frappe.new_doc("Item Tax Template")
         item_tax_template.title = item_tax_name
         item_tax_template.company = e_company
         item_tax_template.append("taxes", {
-        "tax_type": output_vat_account,
-        "tax_rate": tax_rate,
-        "efris_e_tax_category": tax_category
+            "tax_type": output_vat_account,
+            "tax_rate": tax_rate,
+            "efris_e_tax_category": tax_category
         })
         item_tax_template.insert(ignore_permissions=True)
-        efris_log_info(f"Item Tax Template Created successfully {item_tax_template.name}")
+        efris_log_info(f"Item Tax Template Created successfully: {item_tax_template.name}")
    
 def update_efris_company(doc,mehtod):
     efris_log_info(f"Update EFRIS Company called...")
