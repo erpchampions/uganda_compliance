@@ -30,5 +30,10 @@ frappe.ui.form.on('E Invoicing Settings', {
                 }
             };
         };
+    },
+    output_vat_account: function(frm) {
+        frm.set_value('sales_taxes_and_charges_template', '');
+    }, input_vat_account: function(frm) {
+        frm.set_value('purchase_taxes_and_charges_template', '');
     }
 });

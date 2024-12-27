@@ -93,7 +93,7 @@
    "in_list_view": 1,
    "in_preview": 0,
    "in_standard_filter": 0,
-   "insert_after": "efris_product_code",
+   "insert_after": "efris_currency",
    "is_system_generated": 0,
    "is_virtual": 0,
    "label": "EFRIS Commodity Code",

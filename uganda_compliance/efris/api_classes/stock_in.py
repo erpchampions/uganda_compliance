@@ -141,7 +141,8 @@ def stock_in_T131(doc, method):
             e_company = doc.get("company")
             efris_log_info(f"The Company is: {e_company}")
             e_currency = doc.get('currency')
-            efris_log_info(f"The Company Currency is {e_currency}")
+            purchase_currency = doc.get('currency')
+            efris_log_info(f"The Company Currency is {purchase_currency}")
             is_efris_count = 0
             exchange_rate = 0.0
             item_currency = 'UGX'
@@ -168,39 +169,30 @@ def stock_in_T131(doc, method):
             efris_log_info(f"The Stock In type for Purchase Receipt {doc} is {stockInType}")
 
             for item_stock in doc.get("items", []):
-                item = frappe.get_doc("Item", item_stock.get("item_code"))
-                efris_log_info(f"The Item fetched is: {item.item_code}")                
+                item_master = frappe.get_doc("Item", item_stock.get("item_code"))
+                efris_log_info(f"The Item fetched is: {item_master.item_code}")                
                 efris_log_info(f"Stock UOM from items table: {item_stock.get('uom')}")
                 if item_stock.get('uom'):
                     purchase_uom_code = frappe.db.get_value('UOM',{'uom_name':item_stock.get('uom')},'efris_uom_code')
                     efris_log_info(f"Package Uom is {purchase_uom_code}")
-                stock_uom_code = frappe.db.get_value('UOM', {'uom_name': item.stock_uom}, 'efris_uom_code') or ''
+                stock_uom_code = frappe.db.get_value('UOM', {'uom_name': item_master.stock_uom}, 'efris_uom_code') or ''
                 efris_log_info(f"EFRIS UOM code is: {stock_uom_code}")
                 unitPrice = item_stock.get("rate")
-                is_efris_item = item.efris_item
+                is_efris_item = item_master.efris_item
                 item_code = item_stock.get("item_code")
-                efris_log_info(f"The Item {item.item_code} 'is EFRIS Item: {is_efris_item}")
-                goodsCode = item.efris_product_code
+                efris_log_info(f"The Item {item_master.item_code} 'is EFRIS Item: {is_efris_item}")
+                goodsCode = item_master.efris_product_code
                 efris_log_info(f"The EFRIS Product code is {goodsCode}")        
                 if goodsCode:
                     item_code = goodsCode
-                # Get the accept warehouse from the doc
-                item_currency = frappe.get_value('Item',{'item_code':item_stock.item_code},'efris_currency')
-                efris_log_info(f"The Item Currency is {item_currency}")
-                if not e_currency == 'UGX' and item_currency != e_currency:
-                    exchange_rate = float(doc.get('efris_currency_exchange_rate',0.0) or 0.0)
-                    efris_log_info(f"The {e_currency} Exchange Rate to UGX is {exchange_rate}")
-                    unitPrice = item_stock.get("rate",0.0)
-                    unit_price_in_ugx = float(unitPrice) * exchange_rate
-                    efris_log_info(f"Unit Price is {e_currency} is :{unitPrice}")
-                else:
-                    unit_price_in_ugx = unitPrice
 
                 accept_warehouse = item_stock.get("warehouse")
                 efris_log_info(f"The Accept Warehouse is: {accept_warehouse}")
                 if is_efris_item:
                     is_efris = item_stock.get("efris_receipt")
                     efris_log_info(f"The Item added to the table is efris")
+                    unitPrice = item_stock.get("efris_unit_price",0.0)
+                    efris_log_info(f"Unit Price is{unitPrice}")
 
                     if is_efris:
                         efris_log_info(f"The warehouse '{accept_warehouse}' is not a Bonded Warehouse. Proceeding with the function.")
@@ -212,20 +204,20 @@ def stock_in_T131(doc, method):
                                 "goodsCode": item_code,
                                 "measureUnit": purchase_uom_code ,
                                 "quantity": item_stock.get("qty"),
-                                "unitPrice": round(unit_price_in_ugx,0) ,
+                                "unitPrice": round(unitPrice,0) ,
                                 "remarks": item_stock.get("remarks") if item_stock.get('remarks') else "",
                                 "fuelTankId": "",
                                 "lossQuantity": "",
                                 "originalQuantity": "",
                             }
                         )
-                        efris_log_info(f"Item {item.item_code} added to goodsStockInItem. Total items: {len(goodsStockInItem)}")
+                        efris_log_info(f"Item {item_master.item_code} added to goodsStockInItem. Total items: {len(goodsStockInItem)}")
 
                     else:
                         efris_log_info(f"The warehouse '{accept_warehouse}' is a Bonded Wahrehouse. Skipping this item.")
                         
                 else:
-                    efris_log_info(f"The Item '{item.item_code}' is a non efris Item. Skipping this item.")
+                    efris_log_info(f"The Item '{item_master.item_code}' is a non efris Item. Skipping this item.")
                     
 
             if not goodsStockInItem:
@@ -549,38 +541,44 @@ def query_currency_exchange_rate(doc):
     "currency": e_currency,
     "issueDate": today
     }
+    reference_doc_type = doc.get('doctype')
+    reference_document = doc.get('name')
     efris_log_info(f"Querying EFRIS with: {exchange_rate_T121}")
-    success, response = make_post(interfaceCode="T121", content=exchange_rate_T121, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+    success, response = make_post(interfaceCode="T121", content=exchange_rate_T121, company_name=e_company, reference_doc_type=reference_doc_type, reference_document=reference_document)
     
     if success and response:
        efris_log_info(f"Query successful, response: {response}")   
-       exchange_rate_exists = frappe.get_all('Currency Exchange',filters ={
-                                    'date': today,
-                                    'from_currency': response.get('currency'),
-                                    'to_currency' : 'UGX',
-                                    'exchange_rate': response.get('rate'),
-                                    'for_buying' :1,
-                                    'for_selling' : 1  
-                                })  
-       if exchange_rate_exists:
+       #TODO: update the Curency Exchange Rate in the system based on a setting/ check field
+    #    exchange_rate_exists = frappe.get_all('Currency Exchange',filters ={
+    #                                 'date': today,
+    #                                 'from_currency': response.get('currency'),
+    #                                 'to_currency' : 'UGX',
+    #                                 'exchange_rate': response.get('rate'),
+    #                                 'for_buying' :1,
+    #                                 'for_selling' : 1  
+    #                             })  
+       #if not exchange_rate_exists:
             # If an existing exchange rate is found, update it with the new rate
-            exchange_rate_doc = frappe.get_doc('Currency Exchange', exchange_rate_exists[0].name)
-            exchange_rate_doc.exchange_rate = response.get('rate')
-            exchange_rate_doc.save(ignore_permissions=True)
-            frappe.msgprint(f"Exchange rate updated for {response.get('currency')} to {exchange_rate_doc.exchange_rate}")
-       currency_exchange = frappe.get_doc({"doctype":"Currency Exchange",
-                                    'date': today,
-                                    'from_currency': response.get('currency'),
-                                    'to_currency' : 'UGX',
-                                    'exchange_rate': response.get('rate'),
-                                    'for_buying' :1,
-                                    'for_selling' : 1                                   
-                                           
-                                           })
+            #exchange_rate_doc = frappe.get_doc('Currency Exchange', exchange_rate_exists[0].name)
+            #exchange_rate_doc.exchange_rate = response.get('rate')
+            #exchange_rate_doc.save(ignore_permissions=True)
+            #frappe.msgprint(f"Exchange rate updated for {response.get('currency')} to {exchange_rate_doc.exchange_rate}")
+       #else:
+            # currency_exchange = frappe.get_doc({"doctype":"Currency Exchange",
+            #                             'date': today,
+            #                             'from_currency': response.get('currency'),
+            #                             'to_currency' : 'UGX',
+            #                             'exchange_rate': response.get('rate'),
+            #                             'for_buying' :1,
+            #                             'for_selling' : 1                                   
+                                            
+            #                                 })
        
-       currency_exchange.insert(ignore_permissions=True)
-       frappe.msgprint(f"The Exchange Rate for {response.get('currency')} is created {currency_exchange.name}")
+            #currency_exchange.insert(ignore_permissions=True)
+            #frappe.msgprint(f"The Exchange Rate for {response.get('currency')} is created {currency_exchange.name}")
+        
        return response  # Assuming response contains information if item exists
+    
     else:
         efris_log_info("Exchange Rate  not found in EFRIS.")
         return None

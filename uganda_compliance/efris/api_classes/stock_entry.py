@@ -140,8 +140,8 @@ def before_save_on_stock_entry(doc, method):
             
             if purchase_doc:
                 # Get efris_currency from Purchase Receipt
-                efris_currency = purchase_doc.get('currency')
-                efris_log_info(f"The efris currency is {efris_currency}")
+                purchase_currency = purchase_doc.get('currency')
+                efris_log_info(f"The efris currency is {purchase_currency}")
                 
                 # Match item codes in both Stock Entry and Purchase Receipt
                 purchase_item = next((pi for pi in purchase_doc.get('items', []) if pi.item_code == item.item_code), None)
@@ -152,8 +152,8 @@ def before_save_on_stock_entry(doc, method):
                     efris_log_info(f"The efris Unit Price for {item.item_code} is {unit_price}")
                     
                     # Set the values for this specific item in Stock Entry
-                    item.efris_currency = efris_currency
-                    item.efris_unit_price = unit_price
+                    item.efris_currency = purchase_currency
+                    item.efris_unit_price = purchase_item.efris_unit_price or 0.0
                 else:
                     efris_log_info(f"Item {item.item_code} not found in Purchase Receipt {purchase_doc.name}")
             else:

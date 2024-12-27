@@ -80,49 +80,72 @@ class EInvoicingSettings(Document):
 
         # Sales Tax Template (Mandatory)
         if not self.sales_taxes_and_charges_template:
-            sales_template = frappe.new_doc("Sales Taxes and Charges Template")
-            sales_template.title = f"EFRIS Sales VAT Taxes"
-            sales_template.company = self.company
-            sales_template.append("taxes", {
-                "charge_type": "On Net Total",
-                "account_head": self.output_vat_account,
-                "rate": 18,
-                "description": "VAT@18.0",
-                "included_in_print_rate": 1,
-                "included_in_paid_amount": 1,
-            })
-            sales_template.insert(ignore_permissions=True)
-            self.sales_taxes_and_charges_template = sales_template.name
-            efris_log_info(f"Sales Tax Template created: {sales_template.name}")
-        
+            try:
+                if frappe.db.exists("Sales Taxes and Charges Template", {"title": "EFRIS Sales VAT Taxes", "company": self.company}):
+                    existing_template = frappe.get_value(
+                        "Sales Taxes and Charges Template",
+                        {"title": "EFRIS Sales VAT Taxes", "company": self.company},
+                        "name"
+                    )
+                    self.sales_taxes_and_charges_template = existing_template
+                    efris_log_info(f"Sales Tax Template already exists: {existing_template}")
+                else:
+                    sales_template = frappe.new_doc("Sales Taxes and Charges Template")
+                    sales_template.title = f"EFRIS Sales VAT Taxes"
+                    sales_template.company = self.company
+                    sales_template.append("taxes", {
+                        "charge_type": "On Net Total",
+                        "account_head": self.output_vat_account,
+                        "rate": 18,
+                        "description": "VAT@18.0",
+                        "included_in_print_rate": 1,
+                        "included_in_paid_amount": 1,
+                    })
+                    sales_template.insert(ignore_permissions=True)
+                    self.sales_taxes_and_charges_template = sales_template.name
+                    efris_log_info(f"Sales Tax Template created: {sales_template.name}")
+            except Exception as e:
+                efris_log_error(f"Failed to create or retrieve Sales Tax Template: {str(e)}")
+
         # Purchase Tax Template (Optional)
         if self.input_vat_account and not self.purchase_taxes_and_charges_template:
-            purchase_template = frappe.new_doc("Purchase Taxes and Charges Template")
-            purchase_template.title = f"EFRIS Purchase VAT Taxes"
-            purchase_template.company = self.company
-            purchase_template.append("taxes", {
-                "category": "Total",
-                "add_deduct_tax": "Add",
-                "charge_type": "On Net Total",
-                "account_head": self.input_vat_account,
-                "rate": 18,
-                "description": "VAT@18.0",
-                "included_in_print_rate": 1,
-                "included_in_paid_amount": 1,
-            })
-            purchase_template.insert(ignore_permissions=True)
-            self.purchase_taxes_and_charges_template = purchase_template.name
-            efris_log_info(f"Purchase Tax Template created: {purchase_template.name}")
+            try:
+                if frappe.db.exists("Purchase Taxes and Charges Template", {"title": "EFRIS Purchase VAT Taxes", "company": self.company}):
+                    existing_template = frappe.get_value(
+                        "Purchase Taxes and Charges Template",
+                        {"title": "EFRIS Purchase VAT Taxes", "company": self.company},
+                        "name"
+                    )
+                    self.purchase_taxes_and_charges_template = existing_template
+                    efris_log_info(f"Purchase Tax Template already exists: {existing_template}")
+                else:
+                    purchase_template = frappe.new_doc("Purchase Taxes and Charges Template")
+                    purchase_template.title = f"EFRIS Purchase VAT Taxes"
+                    purchase_template.company = self.company
+                    purchase_template.append("taxes", {
+                        "category": "Total",
+                        "add_deduct_tax": "Add",
+                        "charge_type": "On Net Total",
+                        "account_head": self.input_vat_account,
+                        "rate": 18,
+                        "description": "VAT@18.0",
+                        "included_in_print_rate": 1,
+                        "included_in_paid_amount": 1,
+                    })
+                    purchase_template.insert(ignore_permissions=True)
+                    self.purchase_taxes_and_charges_template = purchase_template.name
+                    efris_log_info(f"Purchase Tax Template created: {purchase_template.name}")
+            except Exception as e:
+                efris_log_error(f"Failed to create or retrieve Purchase Tax Template: {str(e)}")
         else:
             efris_log_info("No Input VAT Account provided; skipping Purchase Tax Template creation.")
 
         # Create Item Tax Templates after ensuring at least Sales Template exists
-        create_item_tax_templates(self, "validate")
+        create_item_tax_templates(self)
 
 
-#@frappe.whitelist()
 @frappe.whitelist()
-def create_item_tax_templates(doc, method=None):
+def create_item_tax_templates(doc):
     efris_log_info("Create Item Tax Templates called ...")
     output_vat_account = doc.get("output_vat_account")
     e_company = doc.get("company")
