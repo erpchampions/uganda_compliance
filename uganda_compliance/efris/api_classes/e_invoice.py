@@ -131,7 +131,7 @@ class EInvoiceAPI:
             if goodsCode:
                 item_code = goodsCode
             if discount_percentage > 0:
-                discount_amount = -1 * item.efris_dsct_discountTotal
+                discount_amount = -1 * item.efris_dsct_discount_total
                 efris_log_info(f" Discount Amount {discount_amount}")
                 taxable_amount = -1 * item.efris_dsct_taxable_amount
                 efris_log_info(f"Taxable Amount :{taxable_amount}")               
@@ -1129,7 +1129,7 @@ def calculate_additional_discounts(doc, method):
             discount_tax = 0.0
         efris_log_info(f"Tax is {tax}")
         # Updating row with calculated values
-        row.efris_dsct_discountTotal = discount_amount
+        row.efris_dsct_discount_total = discount_amount
         row.efris_dsct_discount_tax = discount_tax
         row.efris_dsct_discount_tax_rate = str(tax_rate / 100) if tax_rate == 18.0 else "0.0"
         row.efris_dsct_item_tax = tax

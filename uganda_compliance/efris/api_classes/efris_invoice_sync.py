@@ -137,7 +137,7 @@ def efris_invoice_sync():
                 efris_dsct_item_discount =" ",
                 efris_dsct_taxable_amount = 0.0,
                 efris_dsct_item_tax = 0.0,
-                efris_dsct_discountTotal = 0.0,
+                efris_dsct_discount_total = 0.0,
                 efris_dsct_discount_tax = 0.0,
                 efris_dsct_discount_tax_rate = 0.0                
                 efris_additional_discount_percentage = 0.0
@@ -241,11 +241,11 @@ def efris_invoice_sync():
                         # efris_dsct_item_discount = item.get("item", "")
                         efris_dsct_taxable_amount = float(item.get("total", 0))
                         efris_dsct_item_tax = float(item.get("tax", 0))
-                        efris_dsct_discountTotal = float(item.get("discountTotal", 0))
+                        efris_dsct_discount_total = float(item.get("discountTotal", 0))
                         # efris_dsct_discount_tax = float(item.get("tax", 0))
                         # efris_dsct_discount_tax_rate = float(item.get("discountTaxRate", 0))
-                        efris_log_info(f"Discount applied for item {item_code}: Total Discount: {efris_dsct_discountTotal}, Taxable Amount: {efris_dsct_taxable_amount}, Discount Tax: {efris_dsct_discount_tax}")
-                        efris_additional_discount_percentage = float((efris_dsct_discountTotal / efris_dsct_taxable_amount) * 100)
+                        efris_log_info(f"Discount applied for item {item_code}: Total Discount: {efris_dsct_discount_total}, Taxable Amount: {efris_dsct_taxable_amount}, Discount Tax: {efris_dsct_discount_tax}")
+                        efris_additional_discount_percentage = float((efris_dsct_discount_total / efris_dsct_taxable_amount) * 100)
                         efris_log_info(f" Additional Disccount is {efris_additional_discount_percentage}")
                      # Fetch the item using efris_product_code or item_code
                     item_master = frappe.db.get_value("Item", {"efris_product_code": item_code}, "name")
@@ -274,7 +274,7 @@ def efris_invoice_sync():
                                         "efris_dsct_item_discount": efris_dsct_item_discount,
                                         "efris_dsct_taxable_amount": efris_dsct_taxable_amount,
                                         "efris_dsct_item_tax": efris_dsct_item_tax,
-                                        "efris_dsct_discountTotal": efris_dsct_discountTotal,
+                                        "efris_dsct_discount_total": efris_dsct_discount_total,
                                         "efris_dsct_discount_tax": efris_dsct_discount_tax,
                                         "efris_dsct_discount_tax_rate": efris_dsct_discount_tax_rate
                                     })

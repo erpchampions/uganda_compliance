@@ -443,7 +443,7 @@ class EInvoice(Document):
                 'amount': round(item.amount, 2),
                 'order_number': i,
                 'e_tax_category': efris_tax_category,
-                'efris_dsct_discountTotal':round(item.efris_dsct_discountTotal,4),
+                'efris_dsct_discount_total':round(item.efris_dsct_discount_total,4),
                 'efris_dsct_discount_tax' : round(item.efris_dsct_discount_tax,4),
                 'efris_dsct_discount_tax_rate' : item.efris_dsct_discount_tax_rate,
                 'efris_dsct_item_tax' : item.efris_dsct_item_tax,
@@ -603,17 +603,15 @@ class EInvoice(Document):
             discounted_item = row.item_name            
 
             if discount_percentage > 0:
-                discount_amount = row.efris_dsct_discountTotal
+                discount_amount = row.efris_dsct_discount_total
                 discountFlag = "1"
                 discounted_item = row.item_name + " (Discount)"
                 discountTaxRate = taxRate 
                 efris_log_info(f"Taxable Amount :{row.amount}")
                 
                 if taxRate == '0.18':
-                    tax_rate = float(taxRate) + 1
                     tax = row.efris_dsct_item_tax                   
                 if not taxRate or taxRate in ["-", "Exempt"]:
-                    # taxRate = "0.00"  # Convert exempt or invalid tax rates to zero
                     discountTaxRate = "0.0"
 
 
@@ -645,7 +643,6 @@ class EInvoice(Document):
             # Add a discount line if applicable
             if discount_percentage > 0:
                 if taxRate == '0.18':
-                    # tax_on_discount = round((discount_amount / tax_rate), 4)
                     discount_tax = row.efris_dsct_discount_tax                    
                 else:
                     discount_tax = tax
