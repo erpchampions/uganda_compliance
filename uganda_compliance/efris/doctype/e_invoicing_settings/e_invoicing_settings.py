@@ -217,7 +217,7 @@ def create_item_tax_templates(doc):
         item_tax_template.insert(ignore_permissions=True)
         efris_log_info(f"Item Tax Template Created successfully: {item_tax_template.name}")
 
-def update_efris_company(doc):
+def update_efris_company(doc, method):
     efris_log_info(f"Update EFRIS Company called...")
     company = frappe.get_doc("Company",{"name":doc.company})
     if company:

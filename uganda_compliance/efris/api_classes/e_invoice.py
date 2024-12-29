@@ -1066,76 +1066,6 @@ def sales_uom_validation(doc,mehtod):
             if not uom_exists:
                 frappe.throw(f"The Sales UOM ({sales_uom}) must be in the Item's UOMs list for item {item_code}.")
 
-@frappe.whitelist()
-def calculate_additional_discounts2(doc, method):
-    if isinstance(doc, str):
-        try:
-            doc = json.loads(doc)
-        except json.JSONDecodeError:
-            frappe.log_error("Failed to decode `doc` JSON string", "purchase_uom_validation Error")
-            return {"error": "Failed to decode `doc` JSON string"}
-    efris_log_info(f"Calculate Additional Discounts called: {doc}")
-    discount_percentage = doc.get('additional_discount_percentage', 0)
-    efris_log_info(f"Issued Discount is {discount_percentage}")
-    if not discount_percentage or doc.get('is_return'):
-        return
-    if discount_percentage > 0:
-        total_tax = 0.0
-        total_discount_tax = 0.0
-        initial_tax = doc.get('tax_amount', 0)
-        last_item = None
-        efris_log_info(f"initial_tax:{initial_tax}")
-
-        taxes = doc.get('taxes', [])
-        tax_rate = 0.0
-        item_taxes = loads(doc.taxes[0].item_wise_tax_detail)
-       
-        for row in doc.get('items', []):
-            efris_log_info(f"Item: {row}")
-            item_code = row.get('item_code', '')
-            efris_log_info(f"Taxable Amount: {row.amount}")        
-           
-            discount_amount = round(-row.amount * (discount_percentage / 100), 9)
-            discounted_item = row.get('item_name', '') + " (Discount)"
-            efris_log_info(f"Discount Item name: {discounted_item}")
-            item_doc = frappe.get_doc("Item", item_code)
-            efris_log_info(f"Item Code :{item_doc}")           
-            item_tax_amount = item_taxes[item_code][1]
-            efris_log_info(f"Item Tax rate {item_tax_amount}")
-            tax = item_tax_amount
-            tax_rate = float(item_taxes[item_code][0])
-            efris_log_info(f"Tax rate {tax_rate}")
-            
-            if tax_rate == 18.0:  
-                # tax_rate = (tax_rate / 100) + 1              
-                total_tax += tax
-                efris_log_info(f"Tax is {tax}")                
-                tax_on_discount = round((discount_amount / ((tax_rate / 100) + 1)), 4)
-                efris_log_info(f"Discount Taxable Amount: {tax_on_discount}")                
-                discount_tax = round((discount_amount - tax_on_discount), 4)
-                tax = round((row.amount - (row.amount / ((tax_rate / 100) + 1))), 4)
-                total_discount_tax += discount_tax
-                
-            else:
-                tax = 0.0
-                discount_tax = 0.0
-            
-            # Updating row with calculated values
-            row.efris_dsct_discountTotal = discount_amount
-            row.efris_dsct_discount_tax = discount_tax
-            row.efris_dsct_discount_tax_rate = str(tax_rate / 100) if tax_rate == 18.0 else "0.0"
-            row.efris_dsct_item_tax = tax
-            row.efris_dsct_taxable_amount = row.amount
-            row.efris_dsct_item_discount = discounted_item
-            # Keep track of the last item
-            last_item = row
-
-
-        #Loop 2: for all items
-        tax_difference = round(float(initial_tax) - (float(total_tax) + float(total_discount_tax)), 4)
-        if last_item:
-            last_item.efris_dsct_item_tax += tax_difference
-            efris_log_info(f"Adjusted last item's efris_dsct_item_tax by {tax_difference}")
 
 def calculate_additional_discounts(doc, method):
     if isinstance(doc, str):
@@ -1211,8 +1141,10 @@ def calculate_additional_discounts(doc, method):
     # Calculate tax difference and adjust the last item
     tax_difference = round(float(initial_tax) - (float(total_tax) + float(total_discount_tax)), 2)
     if last_item:
+       efris_log_info(f"last item's efris_dsct_item_tax from {last_item.efris_dsct_discount_tax}, difference: {tax_difference}")
        last_item.efris_dsct_discount_tax += tax_difference
-       efris_log_info(f"Adjusted last item's efris_dsct_item_tax by {tax_difference}")
+       efris_log_info(f"Adjusted last item's efris_dsct_item_tax To {last_item.efris_dsct_discount_tax}")
+       
     efris_log_info(f"tax_difference: {tax_difference}")
 
 
