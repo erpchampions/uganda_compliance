@@ -3,9 +3,38 @@ from frappe.model.document import Document
 from frappe import _
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 import json
+import subprocess
+from frappe.utils.password import get_decrypted_password, set_encrypted_password    
+
 
 # Global cache to store E Invoicing Settings by company name
 e_company_settings_cache = {}
+
+
+def before_save_e_invoicing_settings(doc):
+    if doc.sandbox_private_key_password:
+        set_encrypted_password(doc.doctype, doc.name, doc.sandbox_private_key_password, 'sandbox_private_key_password')
+        efris_log_info("Sandbox private key password encrypted and saved successfully.")
+
+    if doc.live_private_key_password:
+        set_encrypted_password(doc.doctype, doc.name, doc.live_private_key_password, 'live_private_key_password')
+        efris_log_info("Live private key password encrypted and saved successfully.")
+
+
+def get_mode_decrypted_password(doc):
+    try:
+        if doc.sandbox_mode:
+            decrypted_password = get_decrypted_password('E Invoicing Settings', doc.name, 'sandbox_private_key_password')
+            efris_log_info("Decrypted sandbox private key password successfully.")
+            return decrypted_password
+        else:
+            decrypted_password = get_decrypted_password('E Invoicing Settings', doc.name, 'live_private_key_password')
+            efris_log_info("Decrypted live private key password successfully.")
+            return decrypted_password
+    except frappe.AuthenticationError as e:
+        efris_log_info(f"Error decrypting password: {str(e)}")
+    return None
+
 
 @frappe.whitelist()
 def before_save(doc, method):
@@ -66,6 +95,7 @@ class EInvoicingSettings(Document):
     def before_save(self):
         efris_log_info("EInvoicingSettings before_save")
         self.validate()
+        before_save_e_invoicing_settings(self)
 
     def validate(self):
         """
@@ -154,14 +184,12 @@ def create_item_tax_templates(doc):
         efris_log_error("Output VAT Account is missing. Cannot create Item Tax Templates.")
         return
     
-    e_tax_category = frappe.db.get_all("E Tax Category")
+    e_tax_categories = frappe.get_all("E Tax Category", fields=["name", "tax_rate"])
 
-    for tax in e_tax_category:
+    for tax in e_tax_categories:
         tax_category = tax.name
         tax_name = tax_category.split(':').pop()
-        tax_category_code = tax_category.split(':')[0]
-        tax_rate_map = {'01': '18', '02': '0', '03': '-', '04': '18'}  # Added 04:D: Deemed (18%)
-        tax_rate = tax_rate_map.get(tax_category_code)
+        tax_rate = tax.tax_rate  # Get the tax rate from the doctype
         item_tax_name = f"EFRIS {tax_name}"
 
         efris_log_info(f"Processing Tax Category: {tax_category} | Tax Name: {tax_name} | Rate: {tax_rate}")
@@ -180,15 +208,16 @@ def create_item_tax_templates(doc):
         item_tax_template = frappe.new_doc("Item Tax Template")
         item_tax_template.title = item_tax_name
         item_tax_template.company = e_company
-        item_tax_template.append("taxes", {
-            "tax_type": output_vat_account,
-            "tax_rate": tax_rate,
-            "efris_e_tax_category": tax_category
-        })
+        if tax_rate is not None:  
+            item_tax_template.append("taxes", {
+                "tax_type": output_vat_account,
+                "tax_rate": tax_rate,
+                "efris_e_tax_category": tax_category
+            })
         item_tax_template.insert(ignore_permissions=True)
         efris_log_info(f"Item Tax Template Created successfully: {item_tax_template.name}")
-   
-def update_efris_company(doc,mehtod):
+
+def update_efris_company(doc):
     efris_log_info(f"Update EFRIS Company called...")
     company = frappe.get_doc("Company",{"name":doc.company})
     if company:

@@ -11,6 +11,8 @@ from .request_utils import fetch_data, guidv4, post_req
 from cryptography.hazmat.primitives import hashes
 import os
 import json
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_mode_decrypted_password
+
 
 def encrypt_aes_ecb(data, key):
     padding_length = 16 - (len(data) % 16)
@@ -30,23 +32,23 @@ def decrypt_aes_ecb(aeskey, ciphertext):
     plaintext = plaintext_with_padding[:-padding_length]
     return plaintext
 
-def get_AES_key(company_name, tin, device_no, private_key_path, sandbox_mode):
+def get_AES_key(tin, device_no, private_key, sandbox_mode):
     try:
         data = fetch_data()
         efris_log_info("Data fetched successfully - inside get_AES_key")
 
         brn = "" # TODO: add BRN to E Company details on E Invoice Settings
         dataExchangeId = guidv4()
-        # company_name = data["SellerDetails"]["businessName"]
-        efris_log_info(f"the legal Company Name is :{company_name}")
-
+        
         data["globalInfo"]["interfaceCode"] = "T104"
         data["globalInfo"]["dataExchangeId"] = dataExchangeId
         data["globalInfo"]["deviceNo"] = device_no
         data["globalInfo"]["tin"] = tin
         data["globalInfo"]["brn"] = brn
 
-        data_json = json.dumps(data).replace("'", '"').replace("\n", "").replace("\r", "")
+        #data_json = json.dumps(data).replace("'", '"').replace("\n", "").replace("\r", "")
+        data_json = json.dumps(data, separators=(',', ':'))  # Minimize JSON size
+        
         efris_log_info("Request data converted to JSON successfully")
 
         resp = post_req(data_json, sandbox_mode)
@@ -63,11 +65,9 @@ def get_AES_key(company_name, tin, device_no, private_key_path, sandbox_mode):
         passwordDes = base64.b64decode(b64passwordDes)
         efris_log_info("PasswordDes decoded successfully")
 
-        privKey = get_private_key(private_key_path)
-        efris_log_info(f"Private key fetched successfully:{privKey}")
 
         # Convert the private key to a PEM format byte string for RSA import
-        pkey_str = privKey.private_bytes(
+        pkey_str = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
@@ -87,24 +87,24 @@ def get_AES_key(company_name, tin, device_no, private_key_path, sandbox_mode):
         return None
 
 
-def get_private_key(key_file_path):
+def get_private_key(key_file_path, e_settings):
     try:
-        #efris_log_info(f"The fetched key is: {company_key}")
-
+        
         key_file_path = frappe.get_site_path(key_file_path.lstrip('/'))  # Ensure correct path construction
-        efris_log_info("key_file_path: " + str(key_file_path))
-
+        
         if not os.path.exists(key_file_path):
-            efris_log_error(f"Key file does not exist at: {key_file_path}")
+            efris_log_error(f"Key file does not exist at provided key_file_path")
             return None
 
         with open(key_file_path, "rb") as f:
-            pfx_data = f.read()
-            efris_log_info("Read the key...")
+            pfx_data = f.read()            
 
-        pfx = pkcs12.load_key_and_certificates(pfx_data, b"efris", default_backend())
-        efris_log_info("pfx done...")
 
+        private_key_password  = get_mode_decrypted_password(e_settings)
+        password_bytes = private_key_password.encode('utf-8') if private_key_password else b""
+
+        pfx = pkcs12.load_key_and_certificates(pfx_data, password_bytes, default_backend())
+        
         private_key = pfx[0]  # The private key is the first element
 
         if private_key is None:

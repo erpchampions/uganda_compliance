@@ -8,7 +8,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "tax_category_name"
+  "tax_category_name",
+  "tax_rate"
  ],
  "fields": [
   {
@@ -22,11 +23,17 @@
    "label": "Tax Category Name",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "description": "The tax rate for this category (e.g., 18 for 18%). Use 0 for zero-rated, and leave blank for exempt.",
+   "fieldname": "tax_rate",
+   "fieldtype": "Float",
+   "label": "Tax Rate"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-30 18:54:30.477555",
+ "modified": "2024-12-27 22:14:06.863041",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Tax Category",

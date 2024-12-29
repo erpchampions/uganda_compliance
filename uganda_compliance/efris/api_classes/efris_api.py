@@ -12,24 +12,23 @@ from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings i
 
 
 ##############
-#def make_post(interfaceCode, content, company_name, tin, device_no, private_key_path):
 def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
     efris_log_info("make post called...")
     
     try:
         
         e_settings = get_e_company_settings(company_name)
-        tin, device_no, private_key_path = e_settings.tin,e_settings.device_no, get_mode_private_key_path(e_settings)
+        tin, device_no, private_key_path, sandbox_mode = e_settings.tin,e_settings.device_no, get_mode_private_key_path(e_settings), e_settings.sandbox_mode
+        brn = "" #TODO add BRN to E Company details under E Invoice Settings
         efris_log_info(f"settings retrieved:{e_settings}")
 
         data = fetch_data()
         efris_log_info("Data fetched successfully")
-        aes_key = get_AES_key(company_name, tin, device_no, private_key_path, e_settings.sandbox_mode)
+        private_key = get_private_key(private_key_path, e_settings)
+        efris_log_info("Private key fetched successfully")
+        aes_key = get_AES_key(tin, device_no, private_key, sandbox_mode)
         efris_log_info("AES key fetched successfully")
 
-        brn = "" #TODO add BRN to E Company details under E Invoice Settings
-        
-        efris_log_info(f"Company Name is :{company_name}")
 
         json_content = json.dumps(content)
         efris_log_info("Content converted to JSON successfully: " + json_content)
@@ -50,8 +49,7 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
             data["data"]["dataDescription"] = {"codeType": "1", "encryptCode": "2"}
             
 
-            private_key = get_private_key(private_key_path)
-            efris_log_info("Private key fetched successfully in make_post()")
+
 
             signature = sign_data(private_key, newEncrypteddata.encode())
             efris_log_info("signature done...")

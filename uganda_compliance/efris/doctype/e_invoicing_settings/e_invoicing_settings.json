@@ -10,12 +10,13 @@
   "company",
   "company_name",
   "tin",
-  "column_break_1",
   "device_no",
-  "column_break_2",
+  "column_break_1",
   "sandbox_mode",
   "sandbox_private_key",
   "live_private_key",
+  "sandbox_private_key_password",
+  "live_private_key_password",
   "tax_accounts_tab",
   "section_break_2",
   "output_vat_account",
@@ -72,6 +73,7 @@
   },
   {
    "columns": 2,
+   "description": "Tax ID on the Company master.",
    "fetch_from": "company.tax_id",
    "fieldname": "tin",
    "fieldtype": "Data",
@@ -88,10 +90,7 @@
    "mandatory_depends_on": "eval:doc.sandbox_mode == 1"
   },
   {
-   "fieldname": "column_break_2",
-   "fieldtype": "Column Break"
-  },
-  {
+   "description": "Enter Device Number provided by URA after EFRIS registration.",
    "fieldname": "device_no",
    "fieldtype": "Data",
    "label": "Device No",
@@ -204,10 +203,29 @@
    "fieldname": "enable_integration_logging",
    "fieldtype": "Check",
    "label": "Enable Integration Logging"
+  },
+  {
+   "default": "''",
+   "depends_on": "eval:doc.sandbox_mode",
+   "description": "Enter the password for the private key file",
+   "fieldname": "sandbox_private_key_password",
+   "fieldtype": "Password",
+   "label": "Sandbox Private Key Password",
+   "mandatory_depends_on": "eval:doc.sandbox_mode",
+   "no_copy": 1
+  },
+  {
+   "depends_on": "eval:!doc.sandbox_mode",
+   "description": "Enter the password for the private key file",
+   "fieldname": "live_private_key_password",
+   "fieldtype": "Password",
+   "label": "Live Private Key Password",
+   "mandatory_depends_on": "eval:!doc.sandbox_mode",
+   "no_copy": 1
   }
  ],
  "links": [],
- "modified": "2024-12-24 21:37:31.419905",
+ "modified": "2024-12-28 00:38:50.956674",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",
