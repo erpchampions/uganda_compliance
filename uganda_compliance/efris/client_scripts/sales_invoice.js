@@ -166,11 +166,7 @@ const set_efris_customer_type = (frm) => {
 };
 
 frappe.ui.form.on('Sales Invoice', {
-    refresh(frm) {
-        // Refresh the field in case changes are not reflected automatically
-       // frm.refresh_field("efris_payment_mode");
-    },
-
+    
     efris_payment_mode: function (frm) {
         console.log(`Listening to EFRIS PAYMENT MODE...`);
         const efris_payment_mode = frm.doc.efris_payment_mode;

@@ -15,6 +15,9 @@ from frappe.utils.data import cint, format_date, getdate, flt, get_link_to_form
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.api_classes.e_invoice import EInvoiceAPI, decode_e_tax_rate, validate_company
 
+CONST_EFRIS_PAYMENT_MODE_CREDIT = "Credit"
+CONST_EFRIS_PAYMENT_MODE_CREDIT_CODE = "101"
+
 
 class DateTimeEncoder(JSONEncoder):
     def default(self, obj):
@@ -300,7 +303,7 @@ class EInvoice(Document):
         # Add "Credit" line if credit amount exists
         if abs(credit) > 0:
             if not self.sales_invoice.efris_payment_mode:
-                payment_mode = "Credit"
+                payment_mode = CONST_EFRIS_PAYMENT_MODE_CREDIT
             credit_payment = frappe._dict({
                 "amount": credit,
                 "mode_of_payment": payment_mode,
@@ -703,10 +706,16 @@ class EInvoice(Document):
         for row in self.e_payments:
              # Map mode_of_payment to the corresponding EFRIS code
             mode_of_payment = row.mode_of_payment
-            if mode_of_payment:
-                payment_method_code  = frappe.db.get_value('Mode of Payment',{'name':mode_of_payment},'efris_payment_mode') 
-                payment_code = payment_method_code.split(':')[0] 
+            if mode_of_payment and mode_of_payment != CONST_EFRIS_PAYMENT_MODE_CREDIT:
+                efris_payment_mode  = frappe.db.get_value('Mode of Payment',{'name':mode_of_payment},'efris_payment_mode') 
+                if not efris_payment_mode:
+                    efris_log_error(f"EFRIS Mode of Payment must be configured on Payment Mode: {mode_of_payment}")
+                    frappe.throw(f"EFRIS Mode of Payment must be configured on Payment Mode: {mode_of_payment}")
+
+                payment_code = efris_payment_mode.split(':')[0] 
                 efris_log_info(f"The EFRIS Payment code is {payment_code}")        
+            elif mode_of_payment == CONST_EFRIS_PAYMENT_MODE_CREDIT:
+                payment_code = CONST_EFRIS_PAYMENT_MODE_CREDIT_CODE    
             
             payments = {
                 "paymentMode": str(payment_code),
