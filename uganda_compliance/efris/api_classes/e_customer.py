@@ -90,7 +90,10 @@ def before_save_query_customer(doc, method):
                 # Create or update Address
                 address_title = f"{legal_name} - Address"
                 existing_address = frappe.db.exists('Address', {'address_title': address_title})
-                
+                if len(address) > 140:
+                    efris_log_info(f"Address for {doc.customer_name} is too long. Truncating to 140 characters.")
+                    address = address[:140]
+
                 if not existing_address:
                     # Create new address if not exists
                     new_address = frappe.get_doc({
