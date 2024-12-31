@@ -10,8 +10,6 @@ frappe.ui.form.on('Sales Invoice', {
             try {
                 const { einvoice_status } = frm.doc;
 
-                
-
                 if (einvoice_status === 'EFRIS Credit Note Pending') {
                     add_einvoice_button(__('Check EFRIS Approval Status'), async () => {
                         if (frm.is_dirty()) return raise_form_is_dirty_error();
@@ -40,50 +38,75 @@ frappe.ui.form.on('Sales Invoice', {
             }
         }
     },
-    
+
     validate: function(frm) {
-        console.log(`validate called`);        
+        console.log(`validate called`);
         set_efris_customer_type(frm);
-        set_efris_flag_based_on_items(frm);    
-        //check EFRIS UOM    
+        set_efris_flag_based_on_items(frm);
+        //check EFRIS UOM
     },
 
-    efris_invoice: async function(frm) {
-        console.log(`is_efris here:${frm.doc.efris_invoice}`);
+    async efris_invoice(frm) {
+        console.log(`efris_invoice triggered: ${frm.doc.efris_invoice}`);
 
         if (frm.doc.efris_invoice && !frm.doc.is_return) {
-            console.log('This is EFRIS Invoice');
+            console.log('This is an EFRIS Invoice');
+
             try {
+                // Fetch the Sales Tax template and its details
                 const response = await frappe.call({
                     method: 'uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_tax_template',
                     args: { company_name: frm.doc.company, tax_type: 'Sales Tax' },
                     freeze: true
                 });
-                refresh_field('taxes');
-                console.log('sales tax template sought');
+
+                if (response && response.message) {
+                    const { template_name, taxes } = response.message;
+
+                    console.log('Sales tax template fetched:', template_name);
+
+                    // Set the fetched template in the taxes_and_charges field
+                    frm.set_value('taxes_and_charges', template_name);
+
+                    // Clear existing taxes and populate with fetched details
+                    frm.clear_table('taxes');
+
+                    taxes.forEach(tax => {
+                        let child = frm.add_child('taxes');
+                        frappe.model.set_value(child.doctype, child.name, 'charge_type', tax.charge_type);
+                        frappe.model.set_value(child.doctype, child.name, 'account_head', tax.account_head);
+                        frappe.model.set_value(child.doctype, child.name, 'rate', tax.rate);
+                        frappe.model.set_value(child.doctype, child.name, 'included_in_print_rate', tax.included_in_print_rate);
+                    });
+
+                    // Refresh taxes child table to reflect changes
+                    await frm.refresh_field('taxes');
+
+                    console.log('Taxes child table updated successfully');
+                } else {
+                    console.warn('No template or tax details found in the response');
+                }
             } catch (error) {
-                console.error(`Error fetching tax template: ${error}`);
+                console.error(`Error fetching or applying tax template: ${error}`);
             }
         } else {
-            console.log('either not efris, or is efris return, tax template not set  ');
+            console.log('Either not EFRIS or it is a return invoice. Tax template not set.');
+        }
+
+        // Set `update_stock` field when `efris_invoice` is enabled
+        if (frm.doc.efris_invoice == 1) {
+            frm.set_value("update_stock", 1);
+            frm.refresh_field("update_stock");
         }
     },
 
     customer: function(frm) {
         set_efris_customer_type(frm);
     },
-    on_submit: function(frm){
+
+    on_submit: function(frm) {
         frm.reload_doc(); // Reload the form here
-       
-    },
-    efris_invoice: function(frm){
-        console.log(`Is EFRIS is called ...`);
-        let is_efris = frm.doc.efris_invoice;
-        if(is_efris && is_efris == 1){
-            frm.set_value("update_stock",1);
-            frm.refresh_field("update_stock")
-        }
-    }  
+    }
 });
 
 // Bind child table events

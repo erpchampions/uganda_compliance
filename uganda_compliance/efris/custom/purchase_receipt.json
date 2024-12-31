@@ -84,7 +84,7 @@
   "label": "Today's EFRIS Currency Exchange Rate",
   "module": "EFRIS",
   "name": "Purchase-Receipt_efris_currency_exchange_rate",
-  "no_copy": 0,
+  "no_copy": 1,
   "owner": "Administrator",
   "permlevel": 0,
   "print_hide": 0,

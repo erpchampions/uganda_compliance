@@ -5,10 +5,37 @@ import json
 from datetime import date
 
 @frappe.whitelist()
+def get_efris_unit_price(purchase_receipt_no, item_code):
+    """
+    Securely fetch efris_unit_price and efris_currency from Purchase Receipt Item.
+    """
+    if not purchase_receipt_no or not item_code:
+        frappe.throw("Both Purchase Receipt No and Item Code are required.")
+
+    result = frappe.db.get_value(
+        'Purchase Receipt Item',
+        {'parent': purchase_receipt_no, 'item_code': item_code},
+        ['efris_unit_price', 'efris_currency']
+    )
+
+    if result:
+        return {
+            'efris_unit_price': result[0],
+            'efris_currency': result[1]
+        }
+    else:
+        frappe.msgprint(f"No EFRIS data found for {item_code}")
+        return {}
+
+@frappe.whitelist()
 def stock_in_T131(doc, method):
  
     doctype = doc.get("doctype")
     efris_log_info(f"The Stock In Type is {doctype}")
+
+    ################################################
+    # STOCK ENTRY
+    ################################################
     if doctype == 'Stock Entry': 
         efris_log_info(f"The {doctype} doc Number: {doc}")
 
@@ -60,9 +87,9 @@ def stock_in_T131(doc, method):
                         efris_log_info(f"UOM from items table: {item_uom}")
                         efris_uom_code = frappe.db.get_value('UOM', {'uom_name': item_uom}, 'efris_uom_code') or ''
                         efris_log_info(f"EFRIS UOM code is: {efris_uom_code}")
-                        efris_unit_price = data.get("basic_rate")
-                        if efris_unit_price:
-                            efris_unit_price = round(efris_unit_price,2) 
+                        efris_unit_price = data.get("efris_unit_price")
+                        #if efris_unit_price:
+                        #    efris_unit_price = round(efris_unit_price,2) 
 
                         # Fetch purchase receipt details
                         if reference_purchase:                       
@@ -133,7 +160,9 @@ def stock_in_T131(doc, method):
                 else:
                     efris_log_error(f"Failed to upload Stock to EFRIS for {e_company} under Purchase Receipt {reference_purchase}: {response}")
                     frappe.throw(f"Failed to upload Stock to EFRIS for {e_company} under Purchase Receipt {reference_purchase}: {response}")
-
+    ################################################
+    # PURCHASE RECEIPT
+    ################################################
     if doctype == 'Purchase Receipt': 
  
             efris_log_info(f"The {doctype} has been fetched successfully for: {doc}")
@@ -204,7 +233,7 @@ def stock_in_T131(doc, method):
                                 "goodsCode": item_code,
                                 "measureUnit": purchase_uom_code ,
                                 "quantity": item_stock.get("qty"),
-                                "unitPrice": round(unitPrice,0) ,
+                                "unitPrice": unitPrice,
                                 "remarks": item_stock.get("remarks") if item_stock.get('remarks') else "",
                                 "fuelTankId": "",
                                 "lossQuantity": "",

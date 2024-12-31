@@ -43,12 +43,31 @@ def before_save(doc, method):
 @frappe.whitelist()
 def get_e_tax_template(company_name, tax_type):
     efris_log_info(f"get_e_tax_template called with company_name, tax_type: {company_name}, {tax_type} ")
+    e_settings = get_e_company_settings(company_name)
+    template_name = None
     if tax_type == 'Sales Tax':
-        return get_e_company_settings(company_name).sales_taxes_and_charges_template
+        template_name = e_settings.sales_taxes_and_charges_template
     elif tax_type == 'Purchase Tax':
-        return get_e_company_settings(company_name).purchase_taxes_and_charges_template
+        template_name = e_settings.purchase_taxes_and_charges_template
     else:
         frappe.throw(f"Unsupported Tax Type: {tax_type}")
+    
+    # Fetch the template and its child table details
+    template_doc = frappe.get_doc('Sales Taxes and Charges Template', template_name)
+    taxes_details = [
+        {
+            'charge_type': tax.charge_type,
+            'account_head': tax.account_head,
+            'rate': tax.rate,
+            'included_in_print_rate': True  # Ensure this is always set to True
+        }
+        for tax in template_doc.taxes
+    ]
+
+    return {
+        'template_name': template_name,
+        'taxes': taxes_details
+    }
 
 
 def get_mode_private_key_path(e_settings):
