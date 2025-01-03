@@ -977,68 +977,76 @@ def check_efris_flag_for_sales_invoice(is_return,return_against):
    return is_efris_flag
 
 @frappe.whitelist()
-def Sales_invoice_is_efris_validation(doc,method):
-    efris_log_info(f"Before Save is called ...")
+def Sales_invoice_is_efris_validation(doc, method):
+    """Validate EFRIS compliance for Sales Invoice."""
+    efris_log_info("Before Save is called ...")
     try:
+        # Ensure doc is a dictionary
         if isinstance(doc, str):
             doc = json.loads(doc)
         
-        is_efris = doc.get('efris_invoice')        
-        if is_efris and doc.get('items',[]):
-            taxes_and_charges_template = doc.get('taxes_and_charges')
-            if not taxes_and_charges_template:
-                templates = frappe.get_all(
-                        "Sales Taxes and Charges Template", 
-                        filters={'company': doc.get('company')},  # Replace with actual filters, if needed
-                        fields=["name"],
-                        order_by="creation asc"  # Ensures you retrieve the oldest template first
-                    )
+        is_efris = doc.get('efris_invoice')
+        items = doc.get('items', [])
         
-                # Set the first template if available
-                if templates:
-                    doc.taxes_and_charges = templates[0].name
-                else:
-                    frappe.throw(_("No Sales Taxes and Charges Templates found matching the criteria."))
-            set_warehouse = doc.get("set_warehouse")
-            t_warehouse = ""
-            for data in doc.get('items',[]):
-                t_warehouse = data.get('warehouse')
-            efris_log_info(f"The Set Warehouse is {set_warehouse}")
-            if set_warehouse or t_warehouse:
-                efris_warehouse = set_warehouse or t_warehouse
-                is_efris_warehouse = frappe.db.get_value("Warehouse", {"name":efris_warehouse},"efris_warehouse")
-                efris_log_info(f"The EFRIS Warehouse Flag for {efris_warehouse} is {is_efris_warehouse}")
-                if is_efris_warehouse == 0:
-                    frappe.throw(f"Target Warehouse {efris_warehouse} must be an EFRIS Warehouse")
+        # Validate EFRIS Warehouse for EFRIS Invoice
+        if is_efris:
+            validate_efris_tax_template(doc)
+            validate_efris_warehouse(doc)
         
-        if  not is_efris:
-            for item in doc.get('items',[]):
-                item_code = item.get('item_code')
-                is_efris_item = frappe.db.get_value('Item', {'item_code':item_code}, 'efris_item')
-                if is_efris_item:
-                    doc.efris_invoice = 1
-                    t_warehouse = item.get('warehouse')
-                    efris_log_info(f" The Item Warehouse is {t_warehouse}")
-                    warehouse_efris_flag = frappe.db.get_value("Warehouse", {"name":t_warehouse},"efris_warehouse")
-                    efris_log_info(f"The EFRIS Warehouse Flag for {t_warehouse} is {warehouse_efris_flag}")
-                    if warehouse_efris_flag == 0:
-                        frappe.throw(f"Target Warehouse {t_warehouse} must be an EFRIS Warehouse")
-                    customer = doc.get('customer')
-                    efris_log_info(f"The Customer is {customer}")                
-                    efris_customer_type = frappe.db.get_value('Customer',{'customer_name':customer},'efris_customer_type')
-                    efris_log_info(f"The EFRIS Customer Type for Customer:{customer} is {efris_customer_type}")
-                    if not doc.efris_customer_type:
-                        doc.efris_customer_type = efris_customer_type
-                        doc.flags.ignore_validate_update_after_submit = True
-                    # doc.save()
-                    efris_log_info(f"Updated Sales Invoice for EFRIS compliance.")
-                    break  # No need to check further items once is_efris is set
-                        
+        # Automatically set EFRIS flag based on item codes
+        else:
+            set_efris_based_on_items(doc, items)
     
     except Exception as e:
-        frappe.throw(f"Sales Invoice EFRIS Validation Failed ...: {str(e)}")
+        frappe.throw(f"Sales Invoice EFRIS Validation Failed: {str(e)}")
 
 
+def validate_efris_tax_template(doc):
+    """Ensure a tax template is set; throw an error if missing."""
+    if not doc.get('taxes_and_charges'):
+        frappe.throw(_("Sales Taxes and Charges Template is required for EFRIS Invoices."))
+
+
+def validate_efris_warehouse(doc):
+    """Validate EFRIS warehouse settings."""
+    set_warehouse = doc.get("set_warehouse")
+    target_warehouse = set_warehouse or next(
+        (item.get('warehouse') for item in doc.get('items', []) if item.get('warehouse')),
+        None
+    )
+    
+    if target_warehouse:
+        is_efris_warehouse = frappe.db.get_value(
+            "Warehouse", {"name": target_warehouse}, "efris_warehouse"
+        )
+        efris_log_info(f"The EFRIS Warehouse Flag for {target_warehouse} is {is_efris_warehouse}")
+        
+        if not is_efris_warehouse:
+            frappe.throw(f"Warehouse {target_warehouse} must be an EFRIS Warehouse")
+
+
+def set_efris_based_on_items(doc, items):
+    """Set EFRIS flag and customer type based on items."""
+    for item in items:
+        item_code = item.get('item_code')
+        if frappe.db.get_value('Item', {'item_code': item_code}, 'efris_item'):
+            doc.efris_invoice = 1
+            target_warehouse = item.get('warehouse')
+            
+            is_efris_warehouse = frappe.db.get_value(
+                "Warehouse", {"name": target_warehouse}, "efris_warehouse"
+            )
+            if not is_efris_warehouse:
+                frappe.throw(f"Target Warehouse {target_warehouse} must be an EFRIS Warehouse")
+            
+            customer = doc.get('customer')
+            efris_customer_type = frappe.db.get_value(
+                'Customer', {'customer_name': customer}, 'efris_customer_type'
+            )
+            doc.efris_customer_type = efris_customer_type
+            doc.flags.ignore_validate_update_after_submit = True
+            efris_log_info(f"Updated Sales Invoice for EFRIS compliance.")
+            break  # Exit after the first match
 @frappe.whitelist()
 def sales_uom_validation(doc,mehtod):
     if isinstance(doc, str):
@@ -1093,7 +1101,7 @@ def calculate_additional_discounts(doc, method):
     initial_tax = doc.total_taxes_and_charges
     efris_log_info(f"Initial Tax: {initial_tax}")
     
-    total_tax = 0.0
+    total_item_tax = 0.0
     total_discount_tax = 0.0
     last_taxable_item = None
 
@@ -1111,7 +1119,7 @@ def calculate_additional_discounts(doc, method):
             discount_tax = round(discount_amount - tax_on_discount, 2)
             item_tax = round(row.amount * (tax_rate / (100 + tax_rate)), 2)
             
-            total_tax += item_tax
+            total_item_tax += item_tax
             total_discount_tax += discount_tax
             last_taxable_item = row
         else:
@@ -1133,14 +1141,18 @@ def calculate_additional_discounts(doc, method):
         row.efris_dsct_item_discount = discounted_item
 
     # Final adjustment for rounding errors
-    tax_difference = round(initial_tax - (total_tax + total_discount_tax), 2)
+    calculated_total_tax = round(total_item_tax + total_discount_tax, 2)
+    tax_difference = round(initial_tax - calculated_total_tax, 2)
+
     if last_taxable_item:
-        efris_log_info(f"Adjusting last item's tax by: {tax_difference}")
+        efris_log_info(f"Adjusting last item's discount tax by: {tax_difference}")
         last_taxable_item.efris_dsct_discount_tax += tax_difference
-        efris_log_info(f"Final adjusted tax for last item: {last_taxable_item.efris_dsct_discount_tax}")
+        last_taxable_item.efris_dsct_item_tax += tax_difference
+        efris_log_info(f"Final adjusted tax for last item: {last_taxable_item.efris_dsct_item_tax}")
 
-    efris_log_info(f"Final Tax Difference Adjustment: {tax_difference}")
-
+    # Log alignment verification
+    efris_log_info(f"ERPNext Total Tax: {initial_tax}, Calculated Total Tax: {calculated_total_tax}")
+    efris_log_info(f"Tax Difference Applied: {tax_difference}")
 
 def decode_e_tax_rate(tax_rate, e_tax_category):
     e_tax_code = e_tax_category.split(':')[0]

@@ -41,9 +41,7 @@ frappe.ui.form.on('Sales Invoice', {
 
     validate: function(frm) {
         console.log(`validate called`);
-        set_efris_customer_type(frm);
-        set_efris_flag_based_on_items(frm);
-        //check EFRIS UOM
+        set_efris_flag_based_on_items(frm);        
     },
 
     async efris_invoice(frm) {
@@ -94,14 +92,20 @@ frappe.ui.form.on('Sales Invoice', {
         }
 
         // Set `update_stock` field when `efris_invoice` is enabled
-        if (frm.doc.efris_invoice == 1) {
-            frm.set_value("update_stock", 1);
-            frm.refresh_field("update_stock");
-        }
+        // Update stock and rounded total settings based on `efris_invoice`
+        const is_efris_invoice = frm.doc.efris_invoice == 1;
+
+        frm.set_value("update_stock", is_efris_invoice ? 1 : 0);
+        //frm.set_df_property('update_stock', 'read_only', is_efris_invoice ? 1 : 0);
+        frm.refresh_field("update_stock");
+
+        frm.set_value("disable_rounded_total", is_efris_invoice ? 1 : 0);
+        frm.refresh_field("disable_rounded_total");
+
     },
 
     customer: function(frm) {
-        set_efris_customer_type(frm);
+        console.log(`customer called`);        
     },
 
     on_submit: function(frm) {
@@ -170,113 +174,93 @@ const raise_form_is_dirty_error = () => {
     });
 };
 
-const set_efris_customer_type = (frm) => {
-    console.log(`set_efris_customer_type called`);
-    let customer = frm.doc.customer;
-    
-    if (!customer) {
-        return;
-    }
 
-    frappe.db.get_doc('Customer', customer).then(doc => {
-        const efris_customer_type = doc.efris_customer_type;
-        frm.set_value('efris_customer_type', efris_customer_type);
-        refresh_field('efris_customer_type');
-    }).catch(err => {
-        console.error(`Failed to retrieve customer details: ${err}`);
-        frappe.msgprint(__('Unable to fetch customer details.'));
-    });
-};
 
 frappe.ui.form.on('Sales Invoice', {
-    
+        // Handle EFRIS Payment Mode selection
     efris_payment_mode: function (frm) {
         console.log(`Listening to EFRIS PAYMENT MODE...`);
-        const efris_payment_mode = frm.doc.efris_payment_mode;
+        const selected_payment_mode = frm.doc.efris_payment_mode;
 
-        if (efris_payment_mode) {
-            console.log(`The EFRIS Payment Mode is ${efris_payment_mode}`);
+        if (!selected_payment_mode) {
+            console.log("No EFRIS Payment Mode selected. Clearing payments...");
 
-            // Fetch the efris_payment_mode value from the linked Mode of Payment
-            frappe.call({
-                method: 'frappe.client.get_value',
-                args: {
-                    doctype: 'Mode of Payment',
-                    filters: { name: efris_payment_mode },
-                    fieldname: 'efris_payment_mode'
-                },
-                callback: function (response) {
-                    const include_payment = response.message.efris_payment_mode;
-                    console.log(`The Payment Mode is ${response.message.efris_payment_mode}`);
-
-                    if (include_payment) {
-                        // Fetch the include_payment flag from EFRIS Payment Mode
-                        frappe.call({
-                            method: 'frappe.client.get_value',
-                            args: {
-                                doctype: 'EFRIS Payment Mode',
-                                filters: { name: include_payment },
-                                fieldname: 'include_payment'
-                            },
-                            callback: function (response) {
-                                const include_payment_flag = response.message.include_payment;
-                                console.log(`The Include Payment is ${response.message.include_payment}`);
-                                // frm.clear("payments");
-                                if (include_payment_flag) {
-                                    console.log("include_payment is true. Updating Sales Invoice...");
-                                    // Set is_pos to true
-                                    frm.set_value('is_pos', 1);
-
-                                    // Make is_pos read-only
-                                    frm.set_df_property('is_pos', 'read_only', 0);
-
-                                    // Clear existing rows in the payments table
-                                    frm.clear_table("payments");
-                                    // Add the selected Mode of Payment to the payments table
-                                    
-                                    const payment_row = frm.add_child('payments');
-                                    payment_row.mode_of_payment = frm.doc.efris_payment_mode;
-
-                                    frm.refresh_field('payments');
-                                } else {
-                                    console.log("include_payment is false. Making is_pos read-only...");
-                                    // Ensure is_pos is read-only
-                                    frm.set_df_property('is_pos', 'read_only', 1);
-                                    frm.clear_table("payments"); // Use clear_table
-                                }
-                            }
-                        });
-                    } else {
-                        console.log(`The response is ${response.message.efris_payment_mode} not set`);
-                    }
-                }
-            });
+            return;
         }
-    },
-    before_save: function (frm) {
-        console.log("Assigning amounts to payment rows...");
-        if(frm.doc.efris_payment_mode){
 
-            let remaining_amount = frm.doc.grand_total;
+        frappe.call({
+            method: 'frappe.client.get_list',
+            args: {
+                doctype: 'Mode of Payment',
+                filters: { name: selected_payment_mode },
+                fields: ['efris_payment_mode']
+            },
+            callback: function (response) {
+                if (response.message && response.message.length > 0) {
+                    const efris_payment_mode_name = response.message[0].efris_payment_mode;
 
-        // Iterate over each row in payments table to distribute the total amount
-        frm.doc.payments.forEach((payment_row, index) => {
-            // Assign amount only if it hasn't been set manually
-            if (!payment_row.amount) {
-                payment_row.amount = remaining_amount; // Set the remaining amount to the last row
-            }
-            // Reset remaining_amount if this is the last row
-            if (index === frm.doc.payments.length - 1) {
-                remaining_amount = 0;
+                    frappe.call({
+                        method: 'frappe.client.get_list',
+                        args: {
+                            doctype: 'EFRIS Payment Mode',
+                            filters: { name: efris_payment_mode_name },
+                            fields: ['include_payment']
+                        },
+                        callback: function (response) {
+                            const include_payment_flag = response.message?.[0]?.include_payment || 0;
+
+                            if (include_payment_flag) {
+                                console.log("include_payment is true. Updating payments...");
+                                frm.set_value('is_pos', 1);
+                                frm.set_df_property('is_pos', 'read_only', 0);
+
+                                // Update the payments table with selected payment mode
+                                frm.clear_table("payments");
+                                let payment_row = frm.add_child('payments');
+                                payment_row.mode_of_payment = selected_payment_mode;
+                                payment_row.amount = frm.doc.grand_total;
+
+                                frm.refresh_field('payments');
+                            } else {
+                                console.log("include_payment is false. Clearing payments...");
+                                frm.set_value('is_pos', 0);
+                                frm.set_df_property('is_pos', 'read_only', 1);
+                                frm.clear_table("payments");
+                                frm.refresh_field('payments');
+                            }
+                        }
+                    });
+                } else {
+                    console.log("EFRIS Payment Mode is invalid. Clearing payments...");
+                    frm.clear_table("payments");
+                    frm.refresh_field('payments');
+                }
             }
         });
+    },
 
-        // Refresh payments table
-        frm.refresh_field('payments');
+    // Before Save Logic
+    before_save: function (frm) {
+        console.log("Validating EFRIS Payment Mode before save...");
+        
+        if (frm.doc.efris_payment_mode) {
+            if (frm.doc.payments.length > 1) {
+                console.log("Multiple payment modes detected. Clearing EFRIS Payment Mode...");
+                frm.set_value('efris_payment_mode', '');
+            } else if (frm.doc.payments.length === 1) {
+                console.log("Single payment mode detected. Validating amount...");
+                let payment_row = frm.doc.payments[0];
+
+                if (!payment_row.amount) {
+                    payment_row.amount = frm.doc.grand_total;
+                }
+            }
         }
 
-        
+        frm.refresh_field('payments');
     }
+
+
 });
 
 frappe.ui.form.on('Sales Invoice Payment', {
@@ -297,4 +281,3 @@ function update_parent_field(frm) {
     // Update the parent field (e.g., total_payment_amount)
     frm.refresh_field("efris_payment_mode");
 }
-
