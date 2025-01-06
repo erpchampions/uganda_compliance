@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uganda Compliance App Documentation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="content">
+        <h1>Uganda Compliance App Documentation</h1>
+        <p>Welcome to the <strong>Uganda Compliance App Documentation</strong>. This guide is designed to help businesses using ERPNext in Uganda achieve seamless compliance with local regulatory requirements, starting with the <strong>Electronic Fiscal Receipting and Invoicing Solution (EFRIS)</strong>.</p>
+
+        <h2>Introduction</h2>
+        <p>The <strong>Uganda Compliance App</strong> simplifies VAT compliance for businesses operating in Uganda by integrating ERPNext directly with the <strong>Electronic Fiscal Receipting and Invoicing Solution (EFRIS)</strong>. This app ensures real-time compliance with Uganda Revenue Authority (URA) regulations through automated invoicing, stock management, and seamless data synchronization.</p>
+
+        <p><strong>Key Highlights:</strong></p>
+        <ul>
+            <li>Direct integration with <strong>URA EFRIS API (Online Mode Only)</strong></li>
+            <li>Support for multiple companies within ERPNext</li>
+            <li>Automated configuration of <strong>tax templates</strong> and <strong>commodity codes</strong></li>
+            <li>Real-time synchronization of <strong>invoices</strong>, <strong>stock</strong>, and <strong>customer data</strong></li>
+            <li>Compliance with both <strong>goods</strong> and <strong>services VAT reporting</strong></li>
+            <li>Support for <strong>multi-currency transactions</strong> (UGX, USD, CNY, EURO, GBP)</li>
+        </ul>
+
+        <h2>Getting Started with EFRIS: Quick Configuration Steps</h2>
+        <p>Follow these quick steps to configure your ERPNext instance with the Uganda Compliance App for EFRIS integration.</p>
+
+        <h4>1. Set up Company E Invoicing Details:</h4>
+        <ul>
+            <li>Add <strong>VAT-TIN (Tax ID)</strong> and <strong>Email</strong> in the <strong>Company Master</strong>.</li>
+        </ul>
+
+        <h4>2. Configure E Invoicing Settings:</h4>
+        <ul>
+            <li>Enable Integration.</li>
+            <li>Enter <strong>Device Number</strong>.</li>
+            <li>Set Tax Accounts (Input VAT, Output VAT).</li>
+        </ul>
+
+        <h4>3. Verify Tax Templates:</h4>
+        <ul>
+            <li>Confirm <strong>Standard Rated (18%)</strong>, <strong>Zero Rated (0%)</strong>, and <strong>Exempt</strong> templates.</li>
+            <li>Map them to appropriate <strong>Commodity Codes</strong>.</li>
+        </ul>
+
+        <h4>4. Set up EFRIS Warehouses:</h4>
+        <ul>
+            <li>Enable the <strong>EFRIS Warehouse Flag</strong> on your warehouses.</li>
+            <li>Ensure <strong>stock operations</strong> align with EFRIS requirements.</li>
+        </ul>
+
+        <h4>5. Run a Test Transaction in Sandbox Mode:</h4>
+        <ul>
+            <li>Test your integration with the <strong>Sandbox Portal</strong> before switching to <strong>Live Mode</strong>.</li>
+        </ul>
+
+        <h4>6. Monitor EFRIS Logs:</h4>
+        <ul>
+            <li>View all <strong>requests/responses</strong> in the <strong>E Invoicing Request Log</strong> table.</li>
+            <li>Validate <strong>statuses</strong> and troubleshoot any communication issues.</li>
+        </ul>
+        
+        <h2>7.EFRIS Currency Codes and EFRIS UOM Codes</h2>
+        <ul>
+            <li>The app has pre-configured <strong>EFRIS Currency Codes</strong> for supported ERPNext currencies.</li>
+            <li><strong>EFRIS UOM Codes</strong> are also set up on the <strong>ERPNext UOM table</strong>.</li>
+            <li>If special or non-standard <strong>ERPNext UOMs</strong> are used, <strong>EFRIS UOM Codes</strong> can be manually set.</li>
+        </ul>
+
+
+        <h2>Key Integrated Services and Features</h2>
+        
+        <h3>1. Company Configuration</h3>
+        <ul>
+            <li>Fetch key <strong>EFRIS Company details</strong> such as <strong>Address</strong> and <strong>Contact Email</strong> from URA with either <strong>Tax ID (TIN)</strong> or <strong>Business Registration Number (BRN)</strong>.</li>
+            <li>Save these details in ERPNext (via <strong>Company Master doctype</strong>).</li>
+        </ul>
+
+        <h3>2. Sandbox / Live Mode</h3>
+        <ul>
+            <li>Integrate with <strong>EFRIS TEST-Portal</strong> or <strong>LIVE portals</strong> (via new <strong>E Invoicing Settings doctype</strong>).</li>
+            <li>Support for multiple companies, each with its own <strong>EFRIS account</strong>.</li>
+        </ul>
+
+        <h3>3. Tax Account, Sales Tax, and Item Tax Template Configuration</h3>
+        <ul>
+            <li><strong>Tax Templates</strong> are automatically generated during the <strong>E Invoicing Setup:</strong>
+                <ul>
+                    <li><strong>Standard Rated (18%)</strong></li>
+                    <li><strong>Zero Rated (0%)</strong></li>
+                    <li><strong>Exempt (-)</strong></li>
+                </ul>
+            </li>
+            <li>Each template is mapped to specific <strong>Commodity Codes</strong> in <strong>Goods/Item Configuration</strong>.</li>
+            <li>During <strong>Item Creation</strong>, the app auto-selects the appropriate <strong>Item Tax Template</strong> based on the <strong>Commodity Code</strong>.</li>
+            <li>If a company already has appropriate <strong>Tax Templates</strong>, they can be manually configured for use.</li>
+        </ul>
+
+
+        <h3>4. Customer Configuration</h3>
+        <ul>
+            <li>Fetch customer details such as <strong>Legal Business Name</strong>, <strong>Address</strong>, and <strong>Contact Email</strong> from URA using:</li>
+            <ul>
+                <li><strong>Business Registration Number (BRN)</strong> for B2B transactions</li>
+                <li><strong>National Identification Number (NIN)</strong> for B2C transactions</li>
+                <li><strong>Tax ID (TIN)</strong> for B2B or B2C transactions</li>
+            </ul>
+            <li>Save these details into the <strong>Customer Doctype</strong> in ERPNext.</li>
+        </ul>
+        
+
+        <h3>5. Goods / Item Configuration</h3>
+        <ul>
+            <li>Create or modify <strong>goods/services</strong> in ERPNext and sync automatically with <strong>EFRIS</strong>.</li>
+            <li>Map goods to <strong>EFRIS Commodity Codes</strong>, categorized as:
+                <ul>
+                    <li><strong>Standard Rated (18%)</strong></li>
+                    <li><strong>Zero Rated (0%)</strong></li>
+                    <li><strong>Exempt (-)</strong></li>
+                </ul>
+            </li>
+            <li>Automatically generate and map <strong>Sales Tax Templates</strong> and <strong>Item Tax Templates</strong> during the initial E Invoicing setup.</li>
+            <li>Ensure applicable <strong>Item Tax Templates</strong> are selected automatically during item creation.</li>
+            <li><strong>EFRIS Goods/Services are unique to each Company/Seller:</strong>
+                <ul>
+                    <li>In a multi-company setup, separate ERPNext items must be created for each company.</li>
+                </ul>
+            </li>
+            <li>Default item currency is <strong>UGX</strong> for purchase and sale of goods/services, and this is expected to match the company currency.</li>
+            <li>The app supports all currencies currently supported by EFRIS, including <strong>UGX, USD, CNY, EURO,</strong> and <strong>GBP</strong>.</li>
+            <li><strong>Multiple Units of Measure (UOM) Support:</strong>
+                <ul>
+                    <li>Configure purchasing or selling in any <strong>EFRIS-configured item UOM</strong>.</li>
+                    <li><strong>Example:</strong> Configure an item such as <strong>"Sugar"</strong> with two UOMs:
+                        <ul>
+                            <li><strong>"Kilograms (KG)"</strong> for procurement</li>
+                            <li><strong>"Packets (PKT)"</strong> for sales</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>Missing commodity codes can be manually added by the business during the setup.</li>
+        </ul>
+        
+
+        <h3>6. Stock-in Management</h3>
+        <ul>
+            <li>Add stock to configured <strong>goods in EFRIS</strong> via <strong>Purchase Receipts</strong> (import or local) in ERPNext.</li>
+            <li>Support direct purchase of <strong>tax-cleared goods</strong> into a chosen <strong>EFRIS Warehouse or store</strong>.</li>
+            <li>Support purchases into a <strong>non-EFRIS Warehouse</strong> (usually a bonded Warehouse awaiting tax-clearance).</li>
+            <li>Once taxes are cleared, perform a <strong>Stock Transfer (Stock Entry)</strong> in ERPNext from <strong>Bonded Warehouse</strong> to <strong>EFRIS Warehouse</strong> for Stock-in to EFRIS.</li>
+            <li>Default Purchase currency is <strong>UGX</strong>, but the app supports purchase in any currency and performs Stock-in using the configured <strong>Item Currency</strong>.</li>
+            <li><strong>Example:</strong> A business can purchase in <strong>USD</strong> an item configured for sale in <strong>UGX</strong>.</li>
+            <li>The app fetches the day's <strong>exchange rate</strong> to supported currencies, alongside ERPNext standard exchange rates.</li>
+            <li><strong>Stock-in Currency Mapping:</strong> The EFRIS Stock-in will always use <strong>Item Currency</strong> (e.g., UGX), while ERPNext maintains the original purchase currency details.</li>
+            <li><strong>Multiple Units of Measure (UOM) Support:</strong> Configure purchasing or selling in any EFRIS-configured item UOM.</li>
+            <li>Stock-in for <strong>Manufactured Goods</strong> is pending app support.</li>
+            <li>Additional Stock-in features include:
+                <ul>
+                    <li><strong>Stock-in via Opening Balance</strong></li>
+                    <li><strong>Stock Adjustment (Reduction)</strong> after stock reconciliation</li>
+                </ul>
+            </li>
+            <li>Both stock adjustments use the <strong>Stock Reconciliation Doctype</strong> (Purpose: Opening Balance or Stock Reconciliation).</li>
+        </ul>
+        
+
+        <h3>7. Invoicing</h3>
+        <ul>
+            <li>Sell any configured <strong>EFRIS goods/services</strong> directly in ERPNext and submit to EFRIS.</li>
+            <li>Ensure invoices match those generated in the <strong>EFRIS TEST/LIVE portal</strong>.</li>
+            <li>Generate <strong>E Invoicing Print Document</strong> directly after submission.</li>
+            <li>Apply <strong>Additional Discounts on Grand Total per item</strong>, ensuring compliance with EFRIS's item-level discount requirements.</li>
+            <li>Support sales to <strong>EFRIS Customer Types:</strong>
+                <ul>
+                    <li><strong>B2C</strong></li>
+                    <li><strong>B2B</strong></li>
+                    <li><strong>Foreigner</strong></li>
+                    <li><strong>B2G (Government)</strong></li>
+                </ul>
+            </li>
+            <li>Integration with <strong>POS Awesome</strong>, including <strong>EFRIS POS Invoice format</strong>.</li>
+            <li><strong>Payment Modes Supported:</strong>
+                <ul>
+                    <li>Sell on <strong>Credit</strong></li>
+                    <li>Manage <strong>Paid</strong>, <strong>Unpaid</strong>, and <strong>Partially Paid</strong> invoices in ERPNext.</li>
+                </ul>
+            </li>
+            <li>Synchronize invoices sold outside ERPNext (e.g., via <strong>Web Portal</strong> or <strong>EFD Mobile devices</strong>).</li>
+            <li>Disable <strong>Rounded Totals</strong> to comply with EFRIS.</li>
+            <li>Support invoicing in any <strong>EFRIS-registered Item currency</strong>.</li>
+        </ul>
+        
+        <h3>8. Credit Note Management</h3>
+        <ul>
+            <li>Create <strong>Sales Returns</strong> for any <strong>EFRIS Sales Invoices</strong> inside ERPNext.</li>
+            <li>Sales Returns can represent either:
+                <ul>
+                    <li>Total cancellation of purchase</li>
+                    <li>Adjustment of Sales Invoice</li>
+                </ul>
+            </li>
+            <li>Submit the <strong>Credit Note</strong> application directly to EFRIS for approval.</li>
+            <li>Monitor the <strong>Credit Note approval status</strong> automatically through the app.</li>
+            <li>Once approved, the Credit Note is confirmed, and a separate <strong>Fiscal Document Number (FDN)</strong> is generated.</li>
+        </ul>
+        
+
+        <h2>Additional Notes</h2>
+        <ul>
+            <li>Approved by <strong>URA</strong> for compliance with goods and services VAT reporting.</li>
+            <li>Supports ERPNext versions <strong>V13, V14, and V15</strong>.</li>
+            <li>Planned Open Source Release: <a href="https://github.com/erpchampions/uganda_compliance">GitHub Repository</a>.</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -37,7 +37,7 @@ bench install-app ugandan_compliance
 
 ---
 
-## **Getting Started: Quick Configuration Steps**
+## **Getting Started with EFRIS: Quick Configuration Steps**
 
 1. **Set up Company E Invoicing Details:**  
    - Add **VAT-TIN (Tax ID)** and **Email** in the **Company Master**.

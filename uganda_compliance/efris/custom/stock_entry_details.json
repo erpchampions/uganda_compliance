@@ -137,7 +137,7 @@
         "permlevel": 0,
         "print_hide": 0,
         "reqd": 0,
-        "read_only":1,
+        "read_only":0,
         "search_index": 0
       },
       {
