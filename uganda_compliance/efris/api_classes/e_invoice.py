@@ -990,21 +990,13 @@ def Sales_invoice_is_efris_validation(doc, method):
         
         # Validate EFRIS Warehouse for EFRIS Invoice
         if is_efris:
-            validate_efris_tax_template(doc)
-            validate_efris_warehouse(doc)
-        
+            validate_efris_warehouse(doc)        
         # Automatically set EFRIS flag based on item codes
         else:
             set_efris_based_on_items(doc, items)
     
     except Exception as e:
         frappe.throw(f"Sales Invoice EFRIS Validation Failed: {str(e)}")
-
-
-def validate_efris_tax_template(doc):
-    """Ensure a tax template is set; throw an error if missing."""
-    if not doc.get('taxes_and_charges'):
-        frappe.throw(_("Sales Taxes and Charges Template is required for EFRIS Invoices."))
 
 
 def validate_efris_warehouse(doc):
@@ -1057,6 +1049,9 @@ def sales_uom_validation(doc,mehtod):
             return {"error": "Failed to decode `doc` JSON string"}
     efris_log_info(f"sales_uom_validation called with doc: {doc}")
     
+    if doc.get('is_return') or not doc.get('efris_invoice'):
+        return
+    
     item = doc.get('items',[])
     for data in item:
         item_code = data.item_code
@@ -1064,8 +1059,8 @@ def sales_uom_validation(doc,mehtod):
         sales_uom = data.uom
         efris_log_info(f"Sales UOM on Items Child Table {sales_uom}")
         if sales_uom:
-            items = frappe.get_doc('Item',{'item_code':item_code})
-            uoms_detail = items.get('uoms',[])
+            item_doc = frappe.get_doc('Item',{'item_code':item_code})
+            uoms_detail = item_doc.get('uoms',[])
             efris_log_info(f"Item UOm is {uoms_detail}")
             # Check if purchase_uom exists in uoms_detail
             uom_exists = any(row.uom == sales_uom for row in uoms_detail)

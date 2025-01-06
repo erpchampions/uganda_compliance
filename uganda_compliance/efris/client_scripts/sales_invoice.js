@@ -1,10 +1,8 @@
 frappe.ui.form.on('Sales Invoice', {
     async refresh(frm) {
-        console.log("refresh here");
         if (frm.is_dirty()) return;
 
         let is_efris = frm.doc.efris_invoice;
-        console.log(`Is EFRIS Sales Invoice set to ${is_efris}`);
 
         if (is_efris == 1) {
             try {
@@ -23,7 +21,6 @@ frappe.ui.form.on('Sales Invoice', {
                                 freeze: true,
                                 callback: function(r) {
                                     if (!r.exc) {
-                                        console.log('E-Invoice successfully created.');
                                         frm.reload_doc(); // Reload the form here
                                     }
                                 }
@@ -38,76 +35,10 @@ frappe.ui.form.on('Sales Invoice', {
             }
         }
     },
-
-    validate: function(frm) {
-        console.log(`validate called`);
-        set_efris_flag_based_on_items(frm);        
+    validate: async function(frm) {
+        set_efris_flag_based_on_items(frm);
+        await set_efris_invoice_details(frm);
     },
-
-    async efris_invoice(frm) {
-        console.log(`efris_invoice triggered: ${frm.doc.efris_invoice}`);
-
-        if (frm.doc.efris_invoice && !frm.doc.is_return) {
-            console.log('This is an EFRIS Invoice');
-
-            try {
-                // Fetch the Sales Tax template and its details
-                const response = await frappe.call({
-                    method: 'uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_tax_template',
-                    args: { company_name: frm.doc.company, tax_type: 'Sales Tax' },
-                    freeze: true
-                });
-
-                if (response && response.message) {
-                    const { template_name, taxes } = response.message;
-
-                    console.log('Sales tax template fetched:', template_name);
-
-                    // Set the fetched template in the taxes_and_charges field
-                    frm.set_value('taxes_and_charges', template_name);
-
-                    // Clear existing taxes and populate with fetched details
-                    frm.clear_table('taxes');
-
-                    taxes.forEach(tax => {
-                        let child = frm.add_child('taxes');
-                        frappe.model.set_value(child.doctype, child.name, 'charge_type', tax.charge_type);
-                        frappe.model.set_value(child.doctype, child.name, 'account_head', tax.account_head);
-                        frappe.model.set_value(child.doctype, child.name, 'rate', tax.rate);
-                        frappe.model.set_value(child.doctype, child.name, 'included_in_print_rate', tax.included_in_print_rate);
-                    });
-
-                    // Refresh taxes child table to reflect changes
-                    await frm.refresh_field('taxes');
-
-                    console.log('Taxes child table updated successfully');
-                } else {
-                    console.warn('No template or tax details found in the response');
-                }
-            } catch (error) {
-                console.error(`Error fetching or applying tax template: ${error}`);
-            }
-        } else {
-            console.log('Either not EFRIS or it is a return invoice. Tax template not set.');
-        }
-
-        // Set `update_stock` field when `efris_invoice` is enabled
-        // Update stock and rounded total settings based on `efris_invoice`
-        const is_efris_invoice = frm.doc.efris_invoice == 1;
-
-        frm.set_value("update_stock", is_efris_invoice ? 1 : 0);
-        //frm.set_df_property('update_stock', 'read_only', is_efris_invoice ? 1 : 0);
-        frm.refresh_field("update_stock");
-
-        frm.set_value("disable_rounded_total", is_efris_invoice ? 1 : 0);
-        frm.refresh_field("disable_rounded_total");
-
-    },
-
-    customer: function(frm) {
-        console.log(`customer called`);        
-    },
-
     on_submit: function(frm) {
         frm.reload_doc(); // Reload the form here
     }
@@ -129,61 +60,26 @@ frappe.ui.form.on('Sales Invoice Item', {
     }
 });
 
-const set_efris_flag_based_on_items = (frm) => {
-    let is_efris_flag = 0;
-    frm.doc.items.forEach(item => {
-        console.log(`The Item Code is ${item.item_code}, EFRIS: ${item.efris_commodity_code}`);
-        if (item.efris_commodity_code) {
-            is_efris_flag = 1;                       
-        }
-    });
-    frm.set_value('efris_invoice', is_efris_flag);
-    console.log(`The Is EFRIS Flag is ${frm.doc.efris_invoice}`);
-};
-
-
-const get_irn_cancellation_fields = () => {
-    return [
-        {
-            label: "Reason Code",
-            fieldname: "reason",
-            fieldtype: "Select",
-            reqd: 1,
-            default: "102:Cancellation of the purchase",
-            options: [
-                "102:Cancellation of the purchase", 
-                "103:Invoice amount wrongly stated due to miscalculation", 
-                "104:Partial or complete waive off of the product", 
-                "105:Others (Please specify in Remarks below)"
-            ]
-        },
-        {
-            label: "Remark",
-            fieldname: "remark",
-            default: "Cancellation of the purchase",
-            fieldtype: "Data",
-            reqd: 1
-        }
-    ];
-};
-
-const raise_form_is_dirty_error = () => {
-    frappe.throw({
-        message: __('You must save the document before making e-invoicing request.'),
-        title: __('Unsaved Document')
-    });
-};
-
 
 
 frappe.ui.form.on('Sales Invoice', {
         // Handle EFRIS Payment Mode selection
     efris_payment_mode: function (frm) {
-        console.log(`Listening to EFRIS PAYMENT MODE...`);
+        
         const selected_payment_mode = frm.doc.efris_payment_mode;
+        const number_of_payments = frm.doc.payments.length;
 
         if (!selected_payment_mode) {
-            console.log("No EFRIS Payment Mode selected. Clearing payments...");
+            
+            if (number_of_payments == 0) {
+                frm.set_value('is_pos', 0);
+                frm.refresh_field('is_pos');
+            }else if (number_of_payments == 1) {
+                frm.clear_table("payments");
+                frm.set_value('is_pos', 0);
+                frm.refresh_field('payments');
+                frm.refresh_field('is_pos');
+            }
 
             return;
         }
@@ -271,6 +167,111 @@ frappe.ui.form.on('Sales Invoice Payment', {
         update_parent_field(frm);
     }
 });
+
+
+///////////////////// FUNCTIONS ////////////////////
+// Separate function for EFRIS logic
+async function set_efris_invoice_details(frm) {
+    console.log(`efris_invoice validation triggered: ${frm.doc.efris_invoice}`);
+
+    if (frm.doc.efris_invoice && !frm.doc.is_return) {
+        console.log('This is an EFRIS Invoice');
+
+        try {
+            // Fetch the Sales Tax template and its details
+            const response = await frappe.call({
+                method: 'uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_tax_template',
+                args: { company_name: frm.doc.company, tax_type: 'Sales Tax' },
+                freeze: true
+            });
+
+            if (response && response.message) {
+                const { template_name, taxes } = response.message;
+
+                console.log('Sales tax template fetched:', template_name);
+
+                // Set the fetched template in the taxes_and_charges field
+                frm.set_value('taxes_and_charges', template_name);
+
+                // Clear existing taxes and populate with fetched details
+                frm.clear_table('taxes');
+
+                taxes.forEach(tax => {
+                    let child = frm.add_child('taxes');
+                    frappe.model.set_value(child.doctype, child.name, 'charge_type', tax.charge_type);
+                    frappe.model.set_value(child.doctype, child.name, 'account_head', tax.account_head);
+                    frappe.model.set_value(child.doctype, child.name, 'rate', tax.rate);
+                    frappe.model.set_value(child.doctype, child.name, 'included_in_print_rate', tax.included_in_print_rate);
+                });
+
+                // Refresh taxes child table to reflect changes
+                await frm.refresh_field('taxes');
+
+                console.log('Taxes child table updated successfully');
+            } else {
+                console.warn('No template or tax details found in the response');
+            }
+        } catch (error) {
+            console.error(`Error fetching or applying tax template: ${error}`);
+        }
+    } else {
+        console.log('Either not EFRIS or it is a return invoice. Tax template not set.');
+    }
+
+    // Set `update_stock` field when `efris_invoice` is enabled
+    const is_efris_invoice = frm.doc.efris_invoice == 1;
+
+    frm.set_value("update_stock", is_efris_invoice ? 1 : 0);
+    frm.refresh_field("update_stock");
+
+    frm.set_value("disable_rounded_total", is_efris_invoice ? 1 : 0);
+    frm.refresh_field("disable_rounded_total");
+}
+
+const set_efris_flag_based_on_items = (frm) => {
+    let is_efris_flag = 0;
+    frm.doc.items.forEach(item => {
+        console.log(`The Item Code is ${item.item_code}, EFRIS: ${item.efris_commodity_code}`);
+        if (item.efris_commodity_code) {
+            is_efris_flag = 1;                       
+        }
+    });
+    frm.set_value('efris_invoice', is_efris_flag);
+    console.log(`The Is EFRIS Flag is ${frm.doc.efris_invoice}`);
+};
+
+
+const get_irn_cancellation_fields = () => {
+    return [
+        {
+            label: "Reason Code",
+            fieldname: "reason",
+            fieldtype: "Select",
+            reqd: 1,
+            default: "102:Cancellation of the purchase",
+            options: [
+                "102:Cancellation of the purchase", 
+                "103:Invoice amount wrongly stated due to miscalculation", 
+                "104:Partial or complete waive off of the product", 
+                "105:Others (Please specify in Remarks below)"
+            ]
+        },
+        {
+            label: "Remark",
+            fieldname: "remark",
+            default: "Cancellation of the purchase",
+            fieldtype: "Data",
+            reqd: 1
+        }
+    ];
+};
+
+const raise_form_is_dirty_error = () => {
+    frappe.throw({
+        message: __('You must save the document before making e-invoicing request.'),
+        title: __('Unsaved Document')
+    });
+};
 
 function update_parent_field(frm) {
     // Iterate through the child table to calculate the total payment amount
