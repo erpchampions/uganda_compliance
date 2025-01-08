@@ -128,4 +128,17 @@ def before_save_query_company(doc, method):
         efris_log_error(f"Error in query_customer: {str(e)}")
         frappe.throw(f"Error querying customer: {str(e)}")
 
+@frappe.whitelist()
+def check_efris_company(tax_id, company_name):
+        # Check if either tax_id or ninBrn is provided
+        if tax_id:
+            
+            query_tax_details_T119 = {
+                "tin": tax_id,
+                "ninBrn": ""
+            }
 
+            # Make the post request to EFRIS
+            connection_status, response = make_post(interfaceCode="T119", content=query_tax_details_T119, company_name=company_name)
+                                 
+            return connection_status

@@ -2,6 +2,7 @@ import frappe
 from frappe.model.document import Document
 from frappe import _
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
+
 import json
 import subprocess
 from frappe.utils.password import get_decrypted_password, set_encrypted_password    
@@ -128,7 +129,7 @@ class EInvoicingSettings(Document):
         efris_log_info("Creating Tax Templates...")
 
         # Sales Tax Template (Mandatory)
-        if not self.sales_taxes_and_charges_template:
+        if not self.sales_taxes_and_charges_template and self.output_vat_account:
             try:
                 if frappe.db.exists("Sales Taxes and Charges Template", {"title": "EFRIS Sales VAT Taxes", "company": self.company}):
                     existing_template = frappe.get_value(
@@ -246,3 +247,4 @@ def update_efris_company(doc, method):
             efris_log_info(f"EFRIS Company is true...")
             company.save()
 
+        

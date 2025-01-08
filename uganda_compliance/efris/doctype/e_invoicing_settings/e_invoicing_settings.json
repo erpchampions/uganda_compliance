@@ -17,13 +17,15 @@
   "live_private_key",
   "sandbox_private_key_password",
   "live_private_key_password",
+  "test_connection",
+  "connection_status_display",
   "section_break_2",
   "output_vat_account",
   "input_vat_account",
   "column_break_3",
   "sales_taxes_and_charges_template",
   "purchase_taxes_and_charges_template",
-  "column_break_4",
+  "column_break_umjz3",
   "e_invoice_price_list_section",
   "efris_price_list",
   "efris_synchronization_section",
@@ -140,11 +142,7 @@
    "in_list_view": 1,
    "label": "Output VAT Account (for Sales)",
    "options": "Account",
-   "reqd": 1
-  },
-  {
-   "fieldname": "column_break_4",
-   "fieldtype": "Column Break"
+   "reqd": 0
   },
   {
    "collapsible": 1,
@@ -171,12 +169,14 @@
   },
   {
    "collapsible": 1,
+   "depends_on": "eval:doc.enabled == 1",
    "fieldname": "efris_synchronization_section",
    "fieldtype": "Section Break",
    "label": "EFRIS Synchronization"
   },
   {
    "collapsible": 1,
+   "depends_on": "eval:doc.enabled == 1",
    "fieldname": "logging_settings_section",
    "fieldtype": "Section Break",
    "label": "Logging Settings"
@@ -211,10 +211,25 @@
    "label": "Live Private Key Password",
    "mandatory_depends_on": "eval:!doc.sandbox_mode",
    "no_copy": 1
+  },
+  {
+   "fieldname": "test_connection",
+   "fieldtype": "Button",
+   "label": "Test Connection"
+  },
+  {
+   "fieldname": "column_break_umjz3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "connection_status_display",
+   "fieldtype": "HTML",
+   "label": "Connection Status",
+   "read_only": 1
   }
  ],
  "links": [],
- "modified": "2024-12-30 03:07:23.508883",
+ "modified": "2025-01-07 14:40:02.556409",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",

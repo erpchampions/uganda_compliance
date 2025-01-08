@@ -852,7 +852,7 @@ def on_submit_sales_invoice(doc, method):
         EInvoiceAPI.synchronize_e_invoice(sales_invoice)
         fdn = sales_invoice.efris_irn
         if fdn:
-            efris_log_info(f"Sales Invoice IRN :{fdn}")
+            efris_log_info(f"Sales Invoice already has FDN :{fdn}")
             return
         
         if (not einvoice_status or einvoice_status == 'EFRIS Pending') :
@@ -993,6 +993,7 @@ def Sales_invoice_is_efris_validation(doc, method):
             validate_efris_warehouse(doc)        
         # Automatically set EFRIS flag based on item codes
         else:
+            # logic utilized e.g. by POS Awesome / other  means of creating invoices
             set_efris_based_on_items(doc, items)
     
     except Exception as e:

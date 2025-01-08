@@ -47,15 +47,12 @@ frappe.ui.form.on('Sales Invoice', {
 // Bind child table events
 frappe.ui.form.on('Sales Invoice Item', {
     items_add: function(frm) {
-        console.log("Adding Item");
         set_efris_flag_based_on_items(frm);
     },
     items_remove: function(frm) {
-        console.log("Removing Item");
         set_efris_flag_based_on_items(frm);
     },
     item_code: function(frm) {
-        console.log("Checking Item Code");
         set_efris_flag_based_on_items(frm);
     }
 });
