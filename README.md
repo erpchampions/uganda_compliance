@@ -39,28 +39,31 @@ bench install-app ugandan_compliance
 
 ## **Getting Started with EFRIS: Quick Configuration Steps**
 
-1. **Set up Company E Invoicing Details:**  
-   - Add **VAT-TIN (Tax ID)** and **Email** in the **Company Master**.
+**Prerequisites**:
 
-2. **Configure E Invoicing Settings:**  
-   - Enable Integration.  
-   - Enter Device Number.  
-   - Verify and Configure **Tax Accounts** (Input VAT, Output VAT).  
+    - Register EFRIS Device and Thumbprint in TEST-Portal. Follow documentation **Step by step guide for EFRIS device and thumbprint registration (TEST).pdf** under **Downloads** section of this page: https://efristest.ura.go.ug/efrissite/canvas/site_index
+    Result should be a virtual Device Number and a Private Key file.
 
-3. **Verify Tax Templates:**  
-   - Confirm **Standard Rated (18%)**, **Zero Rated (0%)**, and **Exempt** templates.  
-   - Map them to appropriate **Commodity Codes**.
+1. **Set up E Company**
 
-4. **Set up EFRIS Warehouses:**  
-   - Enable the **EFRIS Warehouse Flag** on your warehouses.  
-   - Ensure stock operations align with EFRIS requirements.
+    - Add VAT-TIN (Tax ID) and EFRIS contact Email in the Company Master.
 
-5. **Run a Test Transaction in Sandbox Mode:**  
-   - Test your integration with **Sandbox Portal** before switching to **Live Mode**.
+2. **Configure E Invoicing Settings**:
 
-6. **Monitor EFRIS Logs:**  
-   - View all requests/responses in the **E Invoicing Request Log** table.
-   - Validate statuses and troubleshoot any communication issues.
+    - Enable Integration.
+
+    - Select E Company.
+
+    - Enter URA Device No
+
+    - Set path to Private Key file. Default mode is Sandbox.
+
+    - Set the password of the Private Key
+
+    - Save and Test connection. Ensure status is Green before proceeding.
+
+    - *Optional*: Set Tax Accounts (Output VAT and Input VAT) and save. EFRIS Tax templates will be auto-created with your Tax Accounts - i.e. Sales/Purchases Tax & Charges and Item Tax Templates
+
 
 For **detailed configuration and advanced setup**, refer to the full documentation below:  
 👉 **[Uganda Compliance Documentation](https://docs.uganda_compliance.app)**
@@ -84,5 +87,3 @@ Include the following details in your support request:
 - **TIN**  
 - **Device Number**  
 - **JSON Request/Response Samples**  
-
----
