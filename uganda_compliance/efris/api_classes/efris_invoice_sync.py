@@ -3,12 +3,9 @@ from frappe import _
 from uganda_compliance.efris.api_classes.efris_api import make_post
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from uganda_compliance.efris.api_classes.request_utils import get_ug_time_str
-from json import loads, dumps, JSONDecodeError
-from datetime import datetime
-from pyqrcode import create as qrcreate
-import io
-import os
-from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
+
+from datetime import datetime, timedelta  # Ensure timedelta is imported
+
 from uganda_compliance.efris.api_classes.e_invoice import EInvoiceAPI
 
 
@@ -21,37 +18,44 @@ def format_date(date_string, current_format="%d/%m/%Y", target_format="%Y-%m-%d"
 
 @frappe.whitelist()
 def efris_invoice_sync():
-    # Fetch the E Invoicing Settings (assuming it's single doctype or use limit=1)
+    
     reference_doc_type = ""
     reference_document = ""
-    company_list = []
+    company_settings_list = []
     enabled = ""
     enable_sync_from_efris = ""
-    startDate = "2024-12-15"
+    X_days = 0
+    invoice_counter = 0
+    #startDate = "2024-12-15"
     efris_log_info("efris_invoice_sync called...")
-    company_list = frappe.get_all("E Invoicing Settings",filters = [{"enabled":1,},{'enable_sync_from_efris':1}],fields=["*"])
-    for company in company_list:
+    company_settings_list = frappe.get_all("E Invoicing Settings",filters = [{"enabled":1,},{'enable_sync_from_efris':1}],fields=["*"])
+    for company in company_settings_list:
         # company_settings = frappe.db.get_doc("E Invoicing Settings",{'name':company.name})
         company_name = company.company
         deviceNo = company.device_no
         output_vat_account = company.output_vat_account
         sales_taxes_template = company.sales_taxes_and_charges_template
-        efris_log_info(f"The Fetched Company is {company_name}")
-        efris_log_info(f"The Fetched Device No is {deviceNo}")        
-        efris_log_info(f"Vat output Account :{output_vat_account}")        
-        efris_log_info(f"Sales Tax Template :{sales_taxes_template}")        
+            
         enabled = company.enabled       
         enable_sync_from_efris = company.enable_sync_from_efris       
-        reference_doc_type = company.name
-        efris_log_info(f"The Fetched company name  is {reference_doc_type}")
+        
+        reference_doc_type = "E Invoicing Settings"
         reference_document = company.name
+        X_days = company.sync_days_ago
+        efris_log_info(f"Sync Days Ago :{X_days}")
+        
         # Get the current date for the query
         if company_name and enabled and enable_sync_from_efris:
             current_date = frappe.utils.today()    
             warehouse = frappe.db.get_value("Warehouse",{"company":company_name,"efris_warehouse": 1},"name")  
             efris_log_info(f"The Active EFRIS Warehouse is {warehouse}")  
             pos_profile =   frappe.db.get_value("POS Profile",{"company":company_name,"warehouse": warehouse},"name")  
-            efris_log_info(f"The Active EFRIS Pos Profile is {pos_profile}")  
+
+           
+
+            # Calculate dates
+            end_date = frappe.utils.today()
+            start_date = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=X_days)).strftime("%Y-%m-%d")
 
             # Prepare the query for fetching invoice records from EFRIS (T107)
             query_invoice_credit_note_eligibilty_T07 = {
@@ -60,8 +64,8 @@ def efris_invoice_sync():
                 "buyerTin": "",
                 "buyerLegalName": "",
                 "invoiceType": "1",  # Assuming 1 is the correct type
-                "startDate": current_date,
-                "endDate": current_date,
+                "startDate": start_date,
+                "endDate": end_date,
                 "pageNo": "1",  # Pagination parameters
                 "pageSize": "99",  # Fetch 10 records at a time (adjust as necessary)
                 "branchName": ""
@@ -71,11 +75,9 @@ def efris_invoice_sync():
             efris_log_info(f"Fetching invoices from EFRIS for company: {company_name} on {current_date}")
             
             # Make the request to EFRIS using the T107 interface
-            status, response = make_post(interfaceCode = "T107", content = query_invoice_credit_note_eligibilty_T07, company_name = company_name,reference_doc_type = None, reference_document = reference_document)
+            status, response = make_post(interfaceCode = "T107", content = query_invoice_credit_note_eligibilty_T07, company_name = company_name,reference_doc_type = reference_doc_type, reference_document = reference_document)
             
-            if not status:
-                # Log the error and return if request fails
-                efris_log_error(f"Failed to fetch invoices from EFRIS: {response}")
+            if not status:                
                 frappe.throw(f"Failed to fetch invoices from EFRIS: {response}")
                 return
             
@@ -153,9 +155,7 @@ def efris_invoice_sync():
                 #TODO: we may have more than 1 
                 for tax_details in invoice_data["taxDetails"]:
                     taxAmount =  tax_details.get("taxAmount")  or ""
-                    efris_log_info(f"Tax Amount {taxAmount}") 
-                    #grossAmount = tax_details.get("grossAmount")  or ""
-                    #efris_log_info(f"Gross Amount is {grossAmount}")
+                    efris_log_info(f"Tax Amount {taxAmount}")                    
                 qrcode_path = invoice_data["summary"]["qrCode"]
                 if qrcode_path:
                     efris_log_info(f"QR Code Path exists...")
@@ -236,14 +236,10 @@ def efris_invoice_sync():
                    
                     efris_log_info(f"Processing item: {item_code}")
 
-                    if discount_flag == 1:
-                        # Extract discount-related fields
-                        # efris_dsct_item_discount = item.get("item", "")
+                    if discount_flag == 1:                        
                         efris_dsct_taxable_amount = float(item.get("total", 0))
                         efris_dsct_item_tax = float(item.get("tax", 0))
-                        efris_dsct_discount_total = float(item.get("discountTotal", 0))
-                        # efris_dsct_discount_tax = float(item.get("tax", 0))
-                        # efris_dsct_discount_tax_rate = float(item.get("discountTaxRate", 0))
+                        efris_dsct_discount_total = float(item.get("discountTotal", 0))                       
                         efris_log_info(f"Discount applied for item {item_code}: Total Discount: {efris_dsct_discount_total}, Taxable Amount: {efris_dsct_taxable_amount}, Discount Tax: {efris_dsct_discount_tax}")
                         efris_additional_discount_percentage = float((efris_dsct_discount_total / efris_dsct_taxable_amount) * 100)
                         efris_log_info(f" Additional Disccount is {efris_additional_discount_percentage}")
@@ -259,8 +255,7 @@ def efris_invoice_sync():
                             _(f"Item {item_code} not found. Please check the EFRIS Product Code or Item Code.")
                         )    
                     # Safely retrieve 'qty', default to 0 if not found
-                    qty = float(item.get("qty", 0))
-                    
+                    qty = float(item.get("qty", 0))                    
                     # Log a warning if 'qty' is missing or zero
                     if qty == 0:
                         efris_log_info(f"Missing or invalid 'qty' for item: {item.get('itemCode', 'Unknown')}. Skipping item.")
@@ -318,11 +313,9 @@ def efris_invoice_sync():
                     sales_invoice.pos_profile = pos_profile
                 sales_invoice.flags.ignore_tax = True  # Skip tax recalculation
                 sales_invoice.taxes_and_charges = sales_taxes_template
-                #sales_invoice.taxes = get_taxes_and_charges("Sales Taxes and Charges Template",sales_taxes_template)
-                # sales_invoice.save()
+                
                 sales_invoice.insert(ignore_permissions=True)
-                efris_log_info(f"Sales Invoice :{sales_invoice.name}")
-                efris_log_info(f"The Invoice IRN is {sales_invoice.efris_irn}")
+                
                 sales_invoice.submit()              
                 einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
                 efris_log_info(f"The einvoice status is {einvoice.status}")
@@ -333,13 +326,10 @@ def efris_invoice_sync():
                 qrCode = EInvoiceAPI.generate_qrcode(qrcode_path, einvoice)
                 if qrCode:
                     einvoice.qrcode_path = qrCode
-                einvoice.submit()
-                efris_log_info(f"E Invoice {einvoice.name} created successfuly")
-                
-                efris_log_info(f"Successfully created and submitted Sales Invoice for FDN {fdn}")
-                frappe.msgprint(f"Sales Invoice:{sales_invoice.name} created successfully")
-
+                einvoice.submit()                              
+                invoice_counter += 1
             frappe.msgprint("EFRIS Invoice Sync Completed.")
+            frappe.msgprint(f" {invoice_counter} : Invoices Synchronized from EFRIS")
 @frappe.whitelist()
 def get_customer_type(buyer_type):
     efris_customer_type = ''

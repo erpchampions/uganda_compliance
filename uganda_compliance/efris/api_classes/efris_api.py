@@ -13,26 +13,33 @@ from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings i
 
 ##############
 def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
-    efris_log_info("make post called...")
-    
+    efris_log_info("make_post called...")
     try:
-        
         e_settings = get_e_company_settings(company_name)
-        tin, device_no, private_key_path, sandbox_mode = e_settings.tin,e_settings.device_no, get_mode_private_key_path(e_settings), e_settings.sandbox_mode
-        brn = "" #TODO add BRN to E Company details under E Invoice Settings
-        efris_log_info(f"settings retrieved:{e_settings}")
-
+        tin, device_no, private_key_path, sandbox_mode = (
+            e_settings.tin,
+            e_settings.device_no,
+            get_mode_private_key_path(e_settings),
+            e_settings.sandbox_mode
+        )
+        brn = ""  # TODO: Add BRN to E Company details under E Invoice Settings
+        
         data = fetch_data()
         efris_log_info("Data fetched successfully")
-        private_key = get_private_key(private_key_path, e_settings)
+
+        try:
+            private_key = get_private_key(private_key_path, e_settings)
+        except Exception as e:
+            return False, f"Failed to retrieve private key: {e}"
+
         efris_log_info("Private key fetched successfully")
+
         aes_key = get_AES_key(tin, device_no, private_key, sandbox_mode)
         efris_log_info("AES key fetched successfully")
 
-
         json_content = json.dumps(content)
         efris_log_info("Content converted to JSON successfully: " + json_content)
-       
+
         isAESEncrypted = encrypt_aes_ecb(json_content, aes_key)
         efris_log_info("Content encrypted with AES successfully")
 
@@ -47,12 +54,9 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
             data["globalInfo"]["interfaceCode"] = interfaceCode
             data["data"]["content"] = base64.b64encode(isAESEncrypted).decode("utf-8")
             data["data"]["dataDescription"] = {"codeType": "1", "encryptCode": "2"}
-            
-
-
 
             signature = sign_data(private_key, newEncrypteddata.encode())
-            efris_log_info("signature done...")
+            efris_log_info("Signature completed...")
 
             if signature:
                 b4signature = base64.b64encode(signature).decode()
@@ -62,7 +66,6 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
         efris_log_info("Request data converted to JSON successfully")
         efris_log_info("Request data:\n")
         efris_log_info(data_json)
-               
 
         json_resp = post_req(data_json, e_settings.sandbox_mode)
 
@@ -85,7 +88,7 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
         respcontent = resp["data"]["content"]
         efris_response = decrypt_aes_ecb(aes_key, respcontent)
         efris_log_info("Response content decrypted successfully")
-       
+
         resp_json = json.loads(efris_response)
         efris_log_info("Decrypted JSON Data:")
         efris_log_info(resp_json)
@@ -100,5 +103,5 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
         return True, resp_json
 
     except Exception as e:
-        efris_log_error("An error occurred: " + str(e))
+        efris_log_error(f"An error occurred: {e}")
         return False, str(e)

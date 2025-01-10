@@ -89,33 +89,31 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode):
 
 def get_private_key(key_file_path, e_settings):
     try:
-        
         key_file_path = frappe.get_site_path(key_file_path.lstrip('/'))  # Ensure correct path construction
-        
+
         if not os.path.exists(key_file_path):
-            efris_log_error(f"Key file does not exist at provided key_file_path")
-            return None
+            efris_log_error(f"Key file does not exist at the provided path: {key_file_path}")
+            raise Exception(f"Key file does not exist at the provided path: {key_file_path}")
 
         with open(key_file_path, "rb") as f:
-            pfx_data = f.read()            
+            pfx_data = f.read()
 
-
-        private_key_password  = get_mode_decrypted_password(e_settings)
+        private_key_password = get_mode_decrypted_password(e_settings)
         password_bytes = private_key_password.encode('utf-8') if private_key_password else b""
 
         pfx = pkcs12.load_key_and_certificates(pfx_data, password_bytes, default_backend())
-        
         private_key = pfx[0]  # The private key is the first element
 
         if private_key is None:
-            efris_log_info('Private key extraction failed: private_key is None')
-            return None
-        
+            efris_log_error("Private key extraction failed: private_key is None")
+            raise Exception("Private key extraction failed: private_key is None")
+
         efris_log_info("get_private_key()...done")
         return private_key
+
     except Exception as e:
-        efris_log_info(f'Error extracting private key: {e}')
-        return None
+        efris_log_error(f"Error extracting private key: {e}")
+        raise  # Re-raise the exception to be handled by the caller
 
 def sign_data(private_key, data):
     try:

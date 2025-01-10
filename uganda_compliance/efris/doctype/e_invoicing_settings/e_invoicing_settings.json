@@ -30,6 +30,7 @@
   "efris_price_list",
   "efris_synchronization_section",
   "enable_sync_from_efris",
+  "sync_days_ago",
   "logging_settings_section",
   "enable_integration_logging",
   "enable_efris_file_logging"
@@ -67,6 +68,12 @@
    "fieldtype": "Check",
    "label": "Enable Invoice Sync From EFRIS"
   },
+  {
+    "default": "0",
+    "fieldname": "sync_days_ago",
+    "fieldtype": "Int",
+    "label": "Sync Days Ago"
+   },
   {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
