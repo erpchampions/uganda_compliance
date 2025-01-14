@@ -12,14 +12,27 @@ from frappe.utils.password import get_decrypted_password, set_encrypted_password
 e_company_settings_cache = {}
 
 
-def before_save_e_invoicing_settings(doc):
-    if doc.sandbox_private_key_password:
-        set_encrypted_password(doc.doctype, doc.name, doc.sandbox_private_key_password, 'sandbox_private_key_password')
-        efris_log_info("Sandbox private key password encrypted and saved successfully.")
+# def before_save_e_invoicing_settings(doc):
+#     if doc.sandbox_private_key_password:
+#         set_encrypted_password(doc.doctype, doc.name, doc.sandbox_private_key_password, 'sandbox_private_key_password')
+#         efris_log_info("Sandbox private key password encrypted and saved successfully.")
 
-    if doc.live_private_key_password:
-        set_encrypted_password(doc.doctype, doc.name, doc.live_private_key_password, 'live_private_key_password')
-        efris_log_info("Live private key password encrypted and saved successfully.")
+#     if doc.live_private_key_password:
+#         set_encrypted_password(doc.doctype, doc.name, doc.live_private_key_password, 'live_private_key_password')
+#         efris_log_info("Live private key password encrypted and saved successfully.")
+
+def before_save_e_invoicing_settings(doc):
+    old_doc = doc.get_doc_before_save()
+
+    if not old_doc or old_doc.sandbox_private_key_password != doc.sandbox_private_key_password:
+        if doc.sandbox_private_key_password:
+            set_encrypted_password(doc.doctype, doc.name, doc.sandbox_private_key_password, 'sandbox_private_key_password')
+            efris_log_info("Sandbox private key password encrypted and saved successfully.")
+    
+    if not old_doc or old_doc.live_private_key_password != doc.live_private_key_password:
+        if doc.live_private_key_password:
+            set_encrypted_password(doc.doctype, doc.name, doc.live_private_key_password, 'live_private_key_password')
+            efris_log_info("Live private key password encrypted and saved successfully.")
 
 
 def get_mode_decrypted_password(doc):

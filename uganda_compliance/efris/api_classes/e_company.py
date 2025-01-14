@@ -6,13 +6,11 @@ from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings i
 
 @frappe.whitelist()
 def before_save_query_company(doc, method):
-    
     efris_company_sync = doc.get('efris_company_sync')
     efris_log_info(f"The sync EFRIS Data Flag is {efris_company_sync}")
     if not efris_company_sync:
         efris_log_info('The Sync EFRIS Data flag is not Set {efris_company_sync}')
         return
-
     try:
         
         efris_log_info(f"Company query initiated for: {doc.name}")
@@ -49,7 +47,7 @@ def before_save_query_company(doc, method):
             # Make the post request to EFRIS
             success, response = make_post(interfaceCode="T119", content=query_customer_details_T119, company_name=company, reference_doc_type=doc.doctype, reference_document=doc.name)
                                  
-
+            
             if success:
                 efris_log_info(f"Company details successfully fetched for {doc.name}")
 
@@ -128,17 +126,16 @@ def before_save_query_company(doc, method):
         efris_log_error(f"Error in query_customer: {str(e)}")
         frappe.throw(f"Error querying customer: {str(e)}")
 
+
 @frappe.whitelist()
 def check_efris_company(tax_id, company_name):
-        # Check if either tax_id or ninBrn is provided
-        if tax_id:
-            
-            query_tax_details_T119 = {
-                "tin": tax_id,
-                "ninBrn": ""
-            }
+    if tax_id:
+        
+        query_tax_details_T119 = {
+            "tin": tax_id,
+            "ninBrn": ""
+        }
 
-            # Make the post request to EFRIS
-            connection_status, response = make_post(interfaceCode="T119", content=query_tax_details_T119, company_name=company_name)
-                                 
-            return connection_status
+        connection_status, response = make_post(interfaceCode="T119", content=query_tax_details_T119, company_name=company_name)
+                        
+        return connection_status
