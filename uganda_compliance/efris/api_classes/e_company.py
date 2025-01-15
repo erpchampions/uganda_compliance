@@ -4,141 +4,120 @@ from uganda_compliance.efris.api_classes.efris_api import make_post
 import json
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 
+
 @frappe.whitelist()
 def before_save_query_company(doc, method):
-    
-    efris_company_sync = doc.get('efris_company_sync')
-    efris_log_info(f"The sync EFRIS Data Flag is {efris_company_sync}")
-    if not efris_company_sync:
-        efris_log_info('The Sync EFRIS Data flag is not Set {efris_company_sync}')
+  
+    if not doc.get('efris_company_sync'):
+        efris_log_info('The Sync EFRIS Data flag is not set.')
         return
 
-    try:
-        
-        efris_log_info(f"Company query initiated for: {doc.name}")
-        
-        company_name = doc.get('company_name')
-        efris_log_info(f"Company Name :{company_name}")
+    efris_log_info(f"Company query initiated for: {doc.name}")
     
-        if not company_name:
-            frappe.throw("Company name is not provided.")
-            
-        company =  get_e_company_settings(company_name).company
-       
-        if company:
-            # e_company = company_settings[0].get("company")
-            efris_log_info(f"Company: {company}")
-        else:
-            efris_log_error("No E Invoicing Settings found.")
-            frappe.throw("No E Invoicing Settings found.")
+    company_name = doc.get('company_name')
+    if not company_name:
+        frappe.throw("Company name is not provided.")
+    
+    company = validate_company_name(company_name)
+    
+    tax_id, nin_brn = doc.get('tax_id'), doc.get('efris_nin_or_brn')
+    if not (tax_id or nin_brn):
+        efris_log_info(f"Company {doc.name} is not tax registered (No TIN/NIN/BRN provided).")
+        frappe.msgprint(f"Company {doc.name} is not tax registered.")
+        return
 
-        # Customer details from the document
-        tax_id = doc.get('tax_id')
-        ninBrn = doc.get('efris_nin_or_brn')
+    query_customer_details(doc, company, tax_id, nin_brn)
 
-        efris_log_info(f"Company: {doc.name}, Tax ID: {tax_id}, NIN/BRN: {ninBrn}")
 
-        # Check if either tax_id or ninBrn is provided
-        if tax_id or ninBrn:
-            
-            query_customer_details_T119 = {
-                "tin": tax_id,
-                "ninBrn": ninBrn
-            }
+def validate_company_name(company_name):
+    company_settings = get_e_company_settings(company_name)
+    company = company_settings.company if company_settings else None
+    if not company:
+        efris_log_error("No E Invoicing Settings found.")
+        frappe.throw("No E Invoicing Settings found.")
+    return company
 
-            # Make the post request to EFRIS
-            success, response = make_post(interfaceCode="T119", content=query_customer_details_T119, company_name=company, reference_doc_type=doc.doctype, reference_document=doc.name)
-                                 
 
-            if success:
-                efris_log_info(f"Company details successfully fetched for {doc.name}")
+def query_customer_details(doc, company, tax_id, nin_brn):
+    query_data = {"tin": tax_id, "ninBrn": nin_brn}
+    success, response = make_post(
+        interfaceCode="T119",
+        content=query_data,
+        company_name=company,
+        reference_doc_type=doc.doctype,
+        reference_document=doc.name,
+    )
 
-                # Parse response from EFRIS
-                company_data = response.get('taxpayer', {})
-                
-                # Log the fetched data
-                efris_log_info(f"Fetched data: {json.dumps(company_data, indent=2)}")
-                
-                # Extract details from the response
-                legal_name = company_data.get('legalName')                
-                address = company_data.get('address') or ""                
-                contact_mobile = company_data.get('contactMobile') or ""
-                contact_email = company_data.get('contactEmail') or ""
-                contact_number = company_data.get('contactNumber') or ""
-               
-                tin = company_data.get('tin') or ""
-                ninBrn = company_data.get('ninBrn') or ""
-                             
+    if success:
+        efris_log_info(f"Company details successfully fetched for {doc.name}")
+        company_data = response.get('taxpayer', {})
+        efris_log_info(f"Fetched data: {json.dumps(company_data, indent=2)}")
+        update_company_details(doc, company_data)
+        create_or_update_address(doc, company_data)
+    else:
+        efris_log_error(f"Failed to fetch Company details for {doc.name}: {response}")
+        frappe.throw(f"Failed to fetch Company details for {doc.name}: {response}")
 
-                if legal_name:
-                    doc.company_name = legal_name
-                    efris_log_info(f"The Company name has been updated to {legal_name}")
-                
-                if address:
-                    doc.address_html = '\n'.join([address,contact_mobile,contact_number,contact_email])
-                    efris_log_info(f"The Address is {doc.address_html}")
 
-                if contact_number:
-                    doc.efris_seller_mobile = contact_number
-                    doc.phone_no = contact_number
-                if tin:
-                    doc.tax_id = tin
-                if ninBrn:
-                    doc.efris_nin_or_brn = ninBrn
+def update_company_details(doc, company_data):
+    doc.company_name = company_data.get('legalName', doc.company_name)
+    doc.tax_id = company_data.get('tin', doc.tax_id)
+    doc.efris_nin_or_brn = company_data.get('ninBrn', doc.efris_nin_or_brn)
 
-                if contact_email:
-                    doc.email = contact_email   
+    contact_mobile = company_data.get('contactMobile', "")
+    contact_email = company_data.get('contactEmail', "")
+    contact_number = company_data.get('contactNumber', "")
+    address = company_data.get('address', "")
 
-                doc.efris_company_sync = 0   
+    doc.address_html = '\n'.join([address, contact_mobile, contact_number, contact_email])
+    doc.efris_seller_mobile = contact_number or doc.efris_seller_mobile
+    doc.phone_no = contact_number or doc.phone_no
+    doc.email = contact_email or doc.email
+    doc.efris_company_sync = 0
 
-                # Now, handle Address creation or updating
-                address_title = f"{legal_name} - Address"               
-                
-                new_address = frappe.get_doc({
-                    "doctype": "Address",
-                    "address_title": address_title,
-                    "address_type":"Billing",
-                    "address_line1": address,
-                    "city": "KAMPALA",
-                    "country": "Uganda",
-                    "phone":contact_number,
-                    "email_id":contact_email,
-                    "links": [{
-                        "link_doctype": "Company",
-                        "link_name": doc.name
-                        }],
-                    "is_your_company_address":1,
-                    "is_primary_address":1
-                    # Other mandatory fields
-                })
-                new_address.insert()
-                                    
-                    
-                frappe.msgprint(f"Company details successfully updated for {doc.name}")
-                efris_log_info(f"Company {doc.name} has been Updated successfully {response}")
+    efris_log_info(f"Updated company details for {doc.name}.")
 
-            else:
-                efris_log_error(f"Failed to fetch Company details for {doc.name}: {response}")
-                frappe.throw(f"Failed to fetch Company details for {doc.name}: {response}")
-        else:
-            efris_log_info(f"Company {doc.name} is not tax registered (No TIN/NIN/BRN provided)")
-            frappe.msgprint(f"Company {doc.name} is not tax registered")
 
+def create_or_update_address(doc, company_data):
+    legal_name = company_data.get('legalName', doc.company_name)
+    address_title = f"{legal_name} - Address"
+    address = company_data.get('address', "")
+    contact_email = company_data.get('contactEmail', "")
+    contact_number = company_data.get('contactNumber', "")
+
+    address_data = {
+        "doctype": "Address",
+        "address_title": address_title,
+        "address_type": "Billing",
+        "address_line1": address,
+        "city": "KAMPALA",
+        "country": "Uganda",
+        "phone": contact_number,
+        "email_id": contact_email,
+        "links": [{
+            "link_doctype": "Company",
+            "link_name": doc.name
+        }],
+        "is_your_company_address": 1,
+        "is_primary_address": 1,
+    }
+
+    try:
+        frappe.get_doc(address_data).insert()
+        efris_log_info(f"Address created for {doc.name}.")
     except Exception as e:
-        efris_log_error(f"Error in query_customer: {str(e)}")
-        frappe.throw(f"Error querying customer: {str(e)}")
+        efris_log_error(f"Failed to create address for {doc.name}: {str(e)}")
+        frappe.throw(f"Error creating address: {str(e)}")
 
 @frappe.whitelist()
 def check_efris_company(tax_id, company_name):
-        # Check if either tax_id or ninBrn is provided
-        if tax_id:
-            
-            query_tax_details_T119 = {
-                "tin": tax_id,
-                "ninBrn": ""
-            }
+    if tax_id:
+        
+        query_tax_details_T119 = {
+            "tin": tax_id,
+            "ninBrn": ""
+        }
 
-            # Make the post request to EFRIS
-            connection_status, response = make_post(interfaceCode="T119", content=query_tax_details_T119, company_name=company_name)
-                                 
-            return connection_status
+        connection_status, response = make_post(interfaceCode="T119", content=query_tax_details_T119, company_name=company_name)
+                        
+        return connection_status

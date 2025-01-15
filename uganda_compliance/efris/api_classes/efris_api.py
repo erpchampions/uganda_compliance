@@ -66,7 +66,8 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
         efris_log_info("Request data converted to JSON successfully")
         efris_log_info("Request data:\n")
         efris_log_info(data_json)
-
+        print("===========================================================")
+        print(str(data_json))
         json_resp = post_req(data_json, e_settings.sandbox_mode)
 
         resp = json.loads(json_resp)
