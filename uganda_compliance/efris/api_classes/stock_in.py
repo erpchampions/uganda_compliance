@@ -32,24 +32,17 @@ def stock_in_T131(doc, method):
     doctype = doc.get("doctype")
     efris_log_info(f"The Stock In Type is {doctype}")
     if doctype=="Stock Entry":
-        stock_entry_data(doc)
+        send_stock_entry(doc)
     if doctype=="Stock Reconciliation":
-        stock_reconciliation_date(doc)
+        send_stock_reconciliation(doc)
     if doctype=="Purchase Receipt":
-        purchase_receipt_data(doc)
+        send_purchase_receipt(doc)
 
 
-def stock_entry_data(doc):
-    ################################################
-    # STOCK ENTRY
-    ################################################
-    # Get the company from the doc
+def send_stock_entry(doc):
     e_company = doc.get("company")
     efris_log_info(f"The Company is: {e_company}")
-
     purpose = doc.get("purpose")
-    efris_log_info(f"The Stock Entry Type Selected is {purpose}")
-
     if purpose == "Material Transfer": 
 
         # Group items by reference purchase receipt number
@@ -64,84 +57,77 @@ def stock_entry_data(doc):
             items_by_receipt[reference_purchase].append(data)
 
         # Process each group of items based on their reference purchase receipt
-
         for reference_purchase, items in items_by_receipt.items():
             efris_log_info(f"Processing items for Purchase Receipt: {reference_purchase}")
 
-            # Initialize goodsStockInItem list for the current purchase receipt
-            goodsStockInItem = []
-            supplier = ""
-            tax_Id = ""
-            stockInType = "102"
-            goodsCode = ""
-            item_code = ""
-            for data in items:
-                is_efris = data.get("efris_transfer")
-                efris_log_info(f"efris_transfer: {is_efris}")
+            goodsStockInItem, supplier, tax_Id, stockInType = stock_entry_item_data(items, reference_purchase)
 
-                
-                if is_efris:
-                    item_uom = data.get("uom")
-                    item_code = data.get("item_code")  # Ensure item_code is defined within this scope
-                    goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
-                    efris_log_info(f"EFRIS Product Code is {goodsCode}")
-                    if goodsCode:
-                        item_code = goodsCode
-                    efris_log_info(f"UOM from items table: {item_uom}")
-                    efris_uom_code = frappe.db.get_value('UOM', {'uom_name': item_uom}, 'efris_uom_code') or ''
-                    efris_log_info(f"EFRIS UOM code is: {efris_uom_code}")
-                    efris_unit_price = data.get("efris_unit_price")
-                    #if efris_unit_price:
-                    #    efris_unit_price = round(efris_unit_price,2) 
-
-                    # Fetch purchase receipt details
-                    if reference_purchase:                       
-                        efris_log_info(f"The target Purchase Receipt is: {reference_purchase}")
-                        purchase_rec = frappe.get_doc("Purchase Receipt", reference_purchase)
-                        supplier = purchase_rec.supplier_name
-                        efris_log_info(f"The supplier name is: {supplier}")
-                        stockInType = purchase_rec.efris_stockin_type.split(":")[0]
-                        efris_log_info(f"The Stock In type for {purchase_rec} is {stockInType}")
-                        
-                        tax_Id = frappe.db.get_value("Supplier", {'supplier_name': supplier}, "tax_id")
-                    
-
-                    goodsStockInItem.append(
-                        {
-                            "commodityGoodsId": "",
-                            "goodsCode": item_code,
-                            "measureUnit": efris_uom_code,
-                            "quantity": data.get("qty"),
-                            "unitPrice": efris_unit_price,
-                            "remarks": data.get("remarks") if data.get('remarks') else "",
-                            "fuelTankId": "",
-                            "lossQuantity": "",
-                            "originalQuantity": "",
-                        }
-                    )
-                    efris_log_info(f"Total items to be processed: {len(goodsStockInItem)}")
-
-            # Ensure 'item_code' is defined before using it
             if not goodsStockInItem:
                 efris_log_info(f"Skipping, no items found for Purchase Receipt: {reference_purchase}")
                 continue
 
             # Construct the EFRIS payload for the current purchase receipt
             stockin_date = doc.get("posting_date") or frappe.utils.today()
-            efris_log_info(f"stockin_date: {stockin_date}")
-
             supplierTin=tax_Id if tax_Id else ""
             remarks=doc.get("remarks") if doc.get('remarks') else ""
             stockInDate=str(stockin_date)
             supplier=supplier if supplier else ""
             goods_Stock_upload_T131 = goods_Stock_T131_data("101", "", remarks,stockInDate, stockInType, "", "", "", "", "", "", "101", goodsStockInItem, supplier, supplierTin)
-            # Make the post request to EFRIS for the current purchase receipt
+
             success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
-            
             handle_response(success,"Stock Entry Detail", response, items, e_company, reference_purchase)
+              
+def stock_entry_item_data(items, reference_purchase):
+    goodsStockInItem = []
+    supplier = ""
+    tax_Id = ""
+    stockInType = "102"
+    goodsCode = ""
+    item_code = ""
+    for data in items:
+        is_efris = data.get("efris_transfer")
+        
+        if is_efris:
+            item_uom = data.get("uom")
+            item_code = data.get("item_code")  # Ensure item_code is defined within this scope
+            goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
+            if goodsCode:
+                item_code = goodsCode
+            efris_uom_code = frappe.db.get_value('UOM', {'uom_name': item_uom}, 'efris_uom_code') or ''
+            efris_unit_price = data.get("efris_unit_price")
+            #if efris_unit_price:
+            #    efris_unit_price = round(efris_unit_price,2) 
+
+            # Fetch purchase receipt details
+            if reference_purchase:                       
+                efris_log_info(f"The target Purchase Receipt is: {reference_purchase}")
+                purchase_rec = frappe.get_doc("Purchase Receipt", reference_purchase)
+                supplier = purchase_rec.supplier_name
+                efris_log_info(f"The supplier name is: {supplier}")
+                stockInType = purchase_rec.efris_stockin_type.split(":")[0]
+                efris_log_info(f"The Stock In type for {purchase_rec} is {stockInType}")
+                
+                tax_Id = frappe.db.get_value("Supplier", {'supplier_name': supplier}, "tax_id")
             
+            goodsStockInItem.append(
+                {
+                    "commodityGoodsId": "",
+                    "goodsCode": item_code,
+                    "measureUnit": efris_uom_code,
+                    "quantity": data.get("qty"),
+                    "unitPrice": efris_unit_price,
+                    "remarks": data.get("remarks") if data.get('remarks') else "",
+                    "fuelTankId": "",
+                    "lossQuantity": "",
+                    "originalQuantity": "",
+                }
+            )
+            efris_log_info(f"Total items to be processed: {len(goodsStockInItem)}")
             
-def stock_reconciliation_date(doc):
+    return goodsStockInItem, supplier, tax_Id, stockInType
+
+
+def send_stock_reconciliation(doc):
     purpose = doc.get("purpose")
     efris_log_info(f"The Selected Stock Reconciliation Purpose is {purpose}")
     is_efris_count = 0
@@ -154,7 +140,6 @@ def stock_reconciliation_date(doc):
         efris_log_info(f"Purchase Receipt List Items are Non EFRIS")
         return
 
-    # Get the company from the doc
     e_company = doc.get("company")
     efris_log_info(f"The Company is: {e_company}")
     # Initialize the dictionary to group items
@@ -174,16 +159,8 @@ def stock_reconciliation_date(doc):
     for key, items in items_map.items():
         efris_log_info(f"Processing items for key: {key}")
 
-        # Initialize goodsStockInItem list for the current group
-        goodsStockInItem = []
-        adjustment_code = ""
-        supplier = ""
-        tax_Id = ""
-        remark = ""
-        stockIntype = "101"
         item_code = ""
         goodsCode = ""
-        
         
         goodsStockInItem, adjustment_code, supplier,tax_Id, stockIntype, remark = goods_stock_recon_item(goodsStockInItem, items, purpose)
         
@@ -261,7 +238,7 @@ def goods_stock_recon_item(goodsStockInItem, items, purpose):
             continue
     return goodsStockInItem, adjustment_code, supplier,tax_Id, stockIntype, remark
 
-def purchase_receipt_data(doc):
+def send_purchase_receipt(doc):
         e_company = doc.get("company")
         e_currency = doc.get('currency')
         purchase_currency = doc.get('currency')
@@ -355,7 +332,6 @@ def handle_response(success,child_table, response, items, e_company, key):
         
         for item in items:
             frappe.db.set_value(child_table, item.name, 'efris_registered', 1)
-            efris_log_info(f"The EFRIS Registered flag for item: {item.item_code} is set to true")
     else:
         error_message = f"Failed to upload Stock to EFRIS for {e_company} under key {key}: {response}"
         frappe.log_error(error_message)
