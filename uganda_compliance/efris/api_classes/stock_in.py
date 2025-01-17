@@ -162,7 +162,7 @@ def send_stock_reconciliation(doc):
         item_code = ""
         goodsCode = ""
         
-        goodsStockInItem, adjustment_code, supplier,tax_Id, stockIntype, remark = goods_stock_recon_item(goodsStockInItem, items, purpose)
+        goodsStockInItem, adjustment_code, supplier,tax_Id, stockIntype, remark = goods_stock_recon_item(items, purpose)
         
         # Construct the EFRIS payload based on the purpose
         if purpose == "Opening Stock":
@@ -181,7 +181,7 @@ def send_stock_reconciliation(doc):
         handle_response(success,child_table, response, items, e_company, key)
         
 
-def goods_stock_recon_item(goodsStockInItem, items, purpose):
+def goods_stock_recon_item(items, purpose):
     goodsStockInItem = []
     adjustment_code = ""
     supplier = ""
