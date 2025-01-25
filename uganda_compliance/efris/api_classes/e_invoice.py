@@ -50,7 +50,6 @@ class EInvoiceAPI:
 		efris_log_info(f"after einvoice creation")
 
 		status, response = EInvoiceAPI.make_credit_note_return_application_request(einvoice, sales_invoice)
-	   
 		if status:
 			EInvoiceAPI.handle_successful_credit_note_return_application(einvoice, response)
 			efris_log_info(f"Credit Note Return Appliction Successfull for einvoice :{einvoice}")
@@ -381,15 +380,16 @@ class EInvoiceAPI:
 				  
 				if not taxRate or taxRate in ["-", "Exempt"]:                  
 					discountTaxRate = "0.0"
+
 			item_list.append({
 				"item": item.item_name,
 				"itemCode": item_code,
 				"qty": str(item.quantity),
 				"unitOfMeasure": frappe.get_doc("UOM",item.unit).efris_uom_code,
-				"unitPrice": str(item.rate),
+				"unitPrice":str(item.rate),
 				"total": str(taxable_amount),
 				"taxRate": str(taxRate),
-				"tax": str(taxes),
+				"tax":  str(taxes),
 				"discountTotal": str((discount_amount)) if discount_percentage > 0 else "",
 				"discountTaxRate": str(discountTaxRate),
 				"orderNumber": str(orderNumber),
@@ -412,44 +412,17 @@ class EInvoiceAPI:
 			})
 			orderNumber += 1
 			credit_note.update({"goodsDetails": item_list})
-			if discount_percentage > 0:               
-				if taxRate == '0.18':                    
-					discount_tax = -1 * item.efris_dsct_discount_tax                    
-				else:
-					discount_tax = taxes
-					
-				discount_item = {
-							"item": discounted_item,
-							"itemCode": item_code,
-							"qty": "",
-							"unitOfMeasure": "",
-							"unitPrice": "",
-							"total": str((discount_amount)),
-							"taxRate": str(taxRate),
-							"tax": str((discount_tax)),
-							"discountTotal": "",
-							"discountTaxRate": str(discountTaxRate),
-							"orderNumber": str(orderNumber),
-							"discountFlag": "0",
-							"deemedFlag": "2",
-							"exciseFlag": "2",
-							"categoryId": "",
-							"categoryName": "",
-							"goodsCategoryId": item.efris_commodity_code,
-							"goodsCategoryName": "",
-							"vatApplicableFlag": "1",
-						}
-				item_list.append(discount_item)
-				credit_note.update({"goodsDetails": item_list})
-				orderNumber += 1
+			
+				# credit_note.update({"goodsDetails": item_list})
+				# orderNumber += 1
 		tax_list = []
 		for tax in einvoice.taxes:
 			tax_list.append({
 				"taxCategoryCode": tax.tax_category_code.split(':')[0],
 				"netAmount": tax.net_amount,
-				"taxRate": str(tax.tax_rate),
-				"taxAmount": str(tax.tax_amount), #Tried this but it did not work
-				"grossAmount": tax.gross_amount,
+				"taxRate":  str(tax.tax_rate),
+				"taxAmount":  str(tax.tax_amount),
+				"grossAmount":  tax.gross_amount,
 				"exciseUnit": tax.excise_unit,
 				"exciseCurrency": tax.excise_currency,
 				"taxRateName": tax.tax_rate_name
@@ -457,8 +430,8 @@ class EInvoiceAPI:
 
 		credit_note.update({"taxDetails": tax_list})
 		credit_note.update({"summary": {
-			"netAmount": einvoice.net_amount,
-			"taxAmount": einvoice.tax_amount,
+			"netAmount": einvoice.net_amount, 
+			"taxAmount":  einvoice.tax_amount,
 			"grossAmount": einvoice.gross_amount,
 			"itemCount": str(einvoice.item_count),
 			"modeCode": "0",
@@ -528,9 +501,9 @@ class EInvoiceAPI:
 		}})
 
 		efris_log_info(f"Credit Note JSON before Make_Post: {credit_note}")
-
+		# credit_note
 		company_name = einvoice.company
-		# frappe.throw(str(credit_note))
+
 		status, response = make_post(interfaceCode="T110", content=credit_note, company_name=company_name, reference_doc_type=sale_invoice.doctype, reference_document=sale_invoice.name)
 		return status, response
 
@@ -546,7 +519,6 @@ class EInvoiceAPI:
 		einvoice_json = einvoice.get_einvoice_json()
 		
 		company_name = sales_invoice.company
-		# frappe.throw(str(einvoice_json))
 
 		status, response = make_post(interfaceCode="T109", content=einvoice_json, company_name=company_name, reference_doc_type= sales_invoice.doctype, reference_document=sales_invoice.name)
 		if status:
@@ -677,7 +649,7 @@ class EInvoiceAPI:
 			})
    
 		credit_note.update({"goodsDetails": item_list})
-		frappe.throw(str(item_list))
+		# frappe.throw(str(item_list))
 		tax_list = []
 		for tax in einvoice.taxes:
 			tax_list.append({
@@ -790,7 +762,7 @@ class EInvoiceAPI:
 		efris_log_info(f"Credit Note JSON before Make_Post: {credit_note}")
 
 		company_name = einvoice.company
-		frappe.throw(str(credit_note))
+		# frappe.throw(str(credit_note))
 		status, response = make_post(interfaceCode="T110", content=credit_note, company_name=company_name, reference_doc_type=einvoice.doctype, reference_document=einvoice.name)
 				
 			
@@ -1439,3 +1411,18 @@ def validate_company(doc):
 		valid = False
 
 	return valid
+
+
+def new_credit_note_rate(sales_invoice):
+	doc = frappe.get_doc("Sales Invoice", sales_invoice)
+	if doc.additional_discount_percentage > 0:
+		discount = doc.additional_discount_percentage
+		return discount
+
+#New rate after discount on sales invoice
+def before_save(doc, method):
+    if doc.is_new() and doc.is_return:
+        sales_invoice = doc.return_against
+        for item in doc.items:
+            item.rate = item.rate - (new_credit_note_rate(sales_invoice) * item.rate) / 100
+            item.amount = item.rate * item.qty
