@@ -13,14 +13,13 @@ def before_save_query_customer(doc, method):
     if doc.is_new():
         efris_log_info(f"Please Save Customer: {doc.name}")        
         # if not doc.tax_id and not doc.efris_nin_or_brn:
-        return  # Skip if neither tax_id nor NIN/BRN is provided
+        return  
 
     # Scenario 2: Handling customer update with sync_from_efris checked
     if sync_from_efris:
         efris_log_info(f"Customer {doc.name} is being updated with EFRIS sync.")
         
         # Check for E Company when syncing with EFRIS
-      # Fetch an enabled company from e_invoicing_settings
         enabled_e_company = frappe.get_all(
             "E Invoicing Settings",
             filters={"enabled": 1},
@@ -139,7 +138,6 @@ def map_taxpayer_type(taxpayer_type):
     mapping = {
         "201": "Individual",
         "202": "Company",
-        # Add other mappings as needed
     }
     return mapping.get(taxpayer_type, "Individual")  # Default to Individual if not found
 
