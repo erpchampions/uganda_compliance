@@ -230,7 +230,9 @@ doc_events = {
         "on_cancel": "uganda_compliance.efris.api_classes.e_invoice.on_cancel_sales_invoice",
         "before_save": ["uganda_compliance.efris.api_classes.e_invoice.Sales_invoice_is_efris_validation",
                         "uganda_compliance.efris.api_classes.e_invoice.sales_uom_validation" ,
-                        "uganda_compliance.efris.api_classes.e_invoice.calculate_additional_discounts"                      
+                        "uganda_compliance.efris.api_classes.e_invoice.calculate_additional_discounts",
+                                                "uganda_compliance.efris.api_classes.e_invoice.before_save"                      
+                      
                         ]                
         
     },
