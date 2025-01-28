@@ -391,8 +391,8 @@ class EInvoiceAPI:
 				"total": str(taxable_amount),
 				"taxRate": str(taxRate),
 				"tax":  str(taxes),
-				"discountTotal": str((discount_amount)) if discount_percentage > 0 else "",
-				"discountTaxRate": str(discountTaxRate),
+				# "discountTotal": str((discount_amount)) if discount_percentage > 0 else "",
+				# "discountTaxRate": str(discountTaxRate),
 				"orderNumber": str(orderNumber),
 				"discountFlag": discountFlag if discount_percentage > 0 else "2",
 				"deemedFlag": "2",
@@ -1410,18 +1410,24 @@ def validate_company(doc):
 
 	return valid
 
-
 def new_credit_note_rate(sales_invoice):
-	doc = frappe.get_doc("Sales Invoice", sales_invoice)
-	if doc.additional_discount_percentage > 0:
-		discount = doc.additional_discount_percentage
-		return discount
+    doc = frappe.get_doc("Sales Invoice", sales_invoice)
+    
+    if doc.additional_discount_percentage > 0.0:
+        return doc.additional_discount_percentage
+    
+    return None
 
-#New rate after discount on sales invoice
 def before_save(doc, method):
-    if doc.is_new() and doc.is_return:
+    if doc.is_new() and doc.is_return and doc.return_against:
         sales_invoice = doc.return_against
+        
+        discount = new_credit_note_rate(sales_invoice)
+        
+        if discount is None:
+            return
+        
         for item in doc.items:
-            item.rate = item.rate - (new_credit_note_rate(sales_invoice) * item.rate) / 100
+            item.rate = item.rate - (discount * item.rate) / 100
             item.amount = item.rate * item.qty
 
