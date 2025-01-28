@@ -2,6 +2,176 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 11:10:00.957727",
+  "must_be_whole_number": 0,
+  "name": "PAL",
+  "uom_name": "PAL"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 11:53:55.904967",
+  "must_be_whole_number": 0,
+  "name": "Ea (ea)",
+  "uom_name": "Ea (ea)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 11:54:17.741616",
+  "must_be_whole_number": 0,
+  "name": "M3",
+  "uom_name": "M3"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 11:54:27.823498",
+  "must_be_whole_number": 0,
+  "name": "MT",
+  "uom_name": "MT"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 11:54:38.948398",
+  "must_be_whole_number": 0,
+  "name": "MTS",
+  "uom_name": "MTS"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 11:56:30.860059",
+  "must_be_whole_number": 0,
+  "name": "PL",
+  "uom_name": "PL"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 11:56:38.833871",
+  "must_be_whole_number": 0,
+  "name": "TIN",
+  "uom_name": "TIN"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 11:56:44.544757",
+  "must_be_whole_number": 0,
+  "name": "TNS",
+  "uom_name": "TNS"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 14:14:31.942181",
+  "must_be_whole_number": 0,
+  "name": "XX",
+  "uom_name": "XX"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 14:28:41.783349",
+  "must_be_whole_number": 0,
+  "name": "YY",
+  "uom_name": "YY"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-09 14:28:48.021294",
+  "must_be_whole_number": 0,
+  "name": "DRM",
+  "uom_name": "DRM"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-03-11 13:58:30.199723",
+  "must_be_whole_number": 0,
+  "name": "Jerrycans",
+  "uom_name": "Jerrycans"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-04-30 17:15:37.183017",
+  "must_be_whole_number": 0,
+  "name": "BAG",
+  "uom_name": "BAG"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-04-30 17:18:07.651502",
+  "must_be_whole_number": 0,
+  "name": "UL",
+  "uom_name": "UL"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-05-15 19:35:49.481346",
+  "must_be_whole_number": 0,
+  "name": "Month",
+  "uom_name": "Month"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-05-27 12:53:41.042551",
+  "must_be_whole_number": 0,
+  "name": "lbs",
+  "uom_name": "lbs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2024-08-27 10:58:12.414547",
+  "must_be_whole_number": 0,
+  "name": "Each",
+  "uom_name": "Each"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
   "efris_uom_code": "102",
   "enabled": 1,
   "modified": "2024-10-29 15:08:44.832475",

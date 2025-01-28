@@ -210,7 +210,8 @@ class EInvoice(Document):
         for tax_item in self.sales_invoice.taxes:
             accnt_id = tax_item.account_head
             accnt = frappe.get_doc('Account', accnt_id)
-            if tax_item.charge_type == "On Net Total" and accnt.account_name == "VAT":
+            # vat account for Mogas Uganda is Output Vat not VAT: before we where only checking for VAT
+            if tax_item.charge_type == "On Net Total" and (accnt.account_name == "VAT" or accnt.account_name == "Output VAT"):
                 e_taxes_table = {}
                 for e_invoice_item in self.items:
                     e_tax_category = e_invoice_item.e_tax_category

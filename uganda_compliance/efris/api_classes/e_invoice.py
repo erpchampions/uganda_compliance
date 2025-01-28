@@ -608,12 +608,16 @@ class EInvoiceAPI:
 
     @staticmethod
     def confirm_irn_cancellation(sales_invoice):
-        efris_log_info(f"confirm_irn_cancellation called ...")
-        sales_invoice = EInvoiceAPI.parse_sales_invoice(sales_invoice)
+        efris_log_info(f"staticMethod ..confirm_irn_cancellation called ...")
+        invoice_doc =  sales_invoice
+        efris_log_info(f"before parse ...{invoice_doc}")
+        sales_invoice = EInvoiceAPI.parse_sales_invoice(invoice_doc)
+        efris_log_info(f"after parse done...{sales_invoice.is_return}")
         einvoice = EInvoiceAPI.get_einvoice(sales_invoice.name)
-        
+        efris_log_info(f"after get_einvoice done...{einvoice}")
         status, response = EInvoiceAPI.make_confirm_irn_cancellation_request(einvoice)
         if status:
+            efris_log_info(f"Credit Note Status: {response}")
             frappe.msgprint(_("Credit Note Status: " + str(response)), alert=1)
         else:
             frappe.throw(response, title=_('Error Confirming EFRIS Cancellation'))
@@ -760,7 +764,7 @@ class EInvoiceAPI:
             original_einvoice.status = "EFRIS Cancelled"
             original_einvoice.save()
 
-            return True, "Credit Note Approved! New Credit Note Invoice No: " + str(einvoice.credit_note_invoice_no)
+            return True, "Credit Note Approved! New Credit Note Invoice No: " + str(credit_invoice_no)
         return True, ""
         
 
@@ -916,41 +920,45 @@ def validate_sales_invoice(doc,method):
                 efris_log_error("No Sales Taxes and Charges Template found.")
                 frappe.throw("No Sales Taxes and Charges Template found!")
 
-
-def check_credit_note_approval_status():
-    # Log the start of the process
-    frappe.throw("Test error")
-    efris_log_info("Starting daily check for EFRIS credit note approval status.")
-    
-    # Fetch all sales invoices that are pending credit note approval in EFRIS
-    sales_invoices = frappe.get_all("Sales Invoice", filters={
-        'efris_einvoice_status': 'EFRIS Credit Note Pending'
-    })
-
-    if not sales_invoices:
-        efris_log_info("No Sales Invoices found with 'EFRIS Credit Note Pending'.")
-        return
-    
-    # Loop through each sales invoice and check the approval status
-    for sales_invoice in sales_invoices:
-        try:
-            sales_invoice_doc = frappe.get_doc("Sales Invoice", sales_invoice.name)
-            efris_log_info(f"Checking approval status for Sales Invoice: {sales_invoice.name}")
-            
-            # Call the method to check the EFRIS status
-            status, response = EInvoiceAPI.confirm_irn_cancellation(sales_invoice_doc)
-
-            # Log the response
-            if status:
-                efris_log_info(f"Credit note approval successful for Sales Invoice: {sales_invoice.name}.")
-            else:
-                frappe.logger().error(f"Failed to check approval for Sales Invoice: {sales_invoice.name}. Response: {response}")
-        
-        except Exception as e:
-            frappe.log_error(f"Error checking EFRIS status for Sales Invoice {sales_invoice.name}: {e}", "EFRIS Credit Note Approval Check")
-
+@frappe.whitelist()
+def check_credit_note_approval_status():    #
+    #Checks the approval status of credit notes for Sales Invoices marked with    #'EFRIS Credit Note Pending' in EFRIS and updates the system accordingly.
+    # Log the start of the process    efris_log_info("Starting daily check for EFRIS credit note approval status.")
+    try:
+        # Fetch all Sales Invoices pending credit note approval in EFRIS 
+        sales_invoices = frappe.get_all("Sales Invoice",filters={'efris_einvoice_status': 'EFRIS Credit Note Pending'},fields=['name'] )
+        if not sales_invoices:
+            efris_log_info("No Sales Invoices found with 'EFRIS Credit Note Pending'.")             
+            return
+        # Loop through each Sales Invoice and check the approval status
+        for invoice in sales_invoices:  
+            sales_invoice_name = invoice.get("name")
+            if not sales_invoice_name: 
+                frappe.logger().error("Sales Invoice record with missing name encountered. Skipping.")
+                continue
+            try:  
+              # Fetch the Sales Invoice document
+                sales_invoice_doc = frappe.get_doc("Sales Invoice", sales_invoice_name)            
+                
+                efris_log_info(f"Checking approval status for Sales Invoice: {sales_invoice_name}")
+                # Call the method to check the EFRIS status
+                status, response = EInvoiceAPI.confirm_irn_cancellation(sales_invoice_doc)
+                # Log the response and update the document if necessary               
+                if status:
+                    efris_log_info(f"Credit note approval successful for Sales Invoice: {sales_invoice_name}.") 
+                    sales_invoice_doc.efris_einvoice_status = "EFRIS Credit Note Approved"
+                    sales_invoice_doc.save(ignore_permissions=True)                
+                    
+                else:
+                    frappe.logger().error(f"Failed to check approval for Sales Invoice: {sales_invoice_name}. Response: {response}")
+            except frappe.DoesNotExistError:                  
+                    frappe.log_error(f"Sales Invoice {sales_invoice_name} does not exist.","EFRIS Credit Note Approval Check") 
+            except Exception as e:
+                frappe.log_error(frappe.get_traceback(),f"Error checking EFRIS status for Sales Invoice {sales_invoice_name}: {str(e)}")
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Error in check_credit_note_approval_status")
+    # Log the completion of the process    
     efris_log_info("Completed daily check for EFRIS credit note approval status.")
-
 
 @frappe.whitelist()
 def generate_irn(sales_invoice_doc):

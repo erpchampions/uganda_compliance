@@ -49,10 +49,10 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode):
         #data_json = json.dumps(data).replace("'", '"').replace("\n", "").replace("\r", "")
         data_json = json.dumps(data, separators=(',', ':'))  # Minimize JSON size
         
-        efris_log_info("Request data converted to JSON successfully")
+        efris_log_info(f"Request data converted to JSON successfully {data_json}")
 
         resp = post_req(data_json, sandbox_mode)
-        efris_log_info("POST request to fetch AES key successful")
+        efris_log_info(f"POST request to fetch AES key successful: {resp}")
 
         jsonresp = json.loads(resp)
         efris_log_info("Response JSON parsed successfully")

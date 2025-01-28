@@ -26,7 +26,7 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
         
         data = fetch_data()
         efris_log_info("Data fetched successfully")
-
+        efris_log_info("Private Key Path: " + str(private_key_path))
         try:
             private_key = get_private_key(private_key_path, e_settings)
         except Exception as e:
