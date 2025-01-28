@@ -1,39 +1,81 @@
 frappe.ui.form.on('Sales Invoice', {
+    // async refresh(frm) {
+    //     if (frm.is_dirty()) return;
+
+    //     let is_efris = frm.doc.efris_invoice;
+
+    //     if (is_efris == 1) {
+    //         try {
+    //             const { einvoice_status } = frm.doc;
+
+    //             if (einvoice_status === 'EFRIS Credit Note Pending') {
+    //                 add_einvoice_button(__('Check EFRIS Approval Status'), async () => {
+    //                     if (frm.is_dirty()) return raise_form_is_dirty_error();
+
+    //                     await frm.reload_doc();
+
+    //                     try {
+    //                         await frappe.call({
+    //                             method: 'uganda_compliance.efris.api_classes.e_invoice.confirm_irn_cancellation',
+    //                             args: { sales_invoice: frm.doc },
+    //                             freeze: true,
+    //                             callback: function(r) {
+    //                                 if (!r.exc) {
+    //                                     frm.reload_doc(); // Reload the form here
+    //                                 }
+    //                             }
+    //                         });
+    //                     } catch (error) {
+    //                         console.error(`Error confirming IRN cancellation: ${error}`);
+    //                     }
+    //                 });
+    //             }
+    //         } catch (error) {
+    //             console.error(`Error in refresh: ${error}`);
+    //         }
+    //     }
+    // },
     async refresh(frm) {
+        console.log("refresh here");
         if (frm.is_dirty()) return;
-
         let is_efris = frm.doc.efris_invoice;
-
-        if (is_efris == 1) {
+        console.log(`Is Efris Sales Invoice set to ${is_efris}`)
+         if (is_efris == 1){
             try {
-                const { einvoice_status } = frm.doc;
-
+                // const invoice_eligible = await get_einvoice_eligibility(frm.doc);
+                // if (!invoice_eligible) return;
+                const einvoice_status  = frm.doc.efris_einvoice_status;
+                const add_einvoice_button = (label, action) => {
+                    if (!frm.custom_buttons[label]) {
+                        frm.add_custom_button(label, action, __('E-Invoicing'));
+                    }
+                };
+                console.log(`Einvoice Status is ${einvoice_status}`);
                 if (einvoice_status === 'EFRIS Credit Note Pending') {
-                    add_einvoice_button(__('Check EFRIS Approval Status'), async () => {
+                    console.log("Credit Note Pending");
+                    add_einvoice_button(__('Check Efris Approval Status'), async () => {
                         if (frm.is_dirty()) return raise_form_is_dirty_error();
-
                         await frm.reload_doc();
-
                         try {
                             await frappe.call({
                                 method: 'uganda_compliance.efris.api_classes.e_invoice.confirm_irn_cancellation',
                                 args: { sales_invoice: frm.doc },
-                                freeze: true,
-                                callback: function(r) {
-                                    if (!r.exc) {
-                                        frm.reload_doc(); // Reload the form here
-                                    }
-                                }
+                                freeze: true
                             });
                         } catch (error) {
                             console.error(`Error confirming IRN cancellation: ${error}`);
+                        } finally {
+                            frm.reload_doc();
                         }
                     });
                 }
             } catch (error) {
                 console.error(`Error in refresh: ${error}`);
             }
-        }
+
+         }
+        
+        
     },
     validate: async function(frm) {
         set_efris_flag_based_on_items(frm);

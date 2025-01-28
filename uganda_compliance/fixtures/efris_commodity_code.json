@@ -1,5 +1,104 @@
 [
  {
+  "commodity_code": "15121502",
+  "commodity_name": "Oils & Lubricants - Castrol",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.081875",
+  "name": "15121502"
+ },
+ {
+  "commodity_code": "15121503",
+  "commodity_name": "Oils & Lubricants - Castrol",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.120764",
+  "name": "15121503"
+ },
+ {
+  "commodity_code": "15121504",
+  "commodity_name": "Oils & Lubricants",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.129655",
+  "name": "15121504"
+ },
+ {
+  "commodity_code": "15121509",
+  "commodity_name": "Oils & Lubricants",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.138100",
+  "name": "15121509"
+ },
+ {
+  "commodity_code": "15121520",
+  "commodity_name": "Greases - Castrol",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.146452",
+  "name": "15121520"
+ },
+ {
+  "commodity_code": "15121522",
+  "commodity_name": "Oils & Lubricants",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.154352",
+  "name": "15121522"
+ },
+ {
+  "commodity_code": "15121527",
+  "commodity_name": "Fuel",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.166568",
+  "name": "15121527"
+ },
+ {
+  "commodity_code": "15121530",
+  "commodity_name": "Oils & Lubricants",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.174356",
+  "name": "15121530"
+ },
+ {
+  "commodity_code": "15121902",
+  "commodity_name": "Greases",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.185767",
+  "name": "15121902"
+ },
+ {
+  "commodity_code": "24111816",
+  "commodity_name": "LPG",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.194711",
+  "name": "24111816"
+ },
+ {
+  "commodity_code": "40101834",
+  "commodity_name": "LPG",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-01-24 15:54:11.202652",
+  "name": "40101834"
+ },
+ {
   "commodity_code": "50181905",
   "commodity_name": "Sweet biscuits or cookies",
   "docstatus": 0,
