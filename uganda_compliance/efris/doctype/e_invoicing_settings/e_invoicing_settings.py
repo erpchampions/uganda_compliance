@@ -63,7 +63,7 @@ def get_e_tax_template(company_name, tax_type):
             'charge_type': tax.charge_type,
             'account_head': tax.account_head,
             'rate': tax.rate,
-            'included_in_print_rate': True  # Ensure this is always set to True
+            'included_in_print_rate': True  
         }
         for tax in template_doc.taxes
     ]
@@ -212,7 +212,7 @@ def create_item_tax_templates(doc):
     for tax in e_tax_categories:
         tax_category = tax.name
         tax_name = tax_category.split(':').pop()
-        tax_rate = tax.tax_rate  # Get the tax rate from the doctype
+        tax_rate = tax.tax_rate 
         item_tax_name = f"EFRIS {tax_name}"
 
         efris_log_info(f"Processing Tax Category: {tax_category} | Tax Name: {tax_name} | Rate: {tax_rate}")
@@ -251,9 +251,9 @@ def update_efris_company(doc, method):
             company.save()
 
         
-def clear_e_companyu_settings_cache(company_name):
+def clear_e_company_settings_cache(company_name):
     if company_name in e_company_settings_cache:
         del e_company_settings_cache[company_name]
    
 def on_update(doc, method=None):
-    clear_e_companyu_settings_cache(doc.company)
+    clear_e_company_settings_cache(doc.company)
