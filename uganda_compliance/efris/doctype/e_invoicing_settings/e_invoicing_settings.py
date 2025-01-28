@@ -11,16 +11,6 @@ from frappe.utils.password import get_decrypted_password, set_encrypted_password
 # Global cache to store E Invoicing Settings by company name
 e_company_settings_cache = {}
 
-
-# def before_save_e_invoicing_settings(doc):
-#     if doc.sandbox_private_key_password:
-#         set_encrypted_password(doc.doctype, doc.name, doc.sandbox_private_key_password, 'sandbox_private_key_password')
-#         efris_log_info("Sandbox private key password encrypted and saved successfully.")
-
-#     if doc.live_private_key_password:
-#         set_encrypted_password(doc.doctype, doc.name, doc.live_private_key_password, 'live_private_key_password')
-#         efris_log_info("Live private key password encrypted and saved successfully.")
-
 def before_save_e_invoicing_settings(doc):
     old_doc = doc.get_doc_before_save()
 
@@ -254,10 +244,16 @@ def update_efris_company(doc, method):
     efris_log_info(f"Update EFRIS Company called...")
     company = frappe.get_doc("Company",{"name":doc.company})
     if company:
-        efris_log_info(f"The Comopany Doc is fetched... {company}")
+        efris_log_info(f"The Company Doc is fetched... {company}")
         if not company.efris_company:
             company.efris_company = 1 
             efris_log_info(f"EFRIS Company is true...")
             company.save()
 
         
+def clear_e_companyu_settings_cache(company_name):
+    if company_name in e_company_settings_cache:
+        del e_company_settings_cache[company_name]
+   
+def on_update(doc, method=None):
+    clear_e_companyu_settings_cache(doc.company)
