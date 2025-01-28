@@ -390,8 +390,8 @@ class EInvoiceAPI:
 				"total": str(taxable_amount),
 				"taxRate": str(taxRate),
 				"tax":  str(taxes),
-				"discountTotal": str((discount_amount)) if discount_percentage > 0 else "",
-				"discountTaxRate": str(discountTaxRate),
+				# "discountTotal": str((discount_amount)) if discount_percentage > 0 else "",
+				# "discountTaxRate": str(discountTaxRate),
 				"orderNumber": str(orderNumber),
 				"discountFlag": discountFlag if discount_percentage > 0 else "2",
 				"deemedFlag": "2",
@@ -501,7 +501,6 @@ class EInvoiceAPI:
 		}})
 
 		efris_log_info(f"Credit Note JSON before Make_Post: {credit_note}")
-		# credit_note
 		company_name = einvoice.company
 
 		status, response = make_post(interfaceCode="T110", content=credit_note, company_name=company_name, reference_doc_type=sale_invoice.doctype, reference_document=sale_invoice.name)
