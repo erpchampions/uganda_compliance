@@ -256,7 +256,6 @@ doc_events = {
         "before_save":["uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save",
                        "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.update_efris_company"                      
                        ],
-        "on_update":"uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.on_update"
        
     },
     "Stock Reconciliation":{
