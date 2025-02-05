@@ -360,7 +360,8 @@
   {
    "fieldname": "discount_amount",
    "fieldtype": "Currency",
-   "label": "Additional Discounts Amount"
+   "label": "Additional Discounts Amount",
+   "precision": "4"
   },
   {
    "fieldname": "e_invoice_payments_section",
@@ -395,7 +396,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-13 14:50:19.584032",
+ "modified": "2025-02-05 16:48:03.060973",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoice",
