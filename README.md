@@ -33,6 +33,7 @@ Run the following commands on your bench instance:
 ```bash
 bench get-app ugandan_compliance
 bench install-app ugandan_compliance
+bench migrate
 ```
 
 ---
