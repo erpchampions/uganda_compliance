@@ -1,6 +1,7 @@
 import six
 import frappe
 import json
+import math
 from frappe import _
 from uganda_compliance.efris.api_classes.efris_api import make_post
 from uganda_compliance.efris.utils.utils import efris_log_info, safe_load_json, efris_log_error
@@ -305,7 +306,7 @@ class EInvoiceAPI:
 		#
 		item_list = []
 	   
-		orderNumber = 0
+		# orderNumber = 0
 		discount_percentage = einvoice.additional_discount_percentage if einvoice.additional_discount_percentage else 0
 		
 		item_code  = ""
@@ -361,6 +362,7 @@ class EInvoiceAPI:
 			taxRate = decode_e_tax_rate(str(item.gst_rate), item.e_tax_category) 
 			item_code = item.item_code
 			taxable_amount = item.amount
+			orderNumber=get_order_no(original_einvoice, item.item_code, item.item_name)
 			goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
 			efris_log_info(f"The EFRIS Product code is {goodsCode}")        
 			if goodsCode:
@@ -410,7 +412,7 @@ class EInvoiceAPI:
 				"exciseRateName": "",
 				"vatApplicableFlag": "1"
 			})
-			orderNumber += 1
+			# orderNumber += 1
 			credit_note.update({"goodsDetails": item_list})
 			
 				# credit_note.update({"goodsDetails": item_list})
@@ -502,6 +504,7 @@ class EInvoiceAPI:
 
 		efris_log_info(f"Credit Note JSON before Make_Post: {credit_note}")
 		company_name = einvoice.company
+		# frappe.throw(str(credit_note))
 
 		status, response = make_post(interfaceCode="T110", content=credit_note, company_name=company_name, reference_doc_type=sale_invoice.doctype, reference_document=sale_invoice.name)
 		return status, response
@@ -515,10 +518,10 @@ class EInvoiceAPI:
 		
 		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
 		einvoice.fetch_invoice_details()  # Ensure details are fetched
-		einvoice_json = einvoice.get_einvoice_json()
 		
+		einvoice_json = einvoice.get_einvoice_json()
+  
 		company_name = sales_invoice.company
-
 		status, response = make_post(interfaceCode="T109", content=einvoice_json, company_name=company_name, reference_doc_type= sales_invoice.doctype, reference_document=sales_invoice.name)
 		if status:
 			EInvoiceAPI.handle_successful_irn_generation(einvoice, response)
@@ -527,7 +530,6 @@ class EInvoiceAPI:
 		else:
 			frappe.throw(response, title=_('EFRIS Generation Failed'))
 		
-			
 		return status,response 
 
 	@staticmethod
@@ -1412,22 +1414,45 @@ def validate_company(doc):
 	return valid
 
 def new_credit_note_rate(sales_invoice):
-    doc = frappe.get_doc("Sales Invoice", sales_invoice)
-    
-    if doc.additional_discount_percentage > 0.0:
-        return doc.additional_discount_percentage
-    
-    return None
+	doc = frappe.get_doc("Sales Invoice", sales_invoice)
+	
+	if doc.additional_discount_percentage > 0.0:
+		return doc.additional_discount_percentage
+	
+	return None
 
 def before_save(doc, method):
-    if doc.is_new() and doc.is_return and doc.return_against:
-        sales_invoice = doc.return_against
-        
-        discount = new_credit_note_rate(sales_invoice)
-        
-        if discount is None:
-            return
-        
-        for item in doc.items:
-            item.rate = item.rate - (discount * item.rate) / 100
-            item.amount = item.rate * item.qty
+	if doc.is_new() and doc.is_return and doc.return_against:
+		sales_invoice = doc.return_against
+		
+		discount = new_credit_note_rate(sales_invoice)
+		
+		if discount is None:
+			return
+		
+		for item in doc.items:
+			item.rate = item.rate - (discount * item.rate) / 100
+			item.amount = item.rate * item.qty
+
+def get_order_no(invoice, item_code, item_name):
+	doc_list = frappe.get_all(
+		"E Invoice Request Log",
+		filters={"reference_doc_type":"Sales Invoice", "reference_document": invoice.name},
+		fields=["name"],
+		order_by="creation DESC",  
+		limit_page_length=1  
+	)
+
+	if not doc_list:
+		frappe.throw(f"No E Invoice Request Log found for invoice: {invoice}")
+	doc_name = doc_list[0]["name"]
+	request_log = frappe.get_doc("E Invoice Request Log", doc_name)
+	request_data = json.loads(request_log.request_data)
+
+	for item in request_data.get("goodsDetails", []):
+		if item.get("itemCode") == item_code and item.get("item") == item_name:
+			order_number = item.get("orderNumber")
+			return order_number  
+	
+	frappe.throw(f"No matching order number found for {item_code} - {item_name}")
+	return 0

@@ -43,7 +43,7 @@ class EInvoice(Document):
             msg = _("Cannot submit e-invoice without EFRIS.") + ' '
             msg += _("You must generate EFRIS for the sales invoice to submit this e-invoice.")
             frappe.throw(msg, title=_("Missing EFRIS"))
-
+                    
     def on_update(self):
         efris_log_info("On update EInvoice")
         self.update_sales_invoice()
