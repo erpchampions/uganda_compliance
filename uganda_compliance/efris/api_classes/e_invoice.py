@@ -504,7 +504,6 @@ class EInvoiceAPI:
 
 		efris_log_info(f"Credit Note JSON before Make_Post: {credit_note}")
 		company_name = einvoice.company
-		# frappe.throw(str(credit_note))
 
 		status, response = make_post(interfaceCode="T110", content=credit_note, company_name=company_name, reference_doc_type=sale_invoice.doctype, reference_document=sale_invoice.name)
 		return status, response

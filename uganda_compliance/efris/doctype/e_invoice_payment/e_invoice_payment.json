@@ -14,21 +14,21 @@
    "fieldname": "mode_of_payment",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Mode Of Payment",
-   "options": null
+   "label": "Mode Of Payment"
   },
   {
    "fieldname": "amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Amount",
-   "options": "Currency"
+   "options": "Currency",
+   "precision": "4"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-12 15:37:57.151162",
+ "modified": "2025-02-05 16:48:24.888128",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoice Payment",

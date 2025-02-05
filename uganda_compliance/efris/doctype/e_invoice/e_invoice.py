@@ -741,8 +741,3 @@ class EInvoice(Document):
     def get_additional_discount(self):
         efris_log_info("Getting Additional discounts Json")
         return {"additional_discount_percentage":self.additional_discount_percentage}
-
-
-
-
-
