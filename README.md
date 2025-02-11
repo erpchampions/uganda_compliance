@@ -33,6 +33,7 @@ Run the following commands on your bench instance:
 ```bash
 bench get-app ugandan_compliance
 bench install-app ugandan_compliance
+bench migrate
 ```
 
 ---
@@ -41,8 +42,8 @@ bench install-app ugandan_compliance
 
 **Prerequisites**:
 
-    - Register EFRIS Device and Thumbprint in TEST-Portal. Follow documentation **Step by step guide for EFRIS device and thumbprint registration (TEST).pdf** under **Downloads** section of this page: https://efristest.ura.go.ug/efrissite/canvas/site_index
-    Result should be a virtual Device Number and a Private Key file.
+* Register EFRIS Device and Thumbprint in TEST-Portal. Follow documentation **Step by step guide for EFRIS device and thumbprint registration (TEST).pdf** under **Downloads** section of this page: https://efristest.ura.go.ug/efrissite/canvas/site_index
+* The result should be a virtual Device Number and a Private Key file.
 
 1. **Set up E Company**
 

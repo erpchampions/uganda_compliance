@@ -51,6 +51,7 @@ class EInvoiceAPI:
 		efris_log_info(f"after einvoice creation")
 
 		status, response = EInvoiceAPI.make_credit_note_return_application_request(einvoice, sales_invoice)
+
 		if status:
 			EInvoiceAPI.handle_successful_credit_note_return_application(einvoice, response)
 			efris_log_info(f"Credit Note Return Appliction Successfull for einvoice :{einvoice}")
@@ -414,9 +415,7 @@ class EInvoiceAPI:
 			})
 			# orderNumber += 1
 			credit_note.update({"goodsDetails": item_list})
-			
-				# credit_note.update({"goodsDetails": item_list})
-				# orderNumber += 1
+
 		tax_list = []
 		for tax in einvoice.taxes:
 			tax_list.append({
@@ -432,6 +431,7 @@ class EInvoiceAPI:
 
 		credit_note.update({"taxDetails": tax_list})
 		credit_note.update({"summary": {
+
 			"netAmount": einvoice.net_amount, 
 			"taxAmount":  einvoice.tax_amount,
 			"grossAmount": einvoice.gross_amount,
@@ -649,7 +649,6 @@ class EInvoiceAPI:
 			})
    
 		credit_note.update({"goodsDetails": item_list})
-		# frappe.throw(str(item_list))
 		tax_list = []
 		for tax in einvoice.taxes:
 			tax_list.append({
@@ -762,7 +761,7 @@ class EInvoiceAPI:
 		efris_log_info(f"Credit Note JSON before Make_Post: {credit_note}")
 
 		company_name = einvoice.company
-		# frappe.throw(str(credit_note))
+
 		status, response = make_post(interfaceCode="T110", content=credit_note, company_name=company_name, reference_doc_type=einvoice.doctype, reference_document=einvoice.name)
 				
 			
