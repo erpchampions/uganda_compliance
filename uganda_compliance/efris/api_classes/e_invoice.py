@@ -1446,7 +1446,7 @@ def get_order_no(invoice, item_code, item_name):
 	doc_name = doc_list[0]["name"]
 	request_log = frappe.get_doc("E Invoice Request Log", doc_name)
 	request_data = json.loads(request_log.request_data)
-
+	item_code = get_efris_product_code(item_code)
 	for item in request_data.get("goodsDetails", []):
 		if item.get("itemCode") == item_code and item.get("item") == item_name:
 			order_number = item.get("orderNumber")
@@ -1454,3 +1454,9 @@ def get_order_no(invoice, item_code, item_name):
 	
 	frappe.throw(f"No matching order number found for {item_code} - {item_name}")
 	return 0
+
+def get_efris_product_code(item_code):
+	product_code = frappe.db.get_value("Item", item_code, "efris_product_code")
+	if not product_code:
+		frappe.throw(f"No EFRIS Product Code found for item: {item_code}")
+	return product_code
