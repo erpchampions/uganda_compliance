@@ -62,244 +62,6 @@ class EInvoiceAPI:
 
 		return status   
 		
-	# @staticmethod
-	# def make_credit_note_return_application_request(einvoice, sale_invoice):
-	# 	efris_log_info("make_credit_note_return_application_request called")
-	# 	#
-	# 	item_list = []
-	   
-	# 	orderNumber = 0
-	# 	discount_percentage = einvoice.additional_discount_percentage if einvoice.additional_discount_percentage else 0
-		
-	# 	item_code  = ""
-	# 	goodsCode = ""
-	# 	tax_rate = 0.0
-	# 	discount_tax = 0.0      
-	# 	discountTaxRate = ""
-	# 	taxable_amount = 0.0
-	   	
-	# 	remark = sale_invoice.efris_creditnote_remarks
-	# 	efris_log_info(f"Credit Note Remark for return Invoice is :{remark}")
-	# 	reason = sale_invoice.efris_creditnote_reasoncode 
-	# 	efris_log_info(f"The Reason for Passing Credit Not is :{reason}")
-	# 	if not reason:
-	# 		reason = "102:Cancellation of the purchase"
-			
-	# 	reasonCode = reason.split(":")[0]
-	# 	efris_log_info(f"The Reason Code is :{reasonCode}")
-
-	# 	irn = frappe.get_doc("Sales Invoice",sale_invoice.return_against).efris_irn 
-	# 	currency = einvoice.currency
-	# 	efris_log_info(f"The Currency is {currency}")
-	# 	original_einvoice = get_einvoice(sale_invoice.return_against)
-	# 	if not original_einvoice:
-	# 		frappe.throw("No original einvoice found!")
-
-	# 	original_einvoice_id = original_einvoice.invoice_id 
-	# 	efris_log_info(f"Original IRN, Invoice ID :{irn}")      
-
-	# 	credit_note = {
-	# 		"oriInvoiceId": original_einvoice_id,
-	# 		"oriInvoiceNo": irn,
-	# 		"reasonCode": reasonCode,
-	# 		"reason": reason,
-	# 		"applicationTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-	# 		"invoiceApplyCategoryCode": "101",
-	# 		"currency": currency, 
-	# 		"contactName": "",
-	# 		"contactMobileNum": "",
-	# 		"contactEmail": "",
-	# 		"source": "103",
-	# 		"remarks": remark,
-	# 		"sellersReferenceNo": einvoice.seller_reference_no
-	# 	}
-	# 	item_list = []
-	# 	payment_list = []
-	# 	discount_percentage = einvoice.additional_discount_percentage
-	# 	efris_log_info(f"Additional Discount Percentage :{discount_percentage}")
-		
-	# 	for item in einvoice.items: 
-	# 		qty = item.quantity 
-	# 		taxes = item.tax
-	# 		taxRate = decode_e_tax_rate(str(item.gst_rate), item.e_tax_category) 
-	# 		item_code = item.item_code
-	# 		taxable_amount = item.amount
-	# 		goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
-	# 		efris_log_info(f"The EFRIS Product code is {goodsCode}")        
-	# 		if goodsCode:
-	# 			item_code = goodsCode
-	# 		if discount_percentage > 0:
-	# 			discount_amount = -1 * item.efris_dsct_discount_total
-	# 			efris_log_info(f" Discount Amount {discount_amount}")
-	# 			taxable_amount = -1 * item.efris_dsct_taxable_amount
-	# 			efris_log_info(f"Taxable Amount :{taxable_amount}")               
-	# 			discountFlag = "1"                        
-	# 			discounted_item = item.efris_dsct_item_discount
-	# 			efris_log_info(f"tax_rate: {tax_rate}")
-	# 			discountTaxRate = item.efris_dsct_discount_tax_rate 
-	# 			efris_log_info(f"tax_rate: {discountTaxRate}")
-	# 			if taxRate == '0.18':                    
-	# 				taxes = -1 * item.efris_dsct_item_tax                  
-	# 				efris_log_info(f" item taxes: {taxes}")
-				  
-	# 			if not taxRate or taxRate in ["-", "Exempt"]:                  
-	# 				discountTaxRate = "0.0"
-	# 		# frappe.throw(str(taxable_amount))
-	# 		item_list.append({
-	# 			"item": item.item_name,
-	# 			"itemCode": item_code,
-	# 			"qty": str(item.quantity),
-	# 			"unitOfMeasure": frappe.get_doc("UOM",item.unit).efris_uom_code,
-	# 			"unitPrice": str(item.rate),
-	# 			"total": str(taxable_amount),
-	# 			"taxRate": str(taxRate),
-	# 			"tax": str(taxes),
-	# 			"discountTotal": str((discount_amount)) if discount_percentage > 0 else "",
-	# 			"discountTaxRate": str(discountTaxRate),
-	# 			"orderNumber": str(orderNumber),
-	# 			"discountFlag": discountFlag if discount_percentage > 0 else "2",
-	# 			"deemedFlag": "2",
-	# 			"exciseFlag": "2",
-	# 			"categoryId": "",
-	# 			"categoryName": "",
-	# 			"goodsCategoryId": item.efris_commodity_code,
-	# 			"goodsCategoryName": "",
-	# 			"exciseRate": "",
-	# 			"exciseRule": "",
-	# 			"exciseTax": "",
-	# 			"pack": "",
-	# 			"stick": "",
-	# 			"exciseUnit": "",
-	# 			"exciseCurrency": "",
-	# 			"exciseRateName": "",
-	# 			"vatApplicableFlag": "1"
-	# 		})
-	# 		orderNumber += 1
-	# 		credit_note.update({"goodsDetails": item_list})
-	# 		if discount_percentage > 0:               
-	# 			if taxRate == '0.18':                    
-	# 				discount_tax = -1 * item.efris_dsct_discount_tax                    
-	# 			else:
-	# 				discount_tax = taxes
-					
-	# 			discount_item = {
-	# 						"item": discounted_item,
-	# 						"itemCode": item_code,
-	# 						"qty": "",
-	# 						"unitOfMeasure": "",
-	# 						"unitPrice": "",
-	# 						"total": str((discount_amount)),
-	# 						"taxRate": str(taxRate),
-	# 						"tax": str((discount_tax)),
-	# 						"discountTotal": "",
-	# 						"discountTaxRate": str(discountTaxRate),
-	# 						"orderNumber": str(orderNumber),
-	# 						"discountFlag": "0",
-	# 						"deemedFlag": "2",
-	# 						"exciseFlag": "2",
-	# 						"categoryId": "",
-	# 						"categoryName": "",
-	# 						"goodsCategoryId": item.efris_commodity_code,
-	# 						"goodsCategoryName": "",
-	# 						"vatApplicableFlag": "1",
-	# 					}
-	# 			item_list.append(discount_item)
-	# 			credit_note.update({"goodsDetails": item_list})
-	# 			orderNumber += 1
-			
-	# 	tax_list = []
-	# 	for tax in einvoice.taxes:
-	# 		tax_list.append({
-	# 			"taxCategoryCode": tax.tax_category_code.split(':')[0],
-	# 			"netAmount": tax.net_amount,
-	# 			"taxRate": str(tax.tax_rate),
-	# 			"taxAmount": str(tax.tax_amount),
-	# 			"grossAmount": tax.gross_amount,
-	# 			"exciseUnit": tax.excise_unit,
-	# 			"exciseCurrency": tax.excise_currency,
-	# 			"taxRateName": tax.tax_rate_name
-	# 		})
-
-	# 	credit_note.update({"taxDetails": tax_list})
-	# 	credit_note.update({"summary": {
-	# 		"netAmount": einvoice.net_amount,
-	# 		"taxAmount": einvoice.tax_amount,
-	# 		"grossAmount": einvoice.gross_amount,
-	# 		"itemCount": str(einvoice.item_count),
-	# 		"modeCode": "0",
-	# 		"qrCode": einvoice.qrcode_path
-	# 	}})
-	# 	credit_note.update({"buyerDetails": {
-	# 		"buyerTin": einvoice.buyer_gstin,
-	# 		"buyerNinBrn": "",
-	# 		"buyerPassportNum": "",
-	# 		"buyerLegalName": "",
-	# 		"buyerBusinessName": "",
-	# 		"buyerAddress": "",
-	# 		"buyerEmail": "",
-	# 		"buyerMobilePhone": "",
-	# 		"buyerLinePhone": "",
-	# 		"buyerPlaceOfBusi": "",
-	# 		"buyerType": "1",
-	# 		"buyerCitizenship": "1",
-	# 		"buyerSector": "1",
-	# 		"buyerReferenceNo": ""
-	# 	}})
-	# 	  # Define the mapping for mode_of_payment to EFRIS payment codes
-	# 	payment_code_map = {
-	# 		"Credit": "101",
-	# 		"Cash": "102",
-	# 		"Cheque": "103",
-	# 		"Demand draft": "104",
-	# 		"Mobile money": "105",
-	# 		"Visa/Master card": "106",
-	# 		"EFT": "107",
-	# 		"POS": "108",
-	# 		"RTGS": "109",
-	# 		"Swift transfer": "110"
-	# 	}
-	# 	if not einvoice.e_payments:
-	# 		payment_list.append({
-	# 			"paymentMode": "101",
-	# 			"paymentAmount": einvoice.gross_amount,
-	# 			"orderNumber": "a"
-	# 		})
-	# 	else:
-	# 		for payment in einvoice.e_payments:
-	# 			payment_method_code = payment_code_map.get(payment.mode_of_payment, "Unknown")
-	# 			if payment_method_code == "Unknown":
-	# 				efris_log_info(f"Mode of payment '{payment.mode_of_payment}' not mapped to any EFRIS code")
-	# 				continue  # Skip unmapped payment modes
-	# 			payment_list.append({
-	# 				"paymentMode": payment_method_code,
-	# 				"paymentAmount": payment.amount,
-	# 				"orderNumber": "a"
-	# 			})
-	# 	credit_note.update({"payWay":payment_list})
-	# 	credit_note.update({"importServicesSeller": {
-	# 		"importBusinessName": "",
-	# 		"importEmailAddress": "",
-	# 		"importContactNumber": "",
-	# 		"importAddress": "",
-	# 		"importInvoiceDate": "",
-	# 		"importAttachmentName": "",
-	# 		"importAttachmentContent": ""
-	# 	}})
-	# 	credit_note.update({"basicInformation": {
-	# 		"operator": einvoice.operator,
-	# 		"invoiceKind": "1",
-	# 		"invoiceIndustryCode": "102",
-	# 		"branchId": ""
-	# 	}})
-
-		
-	# 	efris_log_info(f"Credit Note JSON before Make_Post: {credit_note}")
-
-	# 	company_name = einvoice.company
-	# 	# frappe.throw(str(credit_note))
-	# 	status, response = make_post(interfaceCode="T110", content=credit_note, company_name=company_name, reference_doc_type=sale_invoice.doctype, reference_document=sale_invoice.name)
-		
-	# 	return status, response
 
 	@staticmethod
 	def make_credit_note_return_application_request(einvoice, sale_invoice):
@@ -373,7 +135,7 @@ class EInvoiceAPI:
 				efris_log_info(f" Discount Amount {discount_amount}")
 				taxable_amount = -1 * item.efris_dsct_taxable_amount
 			#     efris_log_info(f"Taxable Amount :{taxable_amount}")               
-				discountFlag = "1"                        
+				discountFlag = "2"                        
 				discounted_item = item.efris_dsct_item_discount
 				discountTaxRate = item.efris_dsct_discount_tax_rate 
 				efris_log_info(f"tax_rate: {discountTaxRate}")
@@ -393,10 +155,8 @@ class EInvoiceAPI:
 				"total": str(taxable_amount),
 				"taxRate": str(taxRate),
 				"tax":  str(taxes),
-				# "discountTotal": str((discount_amount)) if discount_percentage > 0 else "",
-				# "discountTaxRate": str(discountTaxRate),
 				"orderNumber": str(orderNumber),
-				"discountFlag": discountFlag if discount_percentage > 0 else "2",
+				"discountFlag": discountFlag,
 				"deemedFlag": "2",
 				"exciseFlag": "2",
 				"categoryId": "",
@@ -516,7 +276,7 @@ class EInvoiceAPI:
 		efris_log_info(f" after parse done...")
 		
 		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
-		einvoice.fetch_invoice_details()  # Ensure details are fetched
+		einvoice.fetch_invoice_details() 
 		
 		einvoice_json = einvoice.get_einvoice_json()
   
