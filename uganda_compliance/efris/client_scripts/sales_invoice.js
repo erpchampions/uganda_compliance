@@ -136,6 +136,9 @@ frappe.ui.form.on('Sales Invoice', {
     before_save: function (frm) {
         console.log("Validating EFRIS Payment Mode before save...");
         
+        if (frm.doc.is_return){
+            reset_discounts(frm);
+    }
         if (frm.doc.efris_payment_mode) {
             if (frm.doc.payments.length > 1) {
                 console.log("Multiple payment modes detected. Clearing EFRIS Payment Mode...");
@@ -151,7 +154,7 @@ frappe.ui.form.on('Sales Invoice', {
         }
 
         frm.refresh_field('payments');
-    }
+    },
 
 
 });
@@ -278,4 +281,18 @@ function update_parent_field(frm) {
 
     // Update the parent field (e.g., total_payment_amount)
     frm.refresh_field("efris_payment_mode");
+}
+
+function reset_discounts(frm) {
+    (frm.doc.items || []).forEach(function(row) {
+        row.discount_percentage = 0;
+        row.discount_amount = 0;
+    });
+
+    frm.set_value('discount_amount', 0);
+    frm.set_value('additional_discount_percentage', 0);
+
+    frm.refresh_field('items');
+    frm.refresh_field('discount_amount');
+    frm.refresh_field('additional_discount_percentage');
 }
