@@ -118,7 +118,7 @@ class EInvoiceAPI:
 		payment_list = []
 		discount_percentage = einvoice.additional_discount_percentage
 		efris_log_info(f"Additional Discount Percentage :{discount_percentage}")
-		
+		discountFlag="2"
 		for item in einvoice.items: 
 			qty = item.quantity 
 			taxes = item.tax
@@ -135,7 +135,7 @@ class EInvoiceAPI:
 				efris_log_info(f" Discount Amount {discount_amount}")
 				taxable_amount = -1 * item.efris_dsct_taxable_amount
 			#     efris_log_info(f"Taxable Amount :{taxable_amount}")               
-				discountFlag = "2"                        
+				discountFlag = "1"                        
 				discounted_item = item.efris_dsct_item_discount
 				discountTaxRate = item.efris_dsct_discount_tax_rate 
 				efris_log_info(f"tax_rate: {discountTaxRate}")
