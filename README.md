@@ -67,7 +67,7 @@ bench migrate
 
 
 For **detailed configuration and advanced setup**, refer to the full documentation below:  
-👉 **[Uganda Compliance Documentation](https://docs.uganda_compliance.app)**
+👉 **[Uganda Compliance Documentation](https://github.com/erpchampions/uganda_compliance/wiki)**
 
 ---
 
