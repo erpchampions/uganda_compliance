@@ -117,6 +117,7 @@ def get_e_company_settings(company_name):
 class EInvoicingSettings(Document):
     def before_save(self):
         efris_log_info("EInvoicingSettings before_save")
+        e_company_settings_cache.pop(self.company, None)
         self.validate()
         before_save_e_invoicing_settings(self)
 

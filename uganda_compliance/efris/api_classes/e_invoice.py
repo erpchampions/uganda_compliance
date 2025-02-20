@@ -279,7 +279,6 @@ class EInvoiceAPI:
 		einvoice.fetch_invoice_details() 
 		
 		einvoice_json = einvoice.get_einvoice_json()
-  
 		company_name = sales_invoice.company
 		status, response = make_post(interfaceCode="T109", content=einvoice_json, company_name=company_name, reference_doc_type= sales_invoice.doctype, reference_document=sales_invoice.name)
 		if status:
