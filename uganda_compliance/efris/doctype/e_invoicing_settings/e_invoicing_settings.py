@@ -17,12 +17,10 @@ def before_save_e_invoicing_settings(doc):
     if not old_doc or old_doc.sandbox_private_key_password != doc.sandbox_private_key_password:
         if doc.sandbox_private_key_password:
             set_encrypted_password(doc.doctype, doc.name, doc.sandbox_private_key_password, 'sandbox_private_key_password')
-            efris_log_info("Sandbox private key password encrypted and saved successfully.")
     
     if not old_doc or old_doc.live_private_key_password != doc.live_private_key_password:
         if doc.live_private_key_password:
             set_encrypted_password(doc.doctype, doc.name, doc.live_private_key_password, 'live_private_key_password')
-            efris_log_info("Live private key password encrypted and saved successfully.")
 
 
 def get_mode_decrypted_password(doc):
@@ -98,13 +96,11 @@ def get_e_company_settings(company_name):
     )
    
     if not einvoicing_settings:
-        efris_log_error(f"No E Invoicing Settings found for company: {company_name}")
         frappe.throw(f"No E Invoicing Settings found for company: {company_name}")
 
     settings = einvoicing_settings[0]
     e_invoice_enabled = settings.enabled
     if not e_invoice_enabled:
-        efris_log_error(f"E Invoicing Settings are disabled for company: {company_name}")
         frappe.throw(f"E Invoicing Settings are disabled for company: {company_name}")
 
     # Cache the entire settings record
@@ -116,7 +112,6 @@ def get_e_company_settings(company_name):
 
 class EInvoicingSettings(Document):
     def before_save(self):
-        efris_log_info("EInvoicingSettings before_save")
         e_company_settings_cache.pop(self.company, None)
         self.validate()
         before_save_e_invoicing_settings(self)
