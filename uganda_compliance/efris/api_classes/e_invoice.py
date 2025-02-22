@@ -242,7 +242,7 @@ class EInvoiceAPI:
 					continue  # Skip unmapped payment modes
 				payment_list.append({
 					"paymentMode": payment_method_code,
-					"paymentAmount": payment.amount,
+					"paymentAmount": round(payment.amount,2),
 					"orderNumber": "a"
 				})
 		credit_note.update({"payWay":payment_list})
@@ -279,6 +279,7 @@ class EInvoiceAPI:
 		einvoice.fetch_invoice_details() 
 		
 		einvoice_json = einvoice.get_einvoice_json()
+		
 		company_name = sales_invoice.company
 		status, response = make_post(interfaceCode="T109", content=einvoice_json, company_name=company_name, reference_doc_type= sales_invoice.doctype, reference_document=sales_invoice.name)
 		if status:
@@ -473,7 +474,7 @@ class EInvoiceAPI:
 				
 			payment_list.append( {
 				"paymentMode": mode_of_payment,
-				"paymentAmount": payment.amount,
+				"paymentAmount": round(payment.amount,2),
 				"orderNumber": "a"
 			})
 		credit_note.update({"payWay": payment_list})
@@ -1070,16 +1071,16 @@ def calculate_additional_discounts(doc, method):
 	for row in doc.get('items', []):
 		efris_log_info(f"Processing Item: {row.get('item_code', '')}")
 		item_code = row.get('item_code', '')
-		discount_amount = round(-row.amount * (discount_percentage / 100), 2)
+		discount_amount = round(-row.amount * (discount_percentage / 100), 4)
 		discounted_item = f"{row.get('item_name', '')} (Discount)"
 		
 		tax_rate = float(item_taxes.get(item_code, [0, 0])[0]) or 0.0
 		
 		if tax_rate > 0:
 			# Calculate tax adjustments for taxable items
-			tax_on_discount = round(discount_amount / (1 + (tax_rate / 100)), 2)
-			discount_tax = round(discount_amount - tax_on_discount, 2)
-			item_tax = round(row.amount * (tax_rate / (100 + tax_rate)), 2)
+			tax_on_discount = round(discount_amount / (1 + (tax_rate / 100)), 4)
+			discount_tax = round(discount_amount - tax_on_discount, 4)
+			item_tax = round(row.amount * (tax_rate / (100 + tax_rate)), 4)
 			
 			total_item_tax += item_tax
 			total_discount_tax += discount_tax
@@ -1110,19 +1111,19 @@ def calculate_additional_discounts(doc, method):
 			row.efris_dsct_taxable_amount = row.amount
 			row.efris_dsct_item_discount = discounted_item
 		
-	# Final adjustment for rounding errors
-	calculated_total_tax = round(total_item_tax + total_discount_tax, 2)
-	tax_difference = round(initial_tax - calculated_total_tax, 2)
+	# # Final adjustment for rounding errors
+	# calculated_total_tax = round(total_item_tax + total_discount_tax, 4)
+	# tax_difference = round(initial_tax - calculated_total_tax, 4)
+	# # frappe.throw(str(tax_difference))
+	# if last_taxable_item and len(doc.items) < 5:
+	# 	efris_log_info(f"Adjusting last item's discount tax by: {tax_difference}")
+	# 	last_taxable_item.efris_dsct_discount_tax += tax_difference
+	# 	last_taxable_item.efris_dsct_item_tax += tax_difference
+	# 	efris_log_info(f"Final adjusted tax for last item: {last_taxable_item.efris_dsct_item_tax}")
 
-	if last_taxable_item:
-		efris_log_info(f"Adjusting last item's discount tax by: {tax_difference}")
-		last_taxable_item.efris_dsct_discount_tax += tax_difference
-		last_taxable_item.efris_dsct_item_tax += tax_difference
-		efris_log_info(f"Final adjusted tax for last item: {last_taxable_item.efris_dsct_item_tax}")
-
-	# Log alignment verification
-	efris_log_info(f"ERPNext Total Tax: {initial_tax}, Calculated Total Tax: {calculated_total_tax}")
-	efris_log_info(f"Tax Difference Applied: {tax_difference}")
+	# # Log alignment verification
+	# efris_log_info(f"ERPNext Total Tax: {initial_tax}, Calculated Total Tax: {calculated_total_tax}")
+	# efris_log_info(f"Tax Difference Applied: {tax_difference}")
 
 
 def decode_e_tax_rate(tax_rate, e_tax_category):
