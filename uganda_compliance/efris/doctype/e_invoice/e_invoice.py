@@ -774,7 +774,6 @@ def calculate_additional_discounts(invoice):
 
 	total_item_tax = 0.0
 	total_discount_tax = 0.0
-	last_taxable_item = None
 
 	for row in doc.get('items', []):
 		efris_log_info(f"Processing Item: {row.get('item_code', '')}")
@@ -792,7 +791,6 @@ def calculate_additional_discounts(invoice):
 
 			total_item_tax += item_tax
 			total_discount_tax += discount_tax
-			last_taxable_item = row
 		else:
 			tax_on_discount = 0.0
 			discount_tax = 0.0
@@ -803,7 +801,6 @@ def calculate_additional_discounts(invoice):
 			f"Tax on Discount: {discount_tax}, Item Tax: {item_tax}"
 		)
 
-	
 		row.efris_dsct_discount_total = discount_amount
 		row.efris_dsct_discount_tax = discount_tax
 		row.efris_dsct_discount_tax_rate = f"{tax_rate / 100:.2f}" if tax_rate > 0 else "0.0"
@@ -813,7 +810,5 @@ def calculate_additional_discounts(invoice):
 
 	# Final adjustment for rounding errors
 	calculated_total_tax = round(total_item_tax + total_discount_tax, 4)
-	tax_difference = round(initial_tax - calculated_total_tax, 4)
-	# frappe.throw(str(calculated_total_tax))
 	return calculated_total_tax
 	

@@ -1111,19 +1111,19 @@ def calculate_additional_discounts(doc, method):
 			row.efris_dsct_taxable_amount = row.amount
 			row.efris_dsct_item_discount = discounted_item
 		
-	# Final adjustment for rounding errors
-	calculated_total_tax = round(total_item_tax + total_discount_tax, 4)
-	tax_difference = round(initial_tax - calculated_total_tax, 4)
-	# frappe.throw(str(tax_difference))
-	if last_taxable_item and len(doc.items) < 5:
-		efris_log_info(f"Adjusting last item's discount tax by: {tax_difference}")
-		last_taxable_item.efris_dsct_discount_tax += tax_difference
-		last_taxable_item.efris_dsct_item_tax += tax_difference
-		efris_log_info(f"Final adjusted tax for last item: {last_taxable_item.efris_dsct_item_tax}")
+	# # Final adjustment for rounding errors
+	# calculated_total_tax = round(total_item_tax + total_discount_tax, 4)
+	# tax_difference = round(initial_tax - calculated_total_tax, 4)
+	# # frappe.throw(str(tax_difference))
+	# if last_taxable_item and len(doc.items) < 5:
+	# 	efris_log_info(f"Adjusting last item's discount tax by: {tax_difference}")
+	# 	last_taxable_item.efris_dsct_discount_tax += tax_difference
+	# 	last_taxable_item.efris_dsct_item_tax += tax_difference
+	# 	efris_log_info(f"Final adjusted tax for last item: {last_taxable_item.efris_dsct_item_tax}")
 
-	# Log alignment verification
-	efris_log_info(f"ERPNext Total Tax: {initial_tax}, Calculated Total Tax: {calculated_total_tax}")
-	efris_log_info(f"Tax Difference Applied: {tax_difference}")
+	# # Log alignment verification
+	# efris_log_info(f"ERPNext Total Tax: {initial_tax}, Calculated Total Tax: {calculated_total_tax}")
+	# efris_log_info(f"Tax Difference Applied: {tax_difference}")
 
 
 def decode_e_tax_rate(tax_rate, e_tax_category):
