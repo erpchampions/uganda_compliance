@@ -679,22 +679,46 @@ class EInvoice(Document):
 		return {"goodsDetails": item_list}
 
 
+	# def get_tax_details(self):
+	# 	efris_log_info("Getting tax details JSON")
+	# 	tax_details_list = []
+	# 	for row in self.taxes:
+	# 		tax_details = {
+	# 			"taxCategoryCode": row.tax_category_code.split(':')[0],
+	# 			"netAmount": str(row.net_amount),
+	# 			"taxRate": str(row.tax_rate),
+	# 			# "taxAmount": str(row.tax_amount),
+	# 			"taxAmount": calculate_additional_discounts(self.invoice) if self.discount_amount >0 else row.tax_amount,
+	# 			"grossAmount": round(calculate_additional_discounts(self.invoice) + self.net_amount,4) if self.discount_amount >0 else row.gross_amount,
+	# 			"exciseUnit": "",
+	# 			"exciseCurrency": "",
+	# 			"taxRateName": ""
+	# 		}
+	# 		tax_details_list.append(tax_details)
+	# 	return {"taxDetails": tax_details_list}
 	def get_tax_details(self):
 		efris_log_info("Getting tax details JSON")
 		tax_details_list = []
+		
+		# Get calculated tax per category
+		tax_per_category = calculate_tax_by_category(self.invoice)
+		# frappe.throw(str(tax_per_category))
 		for row in self.taxes:
+			tax_category = row.tax_category_code.split(':')[0]
+			calculated_tax = tax_per_category.get(tax_category, row.tax_amount)
+			
 			tax_details = {
-				"taxCategoryCode": row.tax_category_code.split(':')[0],
+				"taxCategoryCode": tax_category,
 				"netAmount": str(row.net_amount),
 				"taxRate": str(row.tax_rate),
-				# "taxAmount": str(row.tax_amount),
-				"taxAmount": calculate_additional_discounts(self.invoice) if self.discount_amount >0 else row.tax_amount,
-				"grossAmount": round(calculate_additional_discounts(self.invoice) + self.net_amount,4) if self.discount_amount >0 else row.gross_amount,
+				"taxAmount": str(calculated_tax),
+				"grossAmount": round(calculated_tax + row.net_amount, 4),
 				"exciseUnit": "",
 				"exciseCurrency": "",
 				"taxRateName": ""
 			}
 			tax_details_list.append(tax_details)
+		
 		return {"taxDetails": tax_details_list}
 	
 	def get_payment_details(self):
@@ -810,5 +834,62 @@ def calculate_additional_discounts(invoice):
 
 	# Final adjustment for rounding errors
 	calculated_total_tax = round(total_item_tax + total_discount_tax, 4)
+	# frappe.throw(str(calculate_tax_by_category(invoice)))
 	return calculated_total_tax
 	
+ 
+import json
+from collections import defaultdict
+def calculate_tax_by_category(invoice):
+    """
+    Calculate total tax per tax category for Sales Invoice items.
+    """
+    
+    # Ensure doc is a valid dictionary
+    doc = frappe.get_doc('Sales Invoice', invoice)
+
+    if isinstance(doc, str):
+        try:
+            doc = json.loads(doc)
+        except json.JSONDecodeError:
+            frappe.log_error("Failed to decode doc JSON string", "calculate_total_tax_per_tax_category Error")
+            return {"error": "Failed to decode doc JSON string"}
+
+    efris_log_info(f"Calculate Total Tax Per Tax Category called: {doc}")
+
+    if not doc.taxes:
+        return
+
+    # Load item tax details
+    item_taxes = loads(doc.taxes[0].item_wise_tax_detail)
+    efris_log_info(f"Initial Tax Details: {item_taxes}")
+
+    # Dictionary to store total tax per tax category
+    tax_category_totals = defaultdict(float)
+
+    for row in doc.get('items', []):
+        efris_log_info(f"Processing Item: {row.get('item_code', '')}")
+        item_code = row.get('item_code', '')
+        item_tax_template = row.get('item_tax_template', '')
+
+        if not item_tax_template:
+            continue
+
+        tax_rate = float(item_taxes.get(item_code, [0, 0])[0]) or 0.0
+
+        if tax_rate > 0:
+            # Calculate tax for the item
+            item_tax = round(row.amount * (tax_rate / (100 + tax_rate)), 4)
+            tax_category_totals[item_tax_template] += item_tax
+
+        efris_log_info(
+            f"Item: {item_code}, Item Tax Template: {item_tax_template}, "
+            f"Tax Rate: {tax_rate}, Item Tax: {item_tax}"
+        )
+
+    # Convert defaultdict to a regular dictionary for easier handling
+    tax_category_totals = dict(tax_category_totals)
+
+    efris_log_info(f"Total Tax Per Tax Category: {tax_category_totals}")
+
+    return tax_category_totals
