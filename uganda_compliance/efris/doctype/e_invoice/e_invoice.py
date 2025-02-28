@@ -6,6 +6,9 @@ from __future__ import unicode_literals
 import six
 import math
 import frappe
+
+import json
+from collections import defaultdict
 from frappe import _
 from json import JSONEncoder, loads, JSONDecodeError
 from frappe.model.document import Document
@@ -701,7 +704,6 @@ class EInvoice(Document):
 		efris_log_info("Getting tax details JSON")
 		tax_details_list = []
 		
-		# Get calculated tax per category
 		tax_per_category = calculate_tax_by_category(self.invoice)
 		trimmed_response = {}
 		for key, value in tax_per_category.items():
@@ -717,7 +719,6 @@ class EInvoice(Document):
 				tax_rate_key = str(int(tax_rate * 100))
 			else:
 				tax_rate_key = row.tax_rate
-				# tax_rate_key = str(int(row.tax_rate * 100))
 			tax_category = row.tax_category_code.split(':')[0]
    
 			# Compare the tax category with the keys in tax_per_category
@@ -727,7 +728,6 @@ class EInvoice(Document):
 				# Take care of when we have mismatch of decimal points summary and taxDetails values
 			if calculated_tax > 0 and calculated_tax != calculate_additional_discounts(self.invoice):
 				calculated_tax = calculate_additional_discounts(self.invoice)
-			# frappe.throw(f"{calculated_tax}")  # This will display 4 decimal places			
 			tax_details = {
 				"taxCategoryCode": tax_category,
 				"netAmount": str(row.net_amount),
@@ -790,8 +790,7 @@ class EInvoice(Document):
 		efris_log_info("Getting Additional discounts Json")
 		return {"additional_discount_percentage":self.additional_discount_percentage}
 	
-	
-import json
+
 def calculate_additional_discounts(invoice):
 	"""
 	Calculate additional discounts and adjust tax values on Sales Invoice items for EFRIS compliance.
@@ -862,8 +861,6 @@ def calculate_additional_discounts(invoice):
 	return calculated_total_tax
 	
  
-import json
-from collections import defaultdict
 def calculate_tax_by_category(invoice):
 	"""
 	Calculate total tax per tax category for Sales Invoice items.
@@ -878,18 +875,14 @@ def calculate_tax_by_category(invoice):
 			frappe.log_error("Failed to decode doc JSON string", "calculate_total_tax_per_tax_category Error")
 			return {"error": "Failed to decode doc JSON string"}
 
-	efris_log_info(f"Calculate Total Tax Per Tax Category called: {doc}")
-
 	if not doc.taxes:
 		return
 
 	item_taxes = loads(doc.taxes[0].item_wise_tax_detail)
-	efris_log_info(f"Initial Tax Details: {item_taxes}")
 
 	tax_category_totals = defaultdict(float)
 
 	for row in doc.get('items', []):
-		efris_log_info(f"Processing Item: {row.get('item_code', '')}")
 		item_code = row.get('item_code', '')
 		item_tax_template = row.get('item_tax_template', '')
 
@@ -901,7 +894,6 @@ def calculate_tax_by_category(invoice):
 		if tax_rate > 0:
 			item_tax = round(row.amount * (tax_rate / (100 + tax_rate)), 2) 
 			if doc.additional_discount_percentage >0.0:
-				# frappe.throw(str(row.efris_dsct_discount_tax))
 				item_tax = item_tax + row.efris_dsct_discount_tax
 			tax_category_totals[item_tax_template] += item_tax
 		else:
@@ -914,7 +906,5 @@ def calculate_tax_by_category(invoice):
 		)
 
 	tax_category_totals = dict(tax_category_totals)
-
-	efris_log_info(f"Total Tax Per Tax Category: {tax_category_totals}")
 
 	return tax_category_totals
