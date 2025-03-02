@@ -11,15 +11,16 @@ from frappe.utils.password import get_decrypted_password, set_encrypted_password
 # Global cache to store E Invoicing Settings by company name
 e_company_settings_cache = {}
 
-
 def before_save_e_invoicing_settings(doc):
-    if doc.sandbox_private_key_password:
-        set_encrypted_password(doc.doctype, doc.name, doc.sandbox_private_key_password, 'sandbox_private_key_password')
-        efris_log_info("Sandbox private key password encrypted and saved successfully.")
+    old_doc = doc.get_doc_before_save()
 
-    if doc.live_private_key_password:
-        set_encrypted_password(doc.doctype, doc.name, doc.live_private_key_password, 'live_private_key_password')
-        efris_log_info("Live private key password encrypted and saved successfully.")
+    if not old_doc or old_doc.sandbox_private_key_password != doc.sandbox_private_key_password:
+        if doc.sandbox_private_key_password:
+            set_encrypted_password(doc.doctype, doc.name, doc.sandbox_private_key_password, 'sandbox_private_key_password')
+    
+    if not old_doc or old_doc.live_private_key_password != doc.live_private_key_password:
+        if doc.live_private_key_password:
+            set_encrypted_password(doc.doctype, doc.name, doc.live_private_key_password, 'live_private_key_password')
 
 
 def get_mode_decrypted_password(doc):
@@ -60,7 +61,7 @@ def get_e_tax_template(company_name, tax_type):
             'charge_type': tax.charge_type,
             'account_head': tax.account_head,
             'rate': tax.rate,
-            'included_in_print_rate': True  # Ensure this is always set to True
+            'included_in_print_rate': True  
         }
         for tax in template_doc.taxes
     ]
@@ -95,13 +96,11 @@ def get_e_company_settings(company_name):
     )
    
     if not einvoicing_settings:
-        efris_log_error(f"No E Invoicing Settings found for company: {company_name}")
         frappe.throw(f"No E Invoicing Settings found for company: {company_name}")
 
     settings = einvoicing_settings[0]
     e_invoice_enabled = settings.enabled
     if not e_invoice_enabled:
-        efris_log_error(f"E Invoicing Settings are disabled for company: {company_name}")
         frappe.throw(f"E Invoicing Settings are disabled for company: {company_name}")
 
     # Cache the entire settings record
@@ -113,7 +112,7 @@ def get_e_company_settings(company_name):
 
 class EInvoicingSettings(Document):
     def before_save(self):
-        efris_log_info("EInvoicingSettings before_save")
+        e_company_settings_cache.pop(self.company, None)
         self.validate()
         before_save_e_invoicing_settings(self)
 
@@ -209,7 +208,7 @@ def create_item_tax_templates(doc):
     for tax in e_tax_categories:
         tax_category = tax.name
         tax_name = tax_category.split(':').pop()
-        tax_rate = tax.tax_rate  # Get the tax rate from the doctype
+        tax_rate = tax.tax_rate 
         item_tax_name = f"EFRIS {tax_name}"
 
         efris_log_info(f"Processing Tax Category: {tax_category} | Tax Name: {tax_name} | Rate: {tax_rate}")
@@ -241,10 +240,16 @@ def update_efris_company(doc, method):
     efris_log_info(f"Update EFRIS Company called...")
     company = frappe.get_doc("Company",{"name":doc.company})
     if company:
-        efris_log_info(f"The Comopany Doc is fetched... {company}")
+        efris_log_info(f"The Company Doc is fetched... {company}")
         if not company.efris_company:
             company.efris_company = 1 
             efris_log_info(f"EFRIS Company is true...")
             company.save()
 
         
+def clear_e_company_settings_cache(company_name):
+    if company_name in e_company_settings_cache:
+        del e_company_settings_cache[company_name]
+   
+def on_update(doc, method=None):
+    clear_e_company_settings_cache(doc.company)
