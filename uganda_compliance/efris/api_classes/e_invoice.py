@@ -11,8 +11,11 @@ from datetime import datetime
 from pyqrcode import create as qrcreate
 import io
 import os
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path
 
 class EInvoiceAPI:
 	@staticmethod
@@ -281,6 +284,7 @@ class EInvoiceAPI:
 		einvoice_json = einvoice.get_einvoice_json()
 		
 		company_name = sales_invoice.company
+		einvoice_json = pad_data(einvoice_json, company_name)
 		status, response = make_post(interfaceCode="T109", content=einvoice_json, company_name=company_name, reference_doc_type= sales_invoice.doctype, reference_document=sales_invoice.name)
 		if status:
 			EInvoiceAPI.handle_successful_irn_generation(einvoice, response)
@@ -1220,3 +1224,82 @@ def get_efris_product_code(item_code):
 	if not product_code:
 		frappe.throw(f"No EFRIS Product Code found for item: {item_code}")
 	return product_code
+
+# def pad_data(payload, company_name):
+# 	e_settings = get_e_company_settings(company_name)
+		
+# 	key = get_mode_private_key_path(e_settings),
+		  
+# 	payload_json = json.dumps(payload)
+# 	block_size = 16
+# 	padded_data = pad(payload_json.encode(), block_size)
+
+# 	 # Replace with the actual encryption key
+# 	cipher = AES.new(key, AES.MODE_ECB)
+# 	encrypted_data = cipher.encrypt(padded_data)
+# 	frappe.throw(str(encrypted_data))
+# 	return encrypted_data
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+import json
+import frappe
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import pkcs12
+from cryptography.hazmat.backends import default_backend
+import os
+
+def pad_data(payload, company_name):
+    # Step 1: Get encryption settings
+    e_settings = get_e_company_settings(company_name)
+    
+    # Step 2: Get the site name
+    site_name = frappe.local.site  # Get the current site name
+    
+    # Step 3: Construct the absolute path to the .p12 file
+    p12_file_name = "erp_champ_sandbox_prk.p12"
+    p12_file_path = os.path.join(
+        frappe.get_site_path("private", "files"),  # Path to private/files
+        p12_file_name  # File name
+    )
+    
+    # Debug: Print the file path
+    # frappe.throw(f"P12 File Path: {p12_file_path}")
+    
+    # Step 4: Extract the private key from the .p12 file
+    p12_password = b"efrischamps"  # Replace with the actual password for the .p12 file
+    try:
+        with open(p12_file_path, "rb") as f:
+            p12_data = f.read()
+    except FileNotFoundError:
+        frappe.throw(f"File not found: {p12_file_path}")
+    
+    # Load the private key and certificate from the .p12 file
+    private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
+        p12_data, p12_password, backend=default_backend()
+    )
+    
+    # Serialize the private key to PEM format
+    private_key_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    
+    # Step 5: Use the private key for encryption
+    # Extract the first 32 bytes of the private key as the AES key
+    key = private_key_pem[:32]
+    
+    # Step 6: Convert payload to JSON string
+    payload_json = json.dumps(payload)
+    
+    # Step 7: Pad the data to the block size
+    block_size = 16  # AES block size is 16 bytes
+    padded_data = pad(payload_json.encode(), block_size)
+    
+    # Step 8: Encrypt the data
+    cipher = AES.new(key, AES.MODE_ECB)
+    encrypted_data = cipher.encrypt(padded_data)
+    
+    # Step 9: Debug and return the encrypted data
+    # frappe.throw(f"Encrypted Data: {encrypted_data}")
+    return encrypted_data
