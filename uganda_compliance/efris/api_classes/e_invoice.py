@@ -284,7 +284,6 @@ class EInvoiceAPI:
 		einvoice_json = einvoice.get_einvoice_json()
 		
 		company_name = sales_invoice.company
-		einvoice_json = pad_data(einvoice_json, company_name)
 		status, response = make_post(interfaceCode="T109", content=einvoice_json, company_name=company_name, reference_doc_type= sales_invoice.doctype, reference_document=sales_invoice.name)
 		if status:
 			EInvoiceAPI.handle_successful_irn_generation(einvoice, response)
@@ -772,11 +771,67 @@ def after_save_sales_invoice(doc, method):
 	if is_return:
 		return
 	
-
-def on_submit_sales_invoice(doc, method):
-
+# def on_submit_sales_invoice(doc, method):
 	
-	efris_log_info(f"on_submit_sales_invoice called") 
+# 	doc = frappe.as_json(doc)
+# 	"""
+# 	Handle EFRIS-related logic when a Sales Invoice is submitted.
+# 	"""
+# 	sales_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
+# 	efris_log_info(f"Is EFRIS flag set to: {sales_invoice.efris_invoice}")
+
+# 	if not sales_invoice.efris_invoice or sales_invoice.is_consolidated:
+# 		return
+
+# 	if not validate_company(sales_invoice):
+# 		return
+# 	frappe.throw("here")
+# 	_handle_efris_logic(sales_invoice, doc)
+	
+# def _handle_efris_logic(sales_invoice, doc):
+# 	"""
+# 	Handle EFRIS-specific logic for Sales Invoices and Returns.
+# 	"""
+# 	if sales_invoice.is_return:
+# 		_handle_sales_return(sales_invoice, doc)
+# 	else:
+# 		_handle_sales_invoice(sales_invoice, doc)
+
+# 	efris_log_info("Finished on_submit_sales_invoice")
+	
+# def _handle_sales_return(sales_invoice, doc):
+# 	"""
+# 	Handle EFRIS logic for Sales Returns.
+# 	"""
+	
+# 	original_e_invoice = get_einvoice(sales_invoice.return_against)
+# 	credit_note_status = ""
+
+# 	if frappe.db.exists('E Invoice', sales_invoice.name):
+# 		creditnote_einvoice = get_einvoice(sales_invoice.name)
+# 		credit_note_status = creditnote_einvoice.status or ""
+# 	else:
+# 		frappe.log_error("Sales return name not set, assumption is it is new")
+
+# 	if original_e_invoice.status == "EFRIS Generated" and not credit_note_status in ["EFRIS Credit Note Pending", "EFRIS Generated"]:
+# 		EInvoiceAPI.generate_credit_note_return_application(sales_invoice)
+		
+# def _handle_sales_invoice(sales_invoice, doc):
+# 	"""
+# 	Handle EFRIS logic for regular Sales Invoices.
+# 	"""
+# 	EInvoiceAPI.synchronize_e_invoice(sales_invoice)
+
+# 	if sales_invoice.efris_irn:
+# 		return
+
+# 	einvoice_status = sales_invoice.get('efris_einvoice_status')
+# 	if not einvoice_status or einvoice_status == 'EFRIS Pending':
+# 		status, response = EInvoiceAPI.generate_irn(doc)
+# 	else:
+# 		efris_log_info("einvoice generation skipped...")
+		
+def on_submit_sales_invoice(doc, method):
 	
 	doc = frappe.as_json(doc)
 	sales_invoice = EInvoiceAPI.parse_sales_invoice(doc)
@@ -795,11 +850,6 @@ def on_submit_sales_invoice(doc, method):
 
 	is_return = sales_invoice.is_return
 	einvoice_status = sales_invoice.get('efris_einvoice_status')
-
-	efris_log_info(f"The Selected Invoice a return Sales :is_return {is_return}")
-
-
-	efris_log_info(f"sales_invoice.'einvoice_status:{einvoice_status}")
 
 	credit_note_status = ""
 	if sales_invoice.is_return:
@@ -844,47 +894,89 @@ def on_update_sales_invoice(doc, method):
 	
 
 def on_cancel_sales_invoice(doc, method):
-	efris_log_info(f"On Cancel is called ...")
 	is_efris = doc.get('efris_invoice')
 	efris_log_info("On Cancel Test Is EFRIS {is_efris}")
 	if not is_efris:
 		return
 	EInvoiceAPI.on_cancel_sales_invoice(doc)
-
-
-
-def validate_sales_invoice(doc,method):
-
-	items = doc.get('items',[])
+ 
+ 
+def validate_sales_invoice(doc, method):
+	"""
+	Validate the Sales Invoice to ensure EFRIS and non-EFRIS items are not mixed.
+	Set the Sales Taxes and Charges Template for EFRIS items.
+	"""
+	items = doc.get('items', [])
 	company = doc.get('company')
-	if items:
-		found_efris_item, found_non_efris_item = 0, 0
-		for row in items:
-			item_code = row.efris_commodity_code
-			efris_log_info(f"the EFRIS Goods & Services Code is:{item_code}")
-   
-			if item_code:
-				found_efris_item = 1
-			else:
-				found_non_efris_item = 1
 
-		# cannot have both on same invoice
-		if found_efris_item and found_non_efris_item:
-			frappe.throw("Cannot sell non-EFRIS and EFRIS items on the same Sales Invoice")
+	if not items:
+		return
+
+	found_efris_item, found_non_efris_item = _check_efris_items(items)
+	if found_efris_item and found_non_efris_item:
+		frappe.throw("Cannot sell non-EFRIS and EFRIS items on the same Sales Invoice")
+
+	if found_efris_item:
+		_set_sales_taxes_template(doc, company)
+
+
+def _check_efris_items(items):
+	found_efris_item, found_non_efris_item = 0, 0
+
+	for row in items:
+		item_code = row.efris_commodity_code
+		efris_log_info(f"The EFRIS Goods & Services Code is: {item_code}")
+
+		if item_code:
+			found_efris_item = 1
+		else:
+			found_non_efris_item = 1
+
+	return found_efris_item, found_non_efris_item
+
+def _set_sales_taxes_template(doc, company):
+	"""
+	Set the Sales Taxes and Charges Template for EFRIS items.
+	"""
+	template_name = get_e_company_settings(company).sales_taxes_and_charges_template
+
+	if template_name:
+		doc.taxes_and_charges = template_name
+	else:
+		frappe.throw("No Sales Taxes and Charges Template found!")
 		
-		if found_efris_item:
-			# default the sales taxes and charges template
-			template_name = get_e_company_settings(company).sales_taxes_and_charges_template
-			efris_log_info(f"The Sales Tax Template Title is: {template_name}")
+# def validate_sales_invoice(doc,method):
+
+# 	items = doc.get('items',[])
+# 	company = doc.get('company')
+# 	if items:
+# 		found_efris_item, found_non_efris_item = 0, 0
+# 		for row in items:
+# 			item_code = row.efris_commodity_code
+# 			efris_log_info(f"the EFRIS Goods & Services Code is:{item_code}")
+   
+# 			if item_code:
+# 				found_efris_item = 1
+# 			else:
+# 				found_non_efris_item = 1
+
+# 		# cannot have both on same invoice
+# 		if found_efris_item and found_non_efris_item:
+# 			frappe.throw("Cannot sell non-EFRIS and EFRIS items on the same Sales Invoice")
+		
+# 		if found_efris_item:
+# 			# default the sales taxes and charges template
+# 			template_name = get_e_company_settings(company).sales_taxes_and_charges_template
+# 			efris_log_info(f"The Sales Tax Template Title is: {template_name}")
 			
-			if template_name:
-				doc.taxes_and_charges = template_name
+# 			if template_name:
+# 				doc.taxes_and_charges = template_name
 				
-			else:
-				efris_log_error("No Sales Taxes and Charges Template found.")
-				frappe.throw("No Sales Taxes and Charges Template found!")
+# 			else:
+# 				efris_log_error("No Sales Taxes and Charges Template found.")
+# 				frappe.throw("No Sales Taxes and Charges Template found!")
 
-
+#ToDo: 
 def check_credit_note_approval_status():
 	# Log the start of the process
 	frappe.throw("Test error")
@@ -938,8 +1030,6 @@ def cancel_irn(sales_invoice, reasonCode, remark):
 
 @frappe.whitelist()
 def check_efris_flag_for_sales_invoice(is_return,return_against):
-   
-   efris_log_info(f"Parsed variables: {is_return}, {return_against}")
    is_efris_flag = bool(is_return and frappe.db.exists('E Invoice', return_against)) or False
    efris_log_info(f"Returned value is {is_efris_flag}")
    return is_efris_flag
@@ -949,19 +1039,14 @@ def Sales_invoice_is_efris_validation(doc, method):
 	"""Validate EFRIS compliance for Sales Invoice."""
 	efris_log_info("Before Save is called ...")
 	try:
-		# Ensure doc is a dictionary
-		if isinstance(doc, str):
-			doc = json.loads(doc)
+		doc = _parse_doc(doc)
 		
 		is_efris = doc.get('efris_invoice')
 		items = doc.get('items', [])
 		
-		# Validate EFRIS Warehouse for EFRIS Invoice
 		if is_efris:
 			validate_efris_warehouse(doc)        
-		# Automatically set EFRIS flag based on item codes
 		else:
-			# logic utilized e.g. by POS Awesome / other  means of creating invoices
 			set_efris_based_on_items(doc, items)
 	
 	except Exception as e:
@@ -1008,126 +1093,117 @@ def set_efris_based_on_items(doc, items):
 			doc.flags.ignore_validate_update_after_submit = True
 			efris_log_info(f"Updated Sales Invoice for EFRIS compliance.")
 			break  # Exit after the first match
+
+
 @frappe.whitelist()
-def sales_uom_validation(doc,mehtod):
-	if isinstance(doc, str):
-		try:
-			doc = json.loads(doc)
-		except json.JSONDecodeError:
-			frappe.log_error("Failed to decode `doc` JSON string", "purchase_uom_validation Error")
-			return {"error": "Failed to decode `doc` JSON string"}
-	efris_log_info(f"sales_uom_validation called with doc: {doc}")
+def sales_uom_validation(doc, method):
+	"""
+	Validate that the Sales UOM for each item in the document exists in the Item's UOMs list.
+	"""
+	doc = _parse_doc(doc)
 	
+	# Skip validation for returns or non-EFRIS invoices
 	if doc.get('is_return') or not doc.get('efris_invoice'):
 		return
-	
-	item = doc.get('items',[])
-	for data in item:
-		item_code = data.item_code
-		efris_log_info(f"Item Code :{item_code}")
-		sales_uom = data.uom
-		efris_log_info(f"Sales UOM on Items Child Table {sales_uom}")
-		if sales_uom:
-			item_doc = frappe.get_doc('Item',{'item_code':item_code})
-			uoms_detail = item_doc.get('uoms',[])
-			efris_log_info(f"Item UOm is {uoms_detail}")
-			# Check if purchase_uom exists in uoms_detail
-			uom_exists = any(row.uom == sales_uom for row in uoms_detail)
-			
-			if not uom_exists:
-				frappe.throw(f"The Sales UOM ({sales_uom}) must be in the Item's UOMs list for item {item_code}.")
 
+	for item in doc.get('items', []):
+		_validate_item_uom(item)
+		
+def _validate_item_uom(item):
+	"""
+	Validate that the Sales UOM for the item exists in the Item's UOMs list.
+	"""
+	item_code = item.get('item_code')
+	sales_uom = item.get('uom')
+
+	if not sales_uom:
+		return
+
+	item_doc = frappe.get_doc('Item', {'item_code': item_code})
+	uoms_detail = item_doc.get('uoms', [])
+
+	if not any(row.uom == sales_uom for row in uoms_detail):
+		frappe.throw(f"The Sales UOM ({sales_uom}) must be in the Item's UOMs list for item {item_code}.")
+		
 def calculate_additional_discounts(doc, method):
 	"""
 	Calculate additional discounts and adjust tax values on Sales Invoice items for EFRIS compliance.
 	"""
-	
-	# Ensure `doc` is a valid dictionary
-	if isinstance(doc, str):
-		try:
-			doc = json.loads(doc)
-		except json.JSONDecodeError:
-			frappe.log_error("Failed to decode `doc` JSON string", "calculate_additional_discounts Error")
-			return {"error": "Failed to decode `doc` JSON string"}
-	
+	doc = _parse_doc(doc)
+
 	efris_log_info(f"Calculate Additional Discounts called: {doc}")
-	
+
 	discount_percentage = doc.get('additional_discount_percentage', 0) or 0.0
 	efris_log_info(f"Issued Discount: {discount_percentage}%")
-	
-	# if not discount_percentage or doc.get('is_return'):
-	# 	return
-	if not discount_percentage:
-		return
 
-	if not doc.taxes:
+	if not discount_percentage or not doc.taxes:
 		return
 
 	# Load item tax details
 	item_taxes = loads(doc.taxes[0].item_wise_tax_detail)
 	initial_tax = doc.total_taxes_and_charges
 	efris_log_info(f"Initial Tax: {initial_tax}")
+
+	total_item_tax, total_discount_tax = _process_items(doc, item_taxes, discount_percentage)
 	
+def _parse_doc(doc):
+	"""
+	Parse the `doc` if it's a JSON string.
+	"""
+	if isinstance(doc, str):
+		try:
+			return json.loads(doc)
+		except json.JSONDecodeError:
+			frappe.log_error("Failed to decode `doc` JSON string", "sales_uom_validation Error")
+			return None
+	return doc
+	
+def _process_items(doc, item_taxes, discount_percentage):
+	"""
+	Process each item in the document to calculate discounts and taxes.
+	"""
 	total_item_tax = 0.0
 	total_discount_tax = 0.0
-	last_taxable_item = None
 
 	for row in doc.get('items', []):
-		efris_log_info(f"Processing Item: {row.get('item_code', '')}")
 		item_code = row.get('item_code', '')
 		discount_amount = round(-row.amount * (discount_percentage / 100), 4)
 		discounted_item = f"{row.get('item_name', '')} (Discount)"
-		
 		tax_rate = float(item_taxes.get(item_code, [0, 0])[0]) or 0.0
-		
+
 		if tax_rate > 0:
-			# Calculate tax adjustments for taxable items
-			tax_on_discount = round(discount_amount / (1 + (tax_rate / 100)), 4)
-			discount_tax = round(discount_amount - tax_on_discount, 4)
-			item_tax = round(row.amount * (tax_rate / (100 + tax_rate)), 4)
-			
+			tax_on_discount, discount_tax, item_tax = _calculate_tax_adjustments(discount_amount, tax_rate, row.amount)
 			total_item_tax += item_tax
 			total_discount_tax += discount_tax
-			last_taxable_item = row
+		   
 		else:
-			tax_on_discount = 0.0
+			
 			discount_tax = 0.0
 			item_tax = 0.0
 
-		efris_log_info(
-			f"Item: {item_code}, Discount Amount: {discount_amount}, "
-			f"Tax on Discount: {discount_tax}, Item Tax: {item_tax}"
-		)
-		
-		# Update row with calculated values
-		if doc.get('is_return'):
-			row.efris_dsct_discount_total = -discount_amount
-			row.efris_dsct_discount_tax = -discount_tax
-			row.efris_dsct_discount_tax_rate = f"{tax_rate / 100:.2f}" if tax_rate > 0 else "0.0"
-			row.efris_dsct_item_tax = -item_tax
-			row.efris_dsct_taxable_amount = -row.amount
-			row.efris_dsct_item_discount = discounted_item
-		else:
-			row.efris_dsct_discount_total = discount_amount
-			row.efris_dsct_discount_tax = discount_tax
-			row.efris_dsct_discount_tax_rate = f"{tax_rate / 100:.2f}" if tax_rate > 0 else "0.0"
-			row.efris_dsct_item_tax = item_tax
-			row.efris_dsct_taxable_amount = row.amount
-			row.efris_dsct_item_discount = discounted_item
-		
-	# # Final adjustment for rounding errors
-	# calculated_total_tax = round(total_item_tax + total_discount_tax, 4)
-	# tax_difference = round(initial_tax - calculated_total_tax, 4)
-	# # frappe.throw(str(tax_difference))
-	# if last_taxable_item and len(doc.items) < 5:
-	# 	efris_log_info(f"Adjusting last item's discount tax by: {tax_difference}")
-	# 	last_taxable_item.efris_dsct_discount_tax += tax_difference
-	# 	last_taxable_item.efris_dsct_item_tax += tax_difference
-	# 	efris_log_info(f"Final adjusted tax for last item: {last_taxable_item.efris_dsct_item_tax}")
+		_update_row_values(row, discount_amount, discount_tax, tax_rate, item_tax, discounted_item, doc.get('is_return', False))
 
-	# # Log alignment verification
-	# efris_log_info(f"ERPNext Total Tax: {initial_tax}, Calculated Total Tax: {calculated_total_tax}")
-	# efris_log_info(f"Tax Difference Applied: {tax_difference}")
+	return total_item_tax, total_discount_tax
+
+def _calculate_tax_adjustments(discount_amount, tax_rate, item_amount):
+	"""
+	Calculate tax adjustments for taxable items.
+	"""
+	tax_on_discount = round(discount_amount / (1 + (tax_rate / 100)), 4)
+	discount_tax = round(discount_amount - tax_on_discount, 4)
+	item_tax = round(item_amount * (tax_rate / (100 + tax_rate)), 4)
+	return tax_on_discount, discount_tax, item_tax
+
+def _update_row_values(row, discount_amount, discount_tax, tax_rate, item_tax, discounted_item, is_return):
+	"""
+	Update row values with calculated discounts and taxes.
+	"""
+	row.efris_dsct_discount_total = -discount_amount if is_return else discount_amount
+	row.efris_dsct_discount_tax = -discount_tax if is_return else discount_tax
+	row.efris_dsct_discount_tax_rate = f"{tax_rate / 100:.2f}" if tax_rate > 0 else "0.0"
+	row.efris_dsct_item_tax = -item_tax if is_return else item_tax
+	row.efris_dsct_taxable_amount = -row.amount if is_return else row.amount
+	row.efris_dsct_item_discount = discounted_item
 
 
 def decode_e_tax_rate(tax_rate, e_tax_category):
@@ -1141,15 +1217,11 @@ def decode_e_tax_rate(tax_rate, e_tax_category):
 	return str(tax_rate)
 
 
+#Ref: Directly return False or True where appropriate. Simplify logic to return conditions when met early
 def validate_company(doc):
 	company_name = doc.get('company', '')
-	efris_log_info(f"The Company name is {company_name}")
-
-	# Initialize valid as False
-	valid = False
 
 	if not company_name:
-		efris_log_error("No company provided in the document.")
 		return valid
 
 	try:        
@@ -1162,18 +1234,14 @@ def validate_company(doc):
 	
 		if not einvoicing_settings:
 			efris_log_error(f"No E Invoicing Settings found for company: {company_name}")
-			valid = False
-			efris_log_info(f"The e-Company: {company_name} is not found")
-		else:
-			valid = True
-			efris_log_info(f"Found EFRIS settings found for Company: {company_name}")
+			return False
+			
+		return True
 
 	
 	except Exception as e:
 		efris_log_error(f"Unexpected error while validating company '{company_name}': {e}")
 		valid = False
-
-	return valid
 
 def new_credit_note_rate(sales_invoice):
 	doc = frappe.get_doc("Sales Invoice", sales_invoice)
@@ -1224,82 +1292,3 @@ def get_efris_product_code(item_code):
 	if not product_code:
 		frappe.throw(f"No EFRIS Product Code found for item: {item_code}")
 	return product_code
-
-# def pad_data(payload, company_name):
-# 	e_settings = get_e_company_settings(company_name)
-		
-# 	key = get_mode_private_key_path(e_settings),
-		  
-# 	payload_json = json.dumps(payload)
-# 	block_size = 16
-# 	padded_data = pad(payload_json.encode(), block_size)
-
-# 	 # Replace with the actual encryption key
-# 	cipher = AES.new(key, AES.MODE_ECB)
-# 	encrypted_data = cipher.encrypt(padded_data)
-# 	frappe.throw(str(encrypted_data))
-# 	return encrypted_data
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
-import json
-import frappe
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.serialization import pkcs12
-from cryptography.hazmat.backends import default_backend
-import os
-
-def pad_data(payload, company_name):
-    # Step 1: Get encryption settings
-    e_settings = get_e_company_settings(company_name)
-    
-    # Step 2: Get the site name
-    site_name = frappe.local.site  # Get the current site name
-    
-    # Step 3: Construct the absolute path to the .p12 file
-    p12_file_name = "erp_champ_sandbox_prk.p12"
-    p12_file_path = os.path.join(
-        frappe.get_site_path("private", "files"),  # Path to private/files
-        p12_file_name  # File name
-    )
-    
-    # Debug: Print the file path
-    # frappe.throw(f"P12 File Path: {p12_file_path}")
-    
-    # Step 4: Extract the private key from the .p12 file
-    p12_password = b"efrischamps"  # Replace with the actual password for the .p12 file
-    try:
-        with open(p12_file_path, "rb") as f:
-            p12_data = f.read()
-    except FileNotFoundError:
-        frappe.throw(f"File not found: {p12_file_path}")
-    
-    # Load the private key and certificate from the .p12 file
-    private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
-        p12_data, p12_password, backend=default_backend()
-    )
-    
-    # Serialize the private key to PEM format
-    private_key_pem = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption()
-    )
-    
-    # Step 5: Use the private key for encryption
-    # Extract the first 32 bytes of the private key as the AES key
-    key = private_key_pem[:32]
-    
-    # Step 6: Convert payload to JSON string
-    payload_json = json.dumps(payload)
-    
-    # Step 7: Pad the data to the block size
-    block_size = 16  # AES block size is 16 bytes
-    padded_data = pad(payload_json.encode(), block_size)
-    
-    # Step 8: Encrypt the data
-    cipher = AES.new(key, AES.MODE_ECB)
-    encrypted_data = cipher.encrypt(padded_data)
-    
-    # Step 9: Debug and return the encrypted data
-    # frappe.throw(f"Encrypted Data: {encrypted_data}")
-    return encrypted_data
