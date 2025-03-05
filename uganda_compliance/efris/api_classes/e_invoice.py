@@ -623,32 +623,6 @@ def initialize_credit_note(einvoice, irn, original_einvoice_id, reason, reason_c
         "sellersReferenceNo": einvoice.seller_reference_no
     }
 
-# def get_goods_details(einvoice, original_einvoice):
-#     item_list = []
-#     discount_percentage = einvoice.additional_discount_percentage or 0
-#     for item in einvoice.items: 
-#         goods_code = frappe.db.get_value("Item", {"item_code": item.item_code}, "efris_product_code") or item.item_code
-#         tax_rate = decode_e_tax_rate(str(item.gst_rate), item.e_tax_category)
-#         taxable_amount = -1 * item.efris_dsct_taxable_amount if discount_percentage > 0 else item.amount
-#         taxes = -1 * item.efris_dsct_item_tax if tax_rate == '0.18' else item.tax
-#         discount_flag = "1" if discount_percentage > 0 else "2"
-        
-#         item_list.append({
-#             "item": item.item_name,
-#             "itemCode": goods_code,
-#             "qty": str(item.quantity),
-#             "unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
-#             "unitPrice": str(item.rate),
-#             "total": str(taxable_amount),
-#             "taxRate": str(tax_rate),
-#             "tax": str(taxes),
-#             "orderNumber": str(get_order_no(original_einvoice, item.item_code, item.item_name)),
-#             "discountFlag": discount_flag,
-#             "deemedFlag": "2",
-#             "exciseFlag": "2",
-#             "vatApplicableFlag": "1"
-#         })
-#     return item_list
 
 def get_tax_details(einvoice):
     return [{
@@ -732,43 +706,8 @@ def get_basic_information(einvoice):
         "invoiceKind": "1",
         "invoiceIndustryCode": "102"
     }
-# def get_goods_details(einvoice, original_einvoice):
-#     def build_item_details(item):
-#         goods_code = frappe.db.get_value("Item", {"item_code": item.item_code}, "efris_product_code") or item.item_code
-#         tax_rate = decode_e_tax_rate(str(item.gst_rate), item.e_tax_category)
-#         taxable_amount = -1 * item.efris_dsct_taxable_amount if einvoice.additional_discount_percentage else item.amount
-#         taxes = -1 * item.efris_dsct_item_tax if tax_rate == '0.18' else item.tax
-#         discount_flag = "1" if einvoice.additional_discount_percentage else "2"
-        
-#         return {
-#             "item": item.item_name,
-#             "itemCode": goods_code,
-#             "qty": str(item.quantity),
-#             "unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
-#             "unitPrice": str(item.rate),
-#             "total": str(taxable_amount),
-#             "taxRate": str(tax_rate),
-#             "tax": str(taxes),
-#             "orderNumber": str(get_order_no(original_einvoice, item.item_code, item.item_name)),
-#             "discountFlag": discount_flag,
-#             "deemedFlag": "2",
-#             "exciseFlag": "2",
-#             "categoryId": "",
-#             "categoryName": "",
-#             "goodsCategoryId": item.efris_commodity_code,
-#             "goodsCategoryName": "",
-#             "exciseRate": "",
-#             "exciseRule": "",
-#             "exciseTax": "",
-#             "pack": "",
-#             "stick": "",
-#             "exciseUnit": "",
-#             "exciseCurrency": "",
-#             "exciseRateName": "",
-#             "vatApplicableFlag": "1"
-#         }
-    
-#     return [build_item_details(item) for item in einvoice.items]
+
+
 def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
     """
     Process items in the einvoice and return a list of goods details for the credit note.
@@ -911,56 +850,6 @@ def _handle_sales_invoice(sales_invoice, doc):
 	else:
 		efris_log_info("einvoice generation skipped...")
 		
-# def on_submit_sales_invoice(doc, method):
-	
-# 	doc = frappe.as_json(doc)
-# 	sales_invoice = EInvoiceAPI.parse_sales_invoice(doc)
-	
-# 	is_efris = sales_invoice.efris_invoice
-# 	efris_log_info(f"Is EFRIS flag is set to :{is_efris}") 
-# 	if not is_efris:
-# 		return   
-	
-# 	if sales_invoice.is_consolidated:
-# 		efris_log_info(f"The Pos Sales Invoice is a Consolidated Invoice")
-# 		return
-
-# 	if not validate_company(sales_invoice):
-# 		return
-
-# 	is_return = sales_invoice.is_return
-# 	einvoice_status = sales_invoice.get('efris_einvoice_status')
-
-# 	credit_note_status = ""
-# 	if sales_invoice.is_return:
-# 		original_e_invoice = get_einvoice(sales_invoice.return_against)
-# 		if frappe.db.exists('E Invoice', sales_invoice.name):
-# 			creditnote_einvoice = get_einvoice(sales_invoice.name)
-# 			credit_note_status = creditnote_einvoice.status or ""
-# 		else:
-# 			efris_log_info("Sales return name not set, assumption is it is new")
-# 			credit_note_status = ""
-
-# 		if original_e_invoice.status == "EFRIS Generated" and not credit_note_status in ["EFRIS Credit Note Pending", "EFRIS Generated"]:
-# 			EInvoiceAPI.generate_credit_note_return_application(sales_invoice)
-
-# 	else:
-# 		# Synchronize the E Invoice with Sales Invoice
-# 		EInvoiceAPI.synchronize_e_invoice(sales_invoice)
-# 		fdn = sales_invoice.efris_irn
-# 		if fdn:
-# 			efris_log_info(f"Sales Invoice already has FDN :{fdn}")
-# 			return
-		
-# 		if (not einvoice_status or einvoice_status == 'EFRIS Pending') :
-# 			efris_log_info(f"einvoice_status is NULL or EFRIS Pending")
-# 			status, response = EInvoiceAPI.generate_irn(doc)        
-						
-# 		else:
-# 			efris_log_info("einvoice generation skipped...")            
-
-# 	efris_log_info(f"finished on_submit_sales_invoice")
-
   
 def on_update_sales_invoice(doc, method):
 	efris_log_info("on_update_sales_invoice called...")
@@ -1024,37 +913,7 @@ def _set_sales_taxes_template(doc, company):
 		doc.taxes_and_charges = template_name
 	else:
 		frappe.throw("No Sales Taxes and Charges Template found!")
-		
-# def validate_sales_invoice(doc,method):
 
-# 	items = doc.get('items',[])
-# 	company = doc.get('company')
-# 	if items:
-# 		found_efris_item, found_non_efris_item = 0, 0
-# 		for row in items:
-# 			item_code = row.efris_commodity_code
-# 			efris_log_info(f"the EFRIS Goods & Services Code is:{item_code}")
-   
-# 			if item_code:
-# 				found_efris_item = 1
-# 			else:
-# 				found_non_efris_item = 1
-
-# 		# cannot have both on same invoice
-# 		if found_efris_item and found_non_efris_item:
-# 			frappe.throw("Cannot sell non-EFRIS and EFRIS items on the same Sales Invoice")
-		
-# 		if found_efris_item:
-# 			# default the sales taxes and charges template
-# 			template_name = get_e_company_settings(company).sales_taxes_and_charges_template
-# 			efris_log_info(f"The Sales Tax Template Title is: {template_name}")
-			
-# 			if template_name:
-# 				doc.taxes_and_charges = template_name
-				
-# 			else:
-# 				efris_log_error("No Sales Taxes and Charges Template found.")
-# 				frappe.throw("No Sales Taxes and Charges Template found!")
 
 #ToDo: 
 def check_credit_note_approval_status():
