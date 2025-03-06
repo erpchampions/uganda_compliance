@@ -11,6 +11,7 @@ from datetime import datetime
 from pyqrcode import create as qrcreate
 import io
 import os
+from frappe.utils.user import get_users_with_role
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
@@ -518,6 +519,7 @@ def handle_rejected_credit_note(einvoice, response):
     sales_invoice_return.flags.ignore_permissions = True
     sales_invoice_return.docstatus = 'Return Cancelled'
     sales_invoice_return.save()
+    notify_system_managers(sales_invoice_return)
 
     original_einvoice = get_einvoice(sales_invoice_return.return_against)
     original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
@@ -530,7 +532,35 @@ def handle_rejected_credit_note(einvoice, response):
 
     return True, "Credit Note Cancelled Successfully"
 
+def notify_system_managers(credit_note_name):
+    """
+    Fetch users with the 'System Manager' role and send them an email notification
+    about the rejected credit note.
+    """
+    system_managers = get_users_with_role("Sales Manager")
+    if not system_managers:
+        efris_log_info("No system managers found to notify.")
+        return
 
+    subject = f"Credit Note Rejected: {credit_note_name}"
+    message = f"""
+    Dear System Manager,
+
+    The credit note with reference {credit_note_name} has been rejected.
+    Please follow up with the relevant team to resolve this issue.
+
+    Best regards,
+    ERPNext System
+    """
+
+    for user in system_managers:
+        frappe.sendmail(
+            recipients=[user.email],
+            subject=subject,
+            message=message
+        )
+        efris_log_info(f"Email sent to {user.email} about rejected credit note {credit_note_name}.")
+        
 def handle_approved_credit_note(einvoice, response):
     credit_invoice_no = response["records"][0]["invoiceNo"]
     oriInvoiceNo = response["records"][0]["oriInvoiceNo"]
