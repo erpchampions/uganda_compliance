@@ -9,12 +9,6 @@ from .request_utils import fetch_data, post_req
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path
 
-
-
-##############
-import json
-import base64
-
 def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
     try:
         # Fetch company settings
@@ -32,7 +26,7 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
 
         private_key = get_private_key(private_key_path, e_settings)
 
-        aes_key = get_AES_key(tin, device_no, private_key, sandbox_mode)
+        aes_key = get_AES_key(tin, device_no, private_key, sandbox_mode, brn)
 
         encrypted_data = encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, brn, private_key, data)
         if not encrypted_data:
@@ -56,7 +50,6 @@ def encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, br
         newEncrypteddata = base64.b64encode(isAESEncrypted).decode("utf-8")
 
         if isAESEncrypted:
-            efris_log_info("AES encryption successful")
             data["globalInfo"]["deviceNo"] = device_no
             data["globalInfo"]["tin"] = tin
             data["globalInfo"]["brn"] = brn
@@ -66,7 +59,6 @@ def encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, br
 
             # Sign the data
             signature = sign_data(private_key, newEncrypteddata.encode())
-            efris_log_info("Signature completed...")
 
             if signature:
                 b4signature = base64.b64encode(signature).decode()
