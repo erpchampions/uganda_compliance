@@ -20,20 +20,16 @@ def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
     return {'is_efris': is_efris}
 
 def before_save_item(doc, method):
-    efris_log_info(f"The Created Item is: {doc}")
     is_import = frappe.flags.in_import
     is_registered_item = doc.get("efris_registered", 0)
     if is_import and is_registered_item == 1:
-        efris_log_info(f"Excludes EFRIS registered Item {doc.get('item_code')}")        
         return
 
     is_efris_item = doc.get('efris_item')
     if not is_efris_item:
-        efris_log_info("Non-EFRIS item, skipping item registration with EFRIS")
         return
 
     is_registered_item = doc.get("efris_registered", 0)
-    efris_log_info(f"The Item's Registration state is: {is_registered_item}")
 
     has_opening_stock = doc.get("opening_stock",0)
     efris_log_info(f"The Opening Stock Quantity is {has_opening_stock}")
@@ -41,19 +37,14 @@ def before_save_item(doc, method):
         frappe.throw("You Should Not ADD Opening Stock, Opening Stock is Stocked-In to EFRIS Via Stock Reconciliation")
 
     e_company = doc.get('efris_e_company', '')
+    
     if not is_registered_item:
         query_result = query_item_before_post(doc)
-        efris_log_info(f"The Response is :{query_result}")
         if query_result:
-            # Item exists in EFRIS, perform update
-            efris_log_info("Item found in EFRIS, proceeding with update.")
             update_existing_item(doc, method, e_company)
         else:
-            # Item does not exist in EFRIS, perform create
-            efris_log_info("Item not found in EFRIS, proceeding with creation.")
             upload_new_item(doc, method, e_company)
     else:
-        # If item is registered in ERPNext, it should already be in EFRIS, so update
         update_existing_item(doc, method, e_company)
 
 def query_item_before_post(doc):
@@ -519,13 +510,12 @@ def validate_uoms(doc):
             package_uom = row.get("uom")
             package_unit_count += 1
             
-
+        
         if is_efris_uom and (not efris_unit_price or not efris_package_scale_value):
             frappe.throw("EFRIS UOMs must have a unit price and scale value.")
     
     doc.purchase_uom = package_uom
     doc.sales_uom = package_uom
-    efris_log_info(f"Defaults Purchase Unit of Measure : {doc.purchase_uom}")
     validate_uom_counts(has_multiple_uom, piece_unit_count, package_unit_count, is_efris_uom_count)
 
 def validate_uom_counts(has_multiple_uom, piece_count, package_count, efris_count):
@@ -580,7 +570,6 @@ def get_item_tax_template(company, e_tax_category):
                 taxes = item_tax.get("taxes",[])               
                 for tax in taxes:
                     if tax.efris_e_tax_category == e_tax_category:
-                        # Match found, return this Item Tax Template
                         return item_tax.name
                 
         
