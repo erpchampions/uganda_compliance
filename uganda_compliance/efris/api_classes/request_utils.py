@@ -60,8 +60,6 @@ def post_req(data, sandbox_mode):
 
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, data=data, headers=headers)
-    print(response.text)
-    efris_log_info("post_req()...done, response:" + response.text)
     return response.text
 
 def get_ug_time_str():
