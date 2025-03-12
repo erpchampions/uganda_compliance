@@ -15,7 +15,7 @@ frappe.ui.form.on('EFRIS invoice Sync', {
 				else{
 					frappe.msgprint("Sync unsuccessful");
 				}
-				frm.reload_doc();  // Reload the form to reflect new log entries
+				frm.reload_doc(); 
 			  }		
 		})
 	}

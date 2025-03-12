@@ -40,12 +40,9 @@ frappe.ui.form.on("Item", {
         frm.refresh_field("taxes")
     },
     item_code:function(frm){
-        // console.log(`On Item Code Change...`)
         let item_code = frm.doc.item_code;
-        // console.log(`Item Code ${item_code} is ${item_code.length} characters long`)
-        if (item_code && item_code !== ''){
+      if (item_code && item_code !== ''){
             item_code = item_code.trim()
-            // console.log(`Trimmed Item Code :${item_code} is ${item_code.length} characters long`)
             frm.set_value('item_code',item_code);
             frm.refresh_field('item_code');
         }
@@ -58,8 +55,7 @@ function set_item_tax_template(frm){
         if (efris_commodity_code) {
             console.log(`The EFRIS commodity code is ${efris_commodity_code}`);
             
-            // Fetch the E Tax Category from the EFRIS Commodity Code
-            frappe.call({
+          frappe.call({
                 method: 'frappe.client.get_value',
                 args: {
                     doctype: 'EFRIS Commodity Code',
@@ -76,7 +72,6 @@ function set_item_tax_template(frm){
                             const company = frm.doc.efris_e_company;
                             console.log(`Item E Company is ${company}`);
                             
-                            // Fetch the Item Tax Template based on E Tax Category and Company
                             frappe.call({
                                 method: 'uganda_compliance.efris.api_classes.e_goods_services.get_item_tax_template',
                                 args: {
@@ -112,7 +107,6 @@ frappe.ui.form.on('Item', {
     after_save: function(frm) {
         console.log("After Save is called...");
 
-        // Check if the item is EFRIS tracked and registered
         if (frm.doc.efris_item && frm.doc.efris_registered) {
             console.log("Item is EFRIS tracked and registered. Proceeding to create item prices...");
 
@@ -141,7 +135,6 @@ frappe.ui.form.on('Item', {
             let purchase_uom = frm.doc.purchase_uom;
             console.log(`Purchase UOM is ${purchase_uom}`);
 
-            // Check if the purchase_uom exists in the UOMs table
             let uom_exists = frm.doc.uoms.some(row => row.uom === purchase_uom);
             if (!uom_exists) {
                 frappe.throw(`The Default Purchase UOM (${purchase_uom}) must be in the item's UOMs list.`);
@@ -155,7 +148,6 @@ frappe.ui.form.on('Item', {
             let sales_uom = frm.doc.sales_uom;
             console.log(`Sales UOM is ${sales_uom}`);
 
-            // Check if the sales_uom exists in the UOMs table
             let uom_exists = frm.doc.uoms.some(row => row.uom === sales_uom);
             if (!uom_exists) {
                 frappe.throw(`The Default Sales UOM (${sales_uom}) must be in the item's UOMs list.`);
@@ -249,9 +241,9 @@ function update_default_uom_row(frm) {
     frm.doc.uoms = frm.doc.uoms.filter(row => {
         if (row.uom !== default_uom && row.conversion_factor === 1) {
             console.log(`Removing outdated UOM row: ${row.uom}`);
-            return false; // Remove this row
+            return false; 
         }
-        return true; // Keep this row
+        return true; 
     });
 
     // Check if the default UOM exists in the table

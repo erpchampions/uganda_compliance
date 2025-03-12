@@ -681,24 +681,6 @@ class EInvoice(Document):
 
 		return {"goodsDetails": item_list}
 
-
-	# def get_tax_details(self):
-	# 	efris_log_info("Getting tax details JSON")
-	# 	tax_details_list = []
-	# 	for row in self.taxes:
-	# 		tax_details = {
-	# 			"taxCategoryCode": row.tax_category_code.split(':')[0],
-	# 			"netAmount": str(row.net_amount),
-	# 			"taxRate": str(row.tax_rate),
-	# 			# "taxAmount": str(row.tax_amount),
-	# 			"taxAmount": calculate_additional_discounts(self.invoice) if self.discount_amount >0 else row.tax_amount,
-	# 			"grossAmount": round(calculate_additional_discounts(self.invoice) + self.net_amount,4) if self.discount_amount >0 else row.gross_amount,
-	# 			"exciseUnit": "",
-	# 			"exciseCurrency": "",
-	# 			"taxRateName": ""
-	# 		}
-	# 		tax_details_list.append(tax_details)
-	# 	return {"taxDetails": tax_details_list}
  
 	def get_tax_details(self):
 		efris_log_info("Getting tax details JSON")
@@ -854,10 +836,8 @@ def calculate_additional_discounts(invoice):
 		row.efris_dsct_taxable_amount = row.amount
 		row.efris_dsct_item_discount = discounted_item
 
-	# Final adjustment for rounding errors
 	calculated_total_tax = round(total_item_tax + total_discount_tax, 2)
-	#frappe.throw(str(calculated_total_tax))
-	# frappe.throw(str(calculate_tax_by_category(invoice)))
+
 	return calculated_total_tax
 	
  
