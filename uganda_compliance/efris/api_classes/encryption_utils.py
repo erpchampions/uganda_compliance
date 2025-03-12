@@ -36,7 +36,7 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode, brn):
     try:
         data = fetch_data()
 
-        brn = brn # TODO: add BRN to E Company details on E Invoice Settings
+        brn = brn 
         dataExchangeId = guidv4()
         
         data["globalInfo"]["interfaceCode"] = "T104"
@@ -45,7 +45,7 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode, brn):
         data["globalInfo"]["tin"] = tin
         data["globalInfo"]["brn"] = brn
 
-        data_json = json.dumps(data, separators=(',', ':'))  # Minimize JSON size
+        data_json = json.dumps(data, separators=(',', ':'))  
         
         resp = post_req(data_json, sandbox_mode)
 
