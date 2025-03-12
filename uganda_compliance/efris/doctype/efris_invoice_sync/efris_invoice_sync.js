@@ -9,6 +9,12 @@ frappe.ui.form.on('EFRIS invoice Sync', {
 		frappe.call({
 			'method':'uganda_compliance.efris.api_classes.efris_invoice_sync.efris_invoice_sync',
 			callback: function (r) {
+				if (r.message) {
+					frappe.msgprint(r.message);
+				}
+				else{
+					frappe.msgprint("Sync unsuccessful");
+				}
 				frm.reload_doc();  // Reload the form to reflect new log entries
 			  }		
 		})

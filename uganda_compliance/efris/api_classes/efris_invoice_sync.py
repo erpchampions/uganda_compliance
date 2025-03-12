@@ -16,320 +16,285 @@ def format_date(date_string, current_format="%d/%m/%Y", target_format="%Y-%m-%d"
     except ValueError:
         frappe.throw(f"Invalid date format: {date_string}")
 
+
 @frappe.whitelist()
 def efris_invoice_sync():
+    company_settings_list = get_company_settings()
     
-    reference_doc_type = ""
-    reference_document = ""
-    company_settings_list = []
-    enabled = ""
-    enable_sync_from_efris = ""
-    X_days = 0
-    invoice_counter = 0
-    #startDate = "2024-12-15"
-    efris_log_info("efris_invoice_sync called...")
-    company_settings_list = frappe.get_all("E Invoicing Settings",filters = [{"enabled":1,},{'enable_sync_from_efris':1}],fields=["*"])
     for company in company_settings_list:
-        # company_settings = frappe.db.get_doc("E Invoicing Settings",{'name':company.name})
-        company_name = company.company
-        deviceNo = company.device_no
-        output_vat_account = company.output_vat_account
-        sales_taxes_template = company.sales_taxes_and_charges_template
-            
-        enabled = company.enabled       
-        enable_sync_from_efris = company.enable_sync_from_efris       
+        if not company.enabled or not company.enable_sync_from_efris:
+            continue
         
-        reference_doc_type = "E Invoicing Settings"
-        reference_document = company.name
-        X_days = company.sync_days_ago
-        efris_log_info(f"Sync Days Ago :{X_days}")
+        process_company_invoices(company)
         
-        # Get the current date for the query
-        if company_name and enabled and enable_sync_from_efris:
-            current_date = frappe.utils.today()    
-            warehouse = frappe.db.get_value("Warehouse",{"company":company_name,"efris_warehouse": 1},"name")  
-            efris_log_info(f"The Active EFRIS Warehouse is {warehouse}")  
-            pos_profile =   frappe.db.get_value("POS Profile",{"company":company_name,"warehouse": warehouse},"name")  
+def get_company_settings():
+    return frappe.get_all("E Invoicing Settings", filters=[{"enabled": 1}, {'enable_sync_from_efris': 1}], fields=["*"])
 
-           
+def process_company_invoices(company):
+    company_name = company.company
+    device_no = company.device_no
+    output_vat_account = company.output_vat_account
+    sales_taxes_template = company.sales_taxes_and_charges_template
+    sync_days_ago = company.sync_days_ago
+        
+    warehouse = frappe.db.get_value("Warehouse", {"company": company_name, "efris_warehouse": 1}, "name")
+    
+    pos_profile = frappe.db.get_value("POS Profile", {"company": company_name, "warehouse": warehouse}, "name")
+    
+    start_date, end_date = calculate_date_range(sync_days_ago)
+    
+    query_invoice_credit_note_eligibilty_T07 = prepare_query_invoice_credit_note_eligibilty_T07(device_no, start_date, end_date)
 
-            # Calculate dates
-            end_date = frappe.utils.today()
-            start_date = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=X_days)).strftime("%Y-%m-%d")
+    status, response = make_post(interfaceCode="T107", content=query_invoice_credit_note_eligibilty_T07, company_name=company_name, reference_doc_type="E Invoicing Settings", reference_document=company.name)
+  
+    if not status:
+        frappe.throw(f"Failed to fetch invoices from EFRIS: {response}")
+        return
+    
+    invoices = response.get("records", [])
+    invoice_counter = 0
+    
+    for invoice in invoices:
+        fdn = invoice.get("invoiceNo")
+        if frappe.db.exists("Sales Invoice", {"efris_irn": fdn}):
+            frappe.log_error(f"Invoice with FDN {fdn} already exists in ERPNext, skipping.")
+            efris_log_info(f"Invoice with FDN {fdn} already exists in ERPNext, skipping.")
+            continue
+        
+        invoice_details = fetch_invoice_details(fdn, company_name, company.name)
+        if not invoice_details:
+            continue
+        
+        customer = create_or_get_customer(invoice_details["buyerDetails"])
+        sales_invoice = create_sales_invoice(invoice_details, customer, company_name, warehouse, pos_profile, output_vat_account, sales_taxes_template)
+        
+        if sales_invoice:
+            einvoice = create_and_submit_einvoice(sales_invoice, invoice_details)
+            invoice_counter += 1
 
-            # Prepare the query for fetching invoice records from EFRIS (T107)
-            query_invoice_credit_note_eligibilty_T07 = {
-                "invoiceNo": "",  # Leave empty to get all invoices
-                "deviceNo": "",  # Device number from EFRIS
-                "buyerTin": "",
-                "buyerLegalName": "",
-                "invoiceType": "1",  # Assuming 1 is the correct type
-                "startDate": start_date,
-                "endDate": end_date,
-                "pageNo": "1",  # Pagination parameters
-                "pageSize": "99",  # Fetch 10 records at a time (adjust as necessary)
-                "branchName": ""
-            }
-            
-            # Log the info
-            efris_log_info(f"Fetching invoices from EFRIS for company: {company_name} on {current_date}")
-            
-            # Make the request to EFRIS using the T107 interface
-            status, response = make_post(interfaceCode = "T107", content = query_invoice_credit_note_eligibilty_T07, company_name = company_name,reference_doc_type = reference_doc_type, reference_document = reference_document)
-            
-            if not status:                
-                frappe.throw(f"Failed to fetch invoices from EFRIS: {response}")
-                return
-            
-            # If successful, process the response
-            efris_log_info(f"Successfully fetched invoices from EFRIS: {response}")
-            invoices = response.get("records", [])  # Assuming the response contains a 'data' key with the invoice records
-            
-            for invoice in invoices:
-                fdn = invoice.get("invoiceNo")
-                
-                # Check if this FDN (invoiceNo) exists in ERPNext Sales Invoice
-                existing_invoice = frappe.db.exists("Sales Invoice", {"efris_irn": fdn})
-            
-            
-                if existing_invoice:
-                    invoice_record = frappe.get_doc("Sales Invoice",{"name":existing_invoice})
-                    efris_log_info(f"Invoice with FDN {fdn} already exists in ERPNext, skipping.")
-                    if invoice_record.docstatus == 1:
-                        # If the invoice already exists, skip it
-                        efris_log_info(f"Invoice with FDN {fdn} already exists in ERPNext, skipping.")
-                    continue
-                
-                
-                # If invoice does not exist, fetch its details using the T108 interface
-                efris_log_info(f"Invoice with FDN {fdn} not found in ERPNext. Fetching details.")
-                
-                Query_Credit_Notes_Invoice_details_T108 = {
-                    "invoiceNo": fdn
-                }
-                
-                # Make the post request to fetch detailed invoice information
-                status, invoice_details_response = make_post(interfaceCode = "T108",content =  Query_Credit_Notes_Invoice_details_T108, company_name = company_name,reference_doc_type = None, reference_document = reference_document)
-               
-                if not status:
-                    efris_log_error(f"Failed to fetch invoice details for FDN {fdn}: {invoice_details_response}")
-                    continue
-                
-                # Create Sales Invoice in ERPNext using the fetched details
-                invoice_data = invoice_details_response  # Assuming 'data' contains the invoice details
-                
-                if not invoice_data:
-                    efris_log_error(f"No invoice data found for FDN {fdn}, skipping.")
-                    continue
-                customer_name = invoice_data["buyerDetails"]["buyerLegalName"]
-                buyer_type = invoice_data["buyerDetails"]["buyerType"]
-                buyer_tin = invoice_data["buyerDetails"].get("buyerTin") or ""
-                efris_customer_type = get_customer_type(buyer_type)
-                invoice_id = invoice_data["basicInformation"].get("invoiceId") or ""
-                efris_log_info(f"Invoice ID :{invoice_id}")
-                antifakeCode = invoice_data["basicInformation"].get("antifakeCode")  or ""
-                efris_log_info(f"Antifake Code :{antifakeCode}") 
-                grossAmount = invoice_data["summary"].get("grossAmount")  or ""
-                payway = invoice_data["payWay"]
-                payment_method_ = ""
-                payment_amount = 0.0
-                discount_flag = 0
-                discount_total = 0.0
-                total_discount_tax = 0.0
-                efris_dsct_item_discount =" ",
-                efris_dsct_taxable_amount = 0.0,
-                efris_dsct_item_tax = 0.0,
-                efris_dsct_discount_total = 0.0,
-                efris_dsct_discount_tax = 0.0,
-                efris_dsct_discount_tax_rate = 0.0                
-                efris_additional_discount_percentage = 0.0
-                for data in invoice_data["goodsDetails"]:
-                    discount_flag = data.get("discountFlag")
-                    if discount_flag == 0:
-                        efris_log_info(f"The Row has Discount Flag {discount_flag}")
-                        efris_dsct_discount_tax = data.get("tax", 0)
-                        efris_dsct_item_discount = data.get("item")
-                        efris_dsct_discount_tax_rate = data.get("discountTaxRate", 0)
-                
-                efris_log_info(f"Gross Amount is {grossAmount}")
-                #TODO: we may have more than 1 
-                for tax_details in invoice_data["taxDetails"]:
-                    taxAmount =  tax_details.get("taxAmount")  or ""
-                    efris_log_info(f"Tax Amount {taxAmount}")                    
-                qrcode_path = invoice_data["summary"]["qrCode"]
-                if qrcode_path:
-                    efris_log_info(f"QR Code Path exists...")
-                
+    frappe.msgprint(f"EFRIS Invoice Sync Completed. {invoice_counter} Invoices Synchronized from EFRIS")
 
 
-                # Check if the customer exists
-                customer = frappe.db.exists("Customer", customer_name)
-                if not customer:
-                    # Create a new customer
-                    customer = frappe.get_doc({
-                        "doctype": "Customer",
-                        "customer_name": customer_name,
-                        "customer_type": "Individual",  # Assuming buyer is a company
-                        "customer_group": "Individual",  # Adjust based on your setup
-                        "territory": "All Territories",  # Adjust based on your setup
-                        "tax_id": buyer_tin,
-                        "efris_customer_type": efris_customer_type,
-                        "efris_sync":0
-                    })
-                    customer.insert(ignore_permissions=True)
-                    frappe.log(f"Created new customer: {customer_name}")
-                
-                # Assuming 'issuedDate' and 'dueDate' are in DD/MM/YYYY format
-                issued_date = datetime.strptime(invoice_data["basicInformation"]["issuedDate"], '%d/%m/%Y %H:%M:%S')
-                due_date = datetime.strptime(invoice_data["basicInformation"]["issuedDate"], '%d/%m/%Y %H:%M:%S')
-                # Prepare the sales invoice document in ERPNext   
-                tax_rate = "" 
-                is_pos = 0   
-            
-                sales_invoice = frappe.get_doc({
-                    "doctype": "Sales Invoice",
-                    "customer": customer_name,
-                    "is_efris": 1,
-                    "posting_date": current_date,
-                    "efris_customer_type": efris_customer_type,
-                    "efris_einvoice_status": "EFRIS Generated",
-                    "efris_irn": fdn,
-                    "company": company_name,
-                    "disable_rounded_total": 1,
-                    "disable_rounded_tax": 1,
-                    "grand_total": float(grossAmount),
-                    "net_total": float(invoice_data["summary"].get("netAmount", 0)),
-                    "update_stock": 1,
-                    "set_warehouse":warehouse
-                })
+def create_or_get_customer(buyer_details):
+    customer_name = buyer_details["buyerLegalName"]
+    buyer_tin = buyer_details.get("buyerTin", "")
+    buyer_type = buyer_details["buyerType"]
+    efris_customer_type = get_customer_type(buyer_type)
+    
+    if not frappe.db.exists("Customer", customer_name):
+        customer = frappe.get_doc({
+            "doctype": "Customer",
+            "customer_name": customer_name,
+            "customer_type": "Individual",
+            "customer_group": "Individual",
+            "territory": "All Territories",
+            "tax_id": buyer_tin,
+            "efris_customer_type": efris_customer_type,
+            "efris_sync": 0
+        })
+        customer.insert(ignore_permissions=True)
+        frappe.log(f"Created new customer: {customer_name}")
+    
+    return customer_name
 
-                for tax in invoice_data["taxDetails"]:
-                    tax_rate_raw = tax.get("taxRate", "0").strip()  # Get raw tax rate and remove whitespace
-                    tax_rate = 0.0
+def calculate_date_range(sync_days_ago):
+    end_date = frappe.utils.today()
+    start_date = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=sync_days_ago)).strftime("%Y-%m-%d")
+    return start_date, end_date
 
-                    try:
-                        # Ensure the tax rate can be converted to float
-                        tax_rate = float(tax_rate_raw)
-                    except ValueError:
-                        efris_log_info(f"Invalid tax rate '{tax_rate_raw}' encountered. Defaulting to 0.0")
-                        continue  # Skip this tax entry if taxRate is invalid
+def prepare_query_invoice_credit_note_eligibilty_T07(device_no, start_date, end_date):
+    return {
+        "invoiceNo": "",
+        "deviceNo": device_no,
+        "buyerTin": "",
+        "buyerLegalName": "",
+        "invoiceType": "1",
+        "startDate": start_date,
+        "endDate": end_date,
+        "pageNo": "1",
+        "pageSize": "99",
+        "branchName": ""
+    }
 
-                    efris_log_info(f"Tax Rate on Item: {tax_rate}")
-                    
-                    if tax_rate != 0.0:
-                        tax_rate = tax_rate + 1  # Increment tax rate if not zero
+def fetch_invoice_details(fdn, company_name, reference_document):
+    query_credit_notes_invoice_details_T108 = {"invoiceNo": fdn}
+    status, response = make_post(interfaceCode="T108", content=query_credit_notes_invoice_details_T108, company_name=company_name, reference_doc_type=None, reference_document=reference_document)
+    
+    if not status:
+        frappe.log_error(f"Failed to fetch invoice details for FDN {fdn}: {response}")
+        efris_log_error(f"Failed to fetch invoice details for FDN {fdn}: {response}")
+        return None
+    
+    return response
 
-                    # Append the tax to the Sales Invoice
-                    sales_invoice.append("taxes", {
-                        "charge_type": "On Net Total",
-                        "account_head": output_vat_account,
-                        "rate": tax_rate * 100,  # Convert rate to percentage
-                        "tax_amount": float(tax.get("taxAmount", 0)),
-                        "total": float(tax.get("grossAmount", 0)),
-                        "description": f"VAT @ {tax_rate * 100}%",
-                        "included_in_print_rate": 1
-                    })
+def create_sales_invoice(invoice_data, customer, company_name, warehouse, pos_profile, output_vat_account, sales_taxes_template):
+    invoice_details = invoice_data["basicInformation"]
+    goods_details = invoice_data["goodsDetails"]
+    tax_details = invoice_data["taxDetails"]
+    payway = invoice_data["payWay"]
 
-                for item in invoice_data["goodsDetails"]:
-                    item_code = item["itemCode"]
-                    discount_flag = int(item.get("discountFlag", 0))  # Ensure it's treated as an integer
-                   
-                    efris_log_info(f"Processing item: {item_code}")
+    sales_invoice = create_base_sales_invoice(invoice_details, customer, company_name, warehouse)
 
-                    if discount_flag == 1:                        
-                        efris_dsct_taxable_amount = float(item.get("total", 0))
-                        efris_dsct_item_tax = float(item.get("tax", 0))
-                        efris_dsct_discount_total = float(item.get("discountTotal", 0))                       
-                        efris_log_info(f"Discount applied for item {item_code}: Total Discount: {efris_dsct_discount_total}, Taxable Amount: {efris_dsct_taxable_amount}, Discount Tax: {efris_dsct_discount_tax}")
-                        efris_additional_discount_percentage = float((efris_dsct_discount_total / efris_dsct_taxable_amount) * 100)
-                        efris_log_info(f" Additional Disccount is {efris_additional_discount_percentage}")
-                     # Fetch the item using efris_product_code or item_code
-                    item_master = frappe.db.get_value("Item", {"efris_product_code": item_code}, "name")
-                    
-                    if not item_master:
-                        # If not found by efris_product_code, try to fetch directly by item_code
-                        item_master = frappe.db.get_value("Item", {"name": item_code}, "name")
-                    
-                    if not item_master:
-                        frappe.throw(
-                            _(f"Item {item_code} not found. Please check the EFRIS Product Code or Item Code.")
-                        )    
-                    # Safely retrieve 'qty', default to 0 if not found
-                    qty = float(item.get("qty", 0))                    
-                    # Log a warning if 'qty' is missing or zero
-                    if qty == 0:
-                        efris_log_info(f"Missing or invalid 'qty' for item: {item.get('itemCode', 'Unknown')}. Skipping item.")
-                        continue  # Skip this item if qty is invalid          
-                    sales_invoice.append("items", {
-                                        "item_code": item_master,
-                                        "qty": qty,
-                                        "rate": float(item.get("unitPrice", 0)),
-                                        "amount": float(item.get("total", 0)),
-                                        "description": item.get("item", ""),
-                                        "efris_dsct_item_discount": efris_dsct_item_discount,
-                                        "efris_dsct_taxable_amount": efris_dsct_taxable_amount,
-                                        "efris_dsct_item_tax": efris_dsct_item_tax,
-                                        "efris_dsct_discount_total": efris_dsct_discount_total,
-                                        "efris_dsct_discount_tax": efris_dsct_discount_tax,
-                                        "efris_dsct_discount_tax_rate": efris_dsct_discount_tax_rate
-                                    })
-                    
-                if payway:
-                # Define the mapping for mode_of_payment to EFRIS payment codes
-                    is_pos = 1
-                    
-                    payment_code_map = {
-                        "101":"Credit",
-                        "102":"Cash",
-                        "103" :"Cheque",
-                        "104" :"Demand draft",
-                        "105" :"Mobile money",
-                        "106" : "Visa/Master card",
-                        "107" :"EFT",
-                        "108" :"POS",
-                        "109" :"RTGS",
-                        "110":"Swift transfer"
-                    }
-                    for payments in payway:
-                        payment_amount = payments.get("paymentAmount") or 0.0
-                        efris_log_info(f"Payment Amount is {payment_amount}")
-                        payment_mode = payments.get("paymentMode")
-                        payment_method = payment_code_map.get(payment_mode, "Unknown")
-                        efris_log_info(f"The Payment Method is {payment_method}")
-                        if payment_method == "Credit":
-                            efris_log_info(f"Credit Not Included in payments table {payment_method}")
-                            continue
+    add_taxes_to_invoice(sales_invoice, tax_details, output_vat_account)
 
-                        sales_invoice.append('payments',{
-                            "amount": payment_amount,
-                            "mode_of_payment": payment_method                            
-                        })
-                total_discount = sum(float(item.get("discountTotal", 0)) for item in invoice_data["goodsDetails"] if int(item.get("discountFlag", 0)) == 1)
-                sales_invoice.discount_amount = abs(total_discount)
-                sales_invoice.additional_discount_percentage = abs(efris_additional_discount_percentage)
+    add_items_to_invoice(sales_invoice, goods_details)
 
-                if sales_invoice.payments:
-                    sales_invoice.is_pos = is_pos
-                    sales_invoice.pos_profile = pos_profile
-                sales_invoice.flags.ignore_tax = True  # Skip tax recalculation
-                sales_invoice.taxes_and_charges = sales_taxes_template
-                
-                sales_invoice.insert(ignore_permissions=True)
-                
-                sales_invoice.submit()              
-                einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
-                efris_log_info(f"The einvoice status is {einvoice.status}")
-                einvoice.status = "EFRIS Generated"
-                einvoice.invoice_id = invoice_id
-                einvoice.antifake_code = antifakeCode
-                einvoice.irn = sales_invoice.efris_irn
-                qrCode = EInvoiceAPI.generate_qrcode(qrcode_path, einvoice)
-                if qrCode:
-                    einvoice.qrcode_path = qrCode
-                einvoice.submit()                              
-                invoice_counter += 1
-            frappe.msgprint("EFRIS Invoice Sync Completed.")
-            frappe.msgprint(f" {invoice_counter} : Invoices Synchronized from EFRIS")
+    if payway:
+        add_payments_to_invoice(sales_invoice, payway, pos_profile)
+
+    apply_discounts_to_invoice(sales_invoice, goods_details)
+
+    finalize_sales_invoice(sales_invoice, sales_taxes_template)
+
+    return sales_invoice
+
+
+def create_base_sales_invoice(invoice_details, customer, company_name, warehouse):
+    """Create the base Sales Invoice document."""
+    return frappe.get_doc({
+        "doctype": "Sales Invoice",
+        "customer": customer,
+        "is_efris": 1,
+        "posting_date": frappe.utils.today(),
+        "efris_customer_type": get_customer_type(invoice_details["buyerDetails"]["buyerType"]),
+        "efris_einvoice_status": "EFRIS Generated",
+        "efris_irn": invoice_details["invoiceNo"],
+        "company": company_name,
+        "disable_rounded_total": 1,
+        "disable_rounded_tax": 1,
+        "grand_total": float(invoice_details["summary"].get("grossAmount", 0)),
+        "net_total": float(invoice_details["summary"].get("netAmount", 0)),
+        "update_stock": 1,
+        "set_warehouse": warehouse
+    })
+
+
+def add_taxes_to_invoice(sales_invoice, tax_details, output_vat_account):
+    """Add taxes to the Sales Invoice."""
+    for tax in tax_details:
+        tax_rate = float(tax.get("taxRate", "0").strip())
+        if tax_rate != 0.0:
+            tax_rate += 1
+        
+        sales_invoice.append("taxes", {
+            "charge_type": "On Net Total",
+            "account_head": output_vat_account,
+            "rate": tax_rate * 100,
+            "tax_amount": float(tax.get("taxAmount", 0)),
+            "total": float(tax.get("grossAmount", 0)),
+            "description": f"VAT @ {tax_rate * 100}%",
+            "included_in_print_rate": 1
+        })
+
+
+def add_items_to_invoice(sales_invoice, goods_details):
+    """Add items to the Sales Invoice."""
+    for item in goods_details:
+        item_code = item["itemCode"]
+        discount_flag = int(item.get("discountFlag", 0))
+        
+        item_master = frappe.db.get_value("Item", {"efris_product_code": item_code}, "name") or frappe.db.get_value("Item", {"name": item_code}, "name")
+        
+        if not item_master:
+            frappe.throw(f"Item {item_code} not found. Please check the EFRIS Product Code or Item Code.")
+        
+        qty = float(item.get("qty", 0))
+        if qty == 0:
+            frappe.log_error(f"Missing or invalid 'qty' for item: {item.get('itemCode', 'Unknown')}. Skipping item.")
+            efris_log_info(f"Missing or invalid 'qty' for item: {item.get('itemCode', 'Unknown')}. Skipping item.")
+            continue
+        
+        sales_invoice.append("items", {
+            "item_code": item_master,
+            "qty": qty,
+            "rate": float(item.get("unitPrice", 0)),
+            "amount": float(item.get("total", 0)),
+            "description": item.get("item", ""),
+            "efris_dsct_item_discount": item.get("discountFlag", 0),
+            "efris_dsct_taxable_amount": float(item.get("total", 0)),
+            "efris_dsct_item_tax": float(item.get("tax", 0)),
+            "efris_dsct_discount_total": float(item.get("discountTotal", 0)),
+            "efris_dsct_discount_tax": float(item.get("discountTax", 0)),
+            "efris_dsct_discount_tax_rate": float(item.get("discountTaxRate", 0))
+        })
+
+
+def add_payments_to_invoice(sales_invoice, payway, pos_profile):
+    """Add payments to the Sales Invoice."""
+    is_pos = 1
+    payment_code_map = {
+        "101": "Credit",
+        "102": "Cash",
+        "103": "Cheque",
+        "104": "Demand draft",
+        "105": "Mobile money",
+        "106": "Visa/Master card",
+        "107": "EFT",
+        "108": "POS",
+        "109": "RTGS",
+        "110": "Swift transfer"
+    }
+    
+    for payment in payway:
+        payment_amount = payment.get("paymentAmount", 0.0)
+        payment_mode = payment.get("paymentMode")
+        payment_method = payment_code_map.get(payment_mode, "Unknown")
+        
+        if payment_method == "Credit":
+            continue
+        
+        sales_invoice.append('payments', {
+            "amount": payment_amount,
+            "mode_of_payment": payment_method
+        })
+    
+    if sales_invoice.payments:
+        sales_invoice.is_pos = is_pos
+        sales_invoice.pos_profile = pos_profile
+
+
+def apply_discounts_to_invoice(sales_invoice, goods_details):
+    """Apply discounts to the Sales Invoice."""
+    total_discount = sum(float(item.get("discountTotal", 0)) for item in goods_details if int(item.get("discountFlag", 0)) == 1)
+    sales_invoice.discount_amount = abs(total_discount)
+    sales_invoice.additional_discount_percentage = abs(calculate_additional_discount_percentage(goods_details))
+
+
+def finalize_sales_invoice(sales_invoice, sales_taxes_template):
+    """Finalize and submit the Sales Invoice."""
+    sales_invoice.flags.ignore_tax = True
+    sales_invoice.taxes_and_charges = sales_taxes_template
+    sales_invoice.insert(ignore_permissions=True)
+    sales_invoice.submit()
+
+def calculate_additional_discount_percentage(goods_details):
+    total_discount = sum(float(item.get("discountTotal", 0)) for item in goods_details if int(item.get("discountFlag", 0)) == 1)
+    total_taxable_amount = sum(float(item.get("total", 0)) for item in goods_details if int(item.get("discountFlag", 0)) == 1)
+    
+    if total_taxable_amount == 0:
+        return 0.0
+    
+    return (total_discount / total_taxable_amount) * 100
+
+def create_and_submit_einvoice(sales_invoice, invoice_data):
+    einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
+    einvoice.status = "EFRIS Generated"
+    einvoice.invoice_id = invoice_data["basicInformation"].get("invoiceId", "")
+    einvoice.antifake_code = invoice_data["basicInformation"].get("antifakeCode", "")
+    einvoice.irn = sales_invoice.efris_irn
+    
+    qrcode_path = invoice_data["summary"].get("qrCode", "")
+    if qrcode_path:
+        qrCode = EInvoiceAPI.generate_qrcode(qrcode_path, einvoice)
+        if qrCode:
+            einvoice.qrcode_path = qrCode
+    
+    einvoice.submit()
+    return einvoice
+
+def get_customer_type(buyer_type):
+    return "Individual"
+
 @frappe.whitelist()
 def get_customer_type(buyer_type):
     efris_customer_type = ''
@@ -344,3 +309,319 @@ def get_customer_type(buyer_type):
     return efris_customer_type
 
 
+
+
+# @frappe.whitelist()
+# def efris_invoice_sync():
+    
+#     reference_doc_type = ""
+#     reference_document = ""
+#     company_settings_list = []
+#     enabled = ""
+#     enable_sync_from_efris = ""
+#     X_days = 0
+#     invoice_counter = 0
+#     #startDate = "2024-12-15"
+#     efris_log_info("efris_invoice_sync called...")
+#     company_settings_list = frappe.get_all("E Invoicing Settings",filters = [{"enabled":1,},{'enable_sync_from_efris':1}],fields=["*"])
+#     for company in company_settings_list:
+#         # company_settings = frappe.db.get_doc("E Invoicing Settings",{'name':company.name})
+#         company_name = company.company
+#         deviceNo = company.device_no
+#         output_vat_account = company.output_vat_account
+#         sales_taxes_template = company.sales_taxes_and_charges_template
+            
+#         enabled = company.enabled       
+#         enable_sync_from_efris = company.enable_sync_from_efris       
+        
+#         reference_doc_type = "E Invoicing Settings"
+#         reference_document = company.name
+#         X_days = company.sync_days_ago
+#         efris_log_info(f"Sync Days Ago :{X_days}")
+        
+#         # Get the current date for the query
+#         if company_name and enabled and enable_sync_from_efris:
+#             current_date = frappe.utils.today()    
+#             warehouse = frappe.db.get_value("Warehouse",{"company":company_name,"efris_warehouse": 1},"name")  
+#             efris_log_info(f"The Active EFRIS Warehouse is {warehouse}")  
+#             pos_profile =   frappe.db.get_value("POS Profile",{"company":company_name,"warehouse": warehouse},"name")  
+
+           
+
+#             # Calculate dates
+#             end_date = frappe.utils.today()
+#             start_date = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=X_days)).strftime("%Y-%m-%d")
+
+#             # Prepare the query for fetching invoice records from EFRIS (T107)
+#             query_invoice_credit_note_eligibilty_T07 = {
+#                 "invoiceNo": "",  # Leave empty to get all invoices
+#                 "deviceNo": "",  # Device number from EFRIS
+#                 "buyerTin": "",
+#                 "buyerLegalName": "",
+#                 "invoiceType": "1",  # Assuming 1 is the correct type
+#                 "startDate": start_date,
+#                 "endDate": end_date,
+#                 "pageNo": "1",  # Pagination parameters
+#                 "pageSize": "99",  # Fetch 10 records at a time (adjust as necessary)
+#                 "branchName": ""
+#             }
+            
+#             # Log the info
+#             efris_log_info(f"Fetching invoices from EFRIS for company: {company_name} on {current_date}")
+            
+#             # Make the request to EFRIS using the T107 interface
+#             status, response = make_post(interfaceCode = "T107", content = query_invoice_credit_note_eligibilty_T07, company_name = company_name,reference_doc_type = reference_doc_type, reference_document = reference_document)
+            
+#             if not status:                
+#                 frappe.throw(f"Failed to fetch invoices from EFRIS: {response}")
+#                 return
+            
+#             # If successful, process the response
+#             efris_log_info(f"Successfully fetched invoices from EFRIS: {response}")
+#             invoices = response.get("records", [])  # Assuming the response contains a 'data' key with the invoice records
+            
+#             for invoice in invoices:
+#                 fdn = invoice.get("invoiceNo")
+                
+#                 # Check if this FDN (invoiceNo) exists in ERPNext Sales Invoice
+#                 existing_invoice = frappe.db.exists("Sales Invoice", {"efris_irn": fdn})
+            
+            
+#                 if existing_invoice:
+#                     invoice_record = frappe.get_doc("Sales Invoice",{"name":existing_invoice})
+#                     efris_log_info(f"Invoice with FDN {fdn} already exists in ERPNext, skipping.")
+#                     if invoice_record.docstatus == 1:
+#                         # If the invoice already exists, skip it
+#                         efris_log_info(f"Invoice with FDN {fdn} already exists in ERPNext, skipping.")
+#                     continue
+                
+                
+#                 # If invoice does not exist, fetch its details using the T108 interface
+#                 efris_log_info(f"Invoice with FDN {fdn} not found in ERPNext. Fetching details.")
+                
+#                 Query_Credit_Notes_Invoice_details_T108 = {
+#                     "invoiceNo": fdn
+#                 }
+                
+#                 # Make the post request to fetch detailed invoice information
+#                 status, invoice_details_response = make_post(interfaceCode = "T108",content =  Query_Credit_Notes_Invoice_details_T108, company_name = company_name,reference_doc_type = None, reference_document = reference_document)
+               
+#                 if not status:
+#                     efris_log_error(f"Failed to fetch invoice details for FDN {fdn}: {invoice_details_response}")
+#                     continue
+                
+#                 # Create Sales Invoice in ERPNext using the fetched details
+#                 invoice_data = invoice_details_response  # Assuming 'data' contains the invoice details
+                
+#                 if not invoice_data:
+#                     efris_log_error(f"No invoice data found for FDN {fdn}, skipping.")
+#                     continue
+#                 customer_name = invoice_data["buyerDetails"]["buyerLegalName"]
+#                 buyer_type = invoice_data["buyerDetails"]["buyerType"]
+#                 buyer_tin = invoice_data["buyerDetails"].get("buyerTin") or ""
+#                 efris_customer_type = get_customer_type(buyer_type)
+#                 invoice_id = invoice_data["basicInformation"].get("invoiceId") or ""
+#                 efris_log_info(f"Invoice ID :{invoice_id}")
+#                 antifakeCode = invoice_data["basicInformation"].get("antifakeCode")  or ""
+#                 efris_log_info(f"Antifake Code :{antifakeCode}") 
+#                 grossAmount = invoice_data["summary"].get("grossAmount")  or ""
+#                 payway = invoice_data["payWay"]
+#                 payment_method_ = ""
+#                 payment_amount = 0.0
+#                 discount_flag = 0
+#                 discount_total = 0.0
+#                 total_discount_tax = 0.0
+#                 efris_dsct_item_discount =" ",
+#                 efris_dsct_taxable_amount = 0.0,
+#                 efris_dsct_item_tax = 0.0,
+#                 efris_dsct_discount_total = 0.0,
+#                 efris_dsct_discount_tax = 0.0,
+#                 efris_dsct_discount_tax_rate = 0.0                
+#                 efris_additional_discount_percentage = 0.0
+#                 for data in invoice_data["goodsDetails"]:
+#                     discount_flag = data.get("discountFlag")
+#                     if discount_flag == 0:
+#                         efris_log_info(f"The Row has Discount Flag {discount_flag}")
+#                         efris_dsct_discount_tax = data.get("tax", 0)
+#                         efris_dsct_item_discount = data.get("item")
+#                         efris_dsct_discount_tax_rate = data.get("discountTaxRate", 0)
+                
+#                 efris_log_info(f"Gross Amount is {grossAmount}")
+#                 #TODO: we may have more than 1 
+#                 for tax_details in invoice_data["taxDetails"]:
+#                     taxAmount =  tax_details.get("taxAmount")  or ""
+#                     efris_log_info(f"Tax Amount {taxAmount}")                    
+#                 qrcode_path = invoice_data["summary"]["qrCode"]
+#                 if qrcode_path:
+#                     efris_log_info(f"QR Code Path exists...")
+                
+
+
+#                 # Check if the customer exists
+#                 customer = frappe.db.exists("Customer", customer_name)
+#                 if not customer:
+#                     # Create a new customer
+#                     customer = frappe.get_doc({
+#                         "doctype": "Customer",
+#                         "customer_name": customer_name,
+#                         "customer_type": "Individual",  # Assuming buyer is a company
+#                         "customer_group": "Individual",  # Adjust based on your setup
+#                         "territory": "All Territories",  # Adjust based on your setup
+#                         "tax_id": buyer_tin,
+#                         "efris_customer_type": efris_customer_type,
+#                         "efris_sync":0
+#                     })
+#                     customer.insert(ignore_permissions=True)
+#                     frappe.log(f"Created new customer: {customer_name}")
+                
+#                 # Assuming 'issuedDate' and 'dueDate' are in DD/MM/YYYY format
+#                 issued_date = datetime.strptime(invoice_data["basicInformation"]["issuedDate"], '%d/%m/%Y %H:%M:%S')
+#                 due_date = datetime.strptime(invoice_data["basicInformation"]["issuedDate"], '%d/%m/%Y %H:%M:%S')
+#                 # Prepare the sales invoice document in ERPNext   
+#                 tax_rate = "" 
+#                 is_pos = 0   
+            
+#                 sales_invoice = frappe.get_doc({
+#                     "doctype": "Sales Invoice",
+#                     "customer": customer_name,
+#                     "is_efris": 1,
+#                     "posting_date": current_date,
+#                     "efris_customer_type": efris_customer_type,
+#                     "efris_einvoice_status": "EFRIS Generated",
+#                     "efris_irn": fdn,
+#                     "company": company_name,
+#                     "disable_rounded_total": 1,
+#                     "disable_rounded_tax": 1,
+#                     "grand_total": float(grossAmount),
+#                     "net_total": float(invoice_data["summary"].get("netAmount", 0)),
+#                     "update_stock": 1,
+#                     "set_warehouse":warehouse
+#                 })
+
+#                 for tax in invoice_data["taxDetails"]:
+#                     tax_rate_raw = tax.get("taxRate", "0").strip()  # Get raw tax rate and remove whitespace
+#                     tax_rate = 0.0
+
+#                     try:
+#                         # Ensure the tax rate can be converted to float
+#                         tax_rate = float(tax_rate_raw)
+#                     except ValueError:
+#                         efris_log_info(f"Invalid tax rate '{tax_rate_raw}' encountered. Defaulting to 0.0")
+#                         continue  # Skip this tax entry if taxRate is invalid
+
+#                     efris_log_info(f"Tax Rate on Item: {tax_rate}")
+                    
+#                     if tax_rate != 0.0:
+#                         tax_rate = tax_rate + 1  # Increment tax rate if not zero
+
+#                     # Append the tax to the Sales Invoice
+#                     sales_invoice.append("taxes", {
+#                         "charge_type": "On Net Total",
+#                         "account_head": output_vat_account,
+#                         "rate": tax_rate * 100,  # Convert rate to percentage
+#                         "tax_amount": float(tax.get("taxAmount", 0)),
+#                         "total": float(tax.get("grossAmount", 0)),
+#                         "description": f"VAT @ {tax_rate * 100}%",
+#                         "included_in_print_rate": 1
+#                     })
+
+#                 for item in invoice_data["goodsDetails"]:
+#                     item_code = item["itemCode"]
+#                     discount_flag = int(item.get("discountFlag", 0))  # Ensure it's treated as an integer
+                   
+#                     efris_log_info(f"Processing item: {item_code}")
+
+#                     if discount_flag == 1:                        
+#                         efris_dsct_taxable_amount = float(item.get("total", 0))
+#                         efris_dsct_item_tax = float(item.get("tax", 0))
+#                         efris_dsct_discount_total = float(item.get("discountTotal", 0))                       
+#                         efris_log_info(f"Discount applied for item {item_code}: Total Discount: {efris_dsct_discount_total}, Taxable Amount: {efris_dsct_taxable_amount}, Discount Tax: {efris_dsct_discount_tax}")
+#                         efris_additional_discount_percentage = float((efris_dsct_discount_total / efris_dsct_taxable_amount) * 100)
+#                         efris_log_info(f" Additional Disccount is {efris_additional_discount_percentage}")
+#                      # Fetch the item using efris_product_code or item_code
+#                     item_master = frappe.db.get_value("Item", {"efris_product_code": item_code}, "name")
+                    
+#                     if not item_master:
+#                         # If not found by efris_product_code, try to fetch directly by item_code
+#                         item_master = frappe.db.get_value("Item", {"name": item_code}, "name")
+                    
+#                     if not item_master:
+#                         frappe.throw(
+#                             _(f"Item {item_code} not found. Please check the EFRIS Product Code or Item Code.")
+#                         )    
+#                     # Safely retrieve 'qty', default to 0 if not found
+#                     qty = float(item.get("qty", 0))                    
+#                     # Log a warning if 'qty' is missing or zero
+#                     if qty == 0:
+#                         efris_log_info(f"Missing or invalid 'qty' for item: {item.get('itemCode', 'Unknown')}. Skipping item.")
+#                         continue  # Skip this item if qty is invalid          
+#                     sales_invoice.append("items", {
+#                                         "item_code": item_master,
+#                                         "qty": qty,
+#                                         "rate": float(item.get("unitPrice", 0)),
+#                                         "amount": float(item.get("total", 0)),
+#                                         "description": item.get("item", ""),
+#                                         "efris_dsct_item_discount": efris_dsct_item_discount,
+#                                         "efris_dsct_taxable_amount": efris_dsct_taxable_amount,
+#                                         "efris_dsct_item_tax": efris_dsct_item_tax,
+#                                         "efris_dsct_discount_total": efris_dsct_discount_total,
+#                                         "efris_dsct_discount_tax": efris_dsct_discount_tax,
+#                                         "efris_dsct_discount_tax_rate": efris_dsct_discount_tax_rate
+#                                     })
+                    
+#                 if payway:
+#                 # Define the mapping for mode_of_payment to EFRIS payment codes
+#                     is_pos = 1
+                    
+#                     payment_code_map = {
+#                         "101":"Credit",
+#                         "102":"Cash",
+#                         "103" :"Cheque",
+#                         "104" :"Demand draft",
+#                         "105" :"Mobile money",
+#                         "106" : "Visa/Master card",
+#                         "107" :"EFT",
+#                         "108" :"POS",
+#                         "109" :"RTGS",
+#                         "110":"Swift transfer"
+#                     }
+#                     for payments in payway:
+#                         payment_amount = payments.get("paymentAmount") or 0.0
+#                         efris_log_info(f"Payment Amount is {payment_amount}")
+#                         payment_mode = payments.get("paymentMode")
+#                         payment_method = payment_code_map.get(payment_mode, "Unknown")
+#                         efris_log_info(f"The Payment Method is {payment_method}")
+#                         if payment_method == "Credit":
+#                             efris_log_info(f"Credit Not Included in payments table {payment_method}")
+#                             continue
+
+#                         sales_invoice.append('payments',{
+#                             "amount": payment_amount,
+#                             "mode_of_payment": payment_method                            
+#                         })
+#                 total_discount = sum(float(item.get("discountTotal", 0)) for item in invoice_data["goodsDetails"] if int(item.get("discountFlag", 0)) == 1)
+#                 sales_invoice.discount_amount = abs(total_discount)
+#                 sales_invoice.additional_discount_percentage = abs(efris_additional_discount_percentage)
+
+#                 if sales_invoice.payments:
+#                     sales_invoice.is_pos = is_pos
+#                     sales_invoice.pos_profile = pos_profile
+#                 sales_invoice.flags.ignore_tax = True  # Skip tax recalculation
+#                 sales_invoice.taxes_and_charges = sales_taxes_template
+                
+#                 sales_invoice.insert(ignore_permissions=True)
+                
+#                 sales_invoice.submit()              
+#                 einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
+#                 efris_log_info(f"The einvoice status is {einvoice.status}")
+#                 einvoice.status = "EFRIS Generated"
+#                 einvoice.invoice_id = invoice_id
+#                 einvoice.antifake_code = antifakeCode
+#                 einvoice.irn = sales_invoice.efris_irn
+#                 qrCode = EInvoiceAPI.generate_qrcode(qrcode_path, einvoice)
+#                 if qrCode:
+#                     einvoice.qrcode_path = qrCode
+#                 einvoice.submit()                              
+#                 invoice_counter += 1
+#             frappe.msgprint("EFRIS Invoice Sync Completed.")
+#             frappe.msgprint(f" {invoice_counter} : Invoices Synchronized from EFRIS")
