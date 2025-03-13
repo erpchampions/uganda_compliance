@@ -27,7 +27,7 @@ frappe.ui.form.on('E Invoicing Settings', {
                 'company_name': frm.doc.company_name
             },
             callback: function(r) {
-                if (r.message !== undefined) { // Ensure r.message exists
+                if (r.message !== undefined) { 
                     console.log(r.message);
                     let connection_status = r.message;
 
@@ -45,7 +45,6 @@ frappe.ui.form.on('E Invoicing Settings', {
                         frappe.show_alert({ message: __('Connection Failed'), indicator: 'red' });
                     }
 
-                    // Refresh the HTML field explicitly
                     frm.refresh_field('connection_status_display');
                 } else {
                     frappe.msgprint(__('Invalid response from server. Please try again.'));
@@ -53,7 +52,6 @@ frappe.ui.form.on('E Invoicing Settings', {
                 }
             },
             error: function(err) {
-                // Handle API errors gracefully
                 console.error('Error during connection check:', err);
                 frm.fields_dict.connection_status_display.$wrapper.html(
                     `<div style="width: 20px; height: 20px; background-color: #dc3545; border-radius: 4px;"></div>`
