@@ -5,7 +5,6 @@ frappe.ui.form.on("Item", {
         if (efris_currency) {
             console.log(`Currency is ${efris_currency}`);
             
-            // Using a Frappe.call to handle the asynchronous get_value call
             frappe.call({
                 method: "frappe.client.get_value",
                 args: {
@@ -207,7 +206,6 @@ frappe.ui.form.on("Item", {
     }
 });
 
-// Handles changes to `stock_uom`
 function handle_stock_uom_change(frm) {
     if (frm.doc.efris_has_multiple_uom) {
         update_default_uom_row(frm);
@@ -215,7 +213,6 @@ function handle_stock_uom_change(frm) {
     }
 }
 
-// Handles changes to `standard_rate`
 function handle_standard_rate_change(frm) {
     if (frm.doc.efris_has_multiple_uom) {
         update_default_uom_row(frm);
@@ -246,16 +243,13 @@ function update_default_uom_row(frm) {
         return true; 
     });
 
-    // Check if the default UOM exists in the table
     const existing_row = frm.doc.uoms.find(row => row.uom === default_uom);
 
     if (existing_row) {
-        // Update the existing row
         existing_row.conversion_factor = 1;
         existing_row.efris_uom = 1;
         existing_row.efris_unit_price = default_rate;
     } else {
-        // Add a new row for the default UOM
         const new_row = frm.add_child("uoms");
         new_row.uom = default_uom;
         new_row.conversion_factor = 1;
@@ -263,11 +257,9 @@ function update_default_uom_row(frm) {
         new_row.efris_unit_price = default_rate;
     }
 
-    // Refresh the table to reflect the updates
     frm.refresh_field("uoms");
 }
 
-// Validates the `uoms` table for multiple UOM scenarios
 function validate_uoms_table(frm) {
     const uoms = frm.doc.uoms;
 
@@ -281,7 +273,6 @@ function validate_uoms_table(frm) {
         frappe.throw("Only one UOM can have a conversion factor of 1.");
     }
 
-    // Validate required fields for EFRIS-specific UOMs
     uoms.forEach(row => {
         if (row.efris_uom) {
             if (!row.efris_unit_price) {
