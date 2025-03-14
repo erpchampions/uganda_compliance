@@ -1,5 +1,5 @@
 frappe.ui.form.on('Sales Invoice', {
-    async refresh(frm) {
+    refresh(frm) {
         if (frm.is_dirty()) return;
 
         let is_efris = frm.doc.efris_invoice;
@@ -18,10 +18,10 @@ frappe.ui.form.on('Sales Invoice', {
                             await frappe.call({
                                 method: 'uganda_compliance.efris.api_classes.e_invoice.confirm_irn_cancellation',
                                 args: { sales_invoice: frm.doc },
-                                freeze: true,
+                                freeze: false, 
                                 callback: function(r) {
                                     if (!r.exc) {
-                                        frm.reload_doc(); // Reload the form here
+                                        frm.reload_doc(); 
                                     }
                                 }
                             });
@@ -39,8 +39,28 @@ frappe.ui.form.on('Sales Invoice', {
         set_efris_flag_based_on_items(frm);
         await set_efris_invoice_details(frm);
     },
+    before_save: function(frm) {
+        if (frm.doc.is_return) {
+            reset_discounts(frm);
+        }
+        if (frm.doc.efris_payment_mode) {
+            if (frm.doc.payments.length > 1) {
+                frm.set_value('efris_payment_mode', '');
+            } else if (frm.doc.payments.length === 1) {
+                let payment_row = frm.doc.payments[0];
+
+                if (!payment_row.amount) {
+                    payment_row.amount = frm.doc.grand_total;
+                }
+            }
+        }
+
+        frm.refresh_field('payments');
+    },
     on_submit: function(frm) {
-        frm.reload_doc(); // Reload the form here
+        setTimeout(() => {
+            frm.reload_doc();
+        }, 1000);
     }
 });
 
@@ -57,27 +77,21 @@ frappe.ui.form.on('Sales Invoice Item', {
     }
 });
 
-
-
 frappe.ui.form.on('Sales Invoice', {
-        // Handle EFRIS Payment Mode selection
     efris_payment_mode: function (frm) {
-        
         const selected_payment_mode = frm.doc.efris_payment_mode;
         const number_of_payments = frm.doc.payments.length;
 
         if (!selected_payment_mode) {
-            
             if (number_of_payments == 0) {
                 frm.set_value('is_pos', 0);
                 frm.refresh_field('is_pos');
-            }else if (number_of_payments == 1) {
+            } else if (number_of_payments == 1) {
                 frm.clear_table("payments");
                 frm.set_value('is_pos', 0);
                 frm.refresh_field('payments');
                 frm.refresh_field('is_pos');
             }
-
             return;
         }
 
@@ -130,33 +144,7 @@ frappe.ui.form.on('Sales Invoice', {
                 }
             }
         });
-    },
-
-    // Before Save Logic
-    before_save: function (frm) {
-        console.log("Validating EFRIS Payment Mode before save...");
-        
-        if (frm.doc.is_return){
-            reset_discounts(frm);
     }
-        if (frm.doc.efris_payment_mode) {
-            if (frm.doc.payments.length > 1) {
-                console.log("Multiple payment modes detected. Clearing EFRIS Payment Mode...");
-                frm.set_value('efris_payment_mode', '');
-            } else if (frm.doc.payments.length === 1) {
-                console.log("Single payment mode detected. Validating amount...");
-                let payment_row = frm.doc.payments[0];
-
-                if (!payment_row.amount) {
-                    payment_row.amount = frm.doc.grand_total;
-                }
-            }
-        }
-
-        frm.refresh_field('payments');
-    },
-
-
 });
 
 frappe.ui.form.on('Sales Invoice Payment', {
@@ -168,21 +156,15 @@ frappe.ui.form.on('Sales Invoice Payment', {
     }
 });
 
-
-///////////////////// FUNCTIONS ////////////////////
 // Separate function for EFRIS logic
 async function set_efris_invoice_details(frm) {
-    console.log(`efris_invoice validation triggered: ${frm.doc.efris_invoice}`);
-
     if (frm.doc.efris_invoice && !frm.doc.is_return) {
-        console.log('This is an EFRIS Invoice');
 
         try {
-            // Fetch the Sales Tax template and its details
             const response = await frappe.call({
                 method: 'uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_tax_template',
                 args: { company_name: frm.doc.company, tax_type: 'Sales Tax' },
-                freeze: true
+                freeze: false 
             });
 
             if (response && response.message) {
@@ -190,10 +172,8 @@ async function set_efris_invoice_details(frm) {
 
                 console.log('Sales tax template fetched:', template_name);
 
-                // Set the fetched template in the taxes_and_charges field
                 frm.set_value('taxes_and_charges', template_name);
 
-                // Clear existing taxes and populate with fetched details
                 frm.clear_table('taxes');
 
                 taxes.forEach(tax => {
@@ -231,15 +211,12 @@ async function set_efris_invoice_details(frm) {
 const set_efris_flag_based_on_items = (frm) => {
     let is_efris_flag = 0;
     frm.doc.items.forEach(item => {
-        console.log(`The Item Code is ${item.item_code}, EFRIS: ${item.efris_commodity_code}`);
         if (item.efris_commodity_code) {
             is_efris_flag = 1;                       
         }
     });
     frm.set_value('efris_invoice', is_efris_flag);
-    console.log(`The Is EFRIS Flag is ${frm.doc.efris_invoice}`);
 };
-
 
 const get_irn_cancellation_fields = () => {
     return [
@@ -274,12 +251,10 @@ const raise_form_is_dirty_error = () => {
 };
 
 function update_parent_field(frm) {
-    // Iterate through the child table to calculate the total payment amount
     frm.doc.payments.forEach(row => {
         frm.set_value('efris_payment_mode', null);
     });
 
-    // Update the parent field (e.g., total_payment_amount)
     frm.refresh_field("efris_payment_mode");
 }
 

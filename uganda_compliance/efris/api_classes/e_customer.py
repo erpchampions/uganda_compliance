@@ -135,7 +135,6 @@ def update_existing_address(existing_address, address, contact_mobile, doc):
     doc.customer_primary_address = existing_address_doc.name
 
 def map_taxpayer_type(taxpayer_type):
-    # Mapping EFRIS taxpayer type to ERPNext customer type
     mapping = {
         "201": "Individual",
         "202": "Company",
