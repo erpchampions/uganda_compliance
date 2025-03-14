@@ -4,9 +4,7 @@ frappe.ui.form.on('Warehouse', {
 
     },
     onload:function(frm){ 
-        // Check if the document is new
         if(!frm.is_new()){
-            console.log(`Onload Called to Set EFRIS warehouse...`)
             frappe.call({
                 method: 'frappe.client.get_list',
                 args: {
@@ -17,16 +15,11 @@ frappe.ui.form.on('Warehouse', {
                     fields: ['company']
                 },
                 callback: function(r) {
-                    if (r.message && r.message.length > 0) {
-                        // If the company exists in E Invoicing Settings, proceed with showing/hiding the field
-                        console.log(`The Company ${frm.doc.company} exists in E Invoicing Settings`);
-                       
-                        frm.set_df_property('efris_warehouse', 'hidden', 0);  // Show field
+                    if (r.message && r.message.length > 0) {                       
+                        frm.set_df_property('efris_warehouse', 'hidden', 0); 
                        
                     } else {
-                        // If the company does not exist in E Invoicing Settings, don't display the field
-                        console.log(`The company ${frm.doc.name} does not have E Invoicing Settings.`);
-                        frm.set_df_property('efris_warehouse', 'hidden', 1);  // Hide field
+                        frm.set_df_property('efris_warehouse', 'hidden', 1);  
                     }
                 }
             });
