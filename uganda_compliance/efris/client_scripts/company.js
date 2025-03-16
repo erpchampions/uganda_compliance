@@ -1,8 +1,6 @@
 frappe.ui.form.on('Company', {
     refresh: function(frm) {
-        // Check if the document is new
         if (!frm.is_new()) {
-            // Call to check if the company exists in E Invoicing Settings
             frappe.call({
                 method: 'frappe.client.get_list',
                 args: {
@@ -14,10 +12,8 @@ frappe.ui.form.on('Company', {
                 },
                 callback: function(r) {
                     if (r.message && r.message.length > 0) {
-                        // If the company exists in E Invoicing Settings, proceed with showing/hiding the field
                         console.log(`The Company ${frm.doc.name} exists in E Invoicing Settings`);
 
-                        // Show the field if it's not a new document and tax_id or efris_nin_or_brn is set
                         if (frm.doc.tax_id || frm.doc.efris_nin_or_brn) {
                             frm.set_df_property('efris_company_sync', 'hidden', 0);  // Show field
                         } else {
@@ -31,7 +27,6 @@ frappe.ui.form.on('Company', {
                 }
             });
         } else {
-            // Hide the field if it's a new document
             frm.set_df_property('efris_company_sync', 'hidden', 1);
         }
     },
