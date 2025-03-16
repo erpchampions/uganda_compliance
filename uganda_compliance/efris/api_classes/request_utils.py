@@ -50,9 +50,7 @@ def guidv4():
     my_uuid_str_32 = my_uuid_str.replace("-", "")
     return my_uuid_str_32
 
-def post_req(data, sandbox_mode):
-    efris_log_info(f"post_req()...starting, sandbox_mode:{sandbox_mode}")
-    
+def post_req(data, sandbox_mode):    
     if sandbox_mode:
         url = "https://efristest.ura.go.ug/efrisws/ws/taapp/getInformation"
     else:
@@ -60,8 +58,6 @@ def post_req(data, sandbox_mode):
 
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, data=data, headers=headers)
-    print(response.text)
-    efris_log_info("post_req()...done, response:" + response.text)
     return response.text
 
 def get_ug_time_str():
