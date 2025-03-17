@@ -52,13 +52,11 @@ class EInvoiceAPI:
 				
 		#EInvoiceAPI.validate_credit_note_return(sales_invoice)
 		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
-		efris_log_info(f"after einvoice creation")
 
 		status, response = EInvoiceAPI.make_credit_note_return_application_request(einvoice, sales_invoice)
 
 		if status:
 			EInvoiceAPI.handle_successful_credit_note_return_application(einvoice, response)
-			efris_log_info(f"Credit Note Return Appliction Successfull for einvoice :{einvoice}")
 			frappe.msgprint(_("Credit Note Return Appliction Generated Successfully."), alert=1)
 		else:
 			frappe.throw(response, title=_('Credit Note Return Appliction Failed'))
@@ -292,7 +290,6 @@ class EInvoiceAPI:
 		status, response = make_post(interfaceCode="T111", content=credit_note_application_query, company_name=company_name, reference_doc_type=einvoice.doctype, reference_document=einvoice.name)
 		
 		
-		#status, response = make_post("T111", credit_note_application_query)
 		if status:
 			status, response = EInvoiceAPI.handle_successful_confirm_irn_cancellation(einvoice, response)
 		return status, response
@@ -761,7 +758,7 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 	Process items in the einvoice and return a list of goods details for the credit note.
 	"""
 	item_list = []
-	discountFlag = "2"  # Default discount flag
+	discountFlag = "2" 
 
 	for item in einvoice.items:
 		qty = item.quantity
@@ -965,10 +962,7 @@ def _set_sales_taxes_template(doc, company):
 
 #ToDo: 
 def check_credit_note_approval_status():
-	# Log the start of the process
-	efris_log_info("Starting daily check for EFRIS credit note approval status.")
 	
-	# Fetch all sales invoices that are pending credit note approval in EFRIS
 	sales_invoices = frappe.get_all("Sales Invoice", filters={
 		'efris_einvoice_status': 'EFRIS Credit Note Pending'
 	})
@@ -977,16 +971,13 @@ def check_credit_note_approval_status():
 		efris_log_info("No Sales Invoices found with 'EFRIS Credit Note Pending'.")
 		return
 	
-	# Loop through each sales invoice and check the approval status
 	for sales_invoice in sales_invoices:
 		try:
 			sales_invoice_doc = frappe.get_doc("Sales Invoice", sales_invoice.name)
 			efris_log_info(f"Checking approval status for Sales Invoice: {sales_invoice.name}")
 			
-			# Call the method to check the EFRIS status
 			status, response = EInvoiceAPI.confirm_irn_cancellation(sales_invoice_doc)
 
-			# Log the response
 			if status:
 				efris_log_info(f"Credit note approval successful for Sales Invoice: {sales_invoice.name}.")
 			else:
@@ -1078,8 +1069,7 @@ def set_efris_based_on_items(doc, items):
 			doc.efris_customer_type = efris_customer_type
 			doc.flags.ignore_validate_update_after_submit = True
 			efris_log_info(f"Updated Sales Invoice for EFRIS compliance.")
-			break  # Exit after the first match
-
+			break  
 
 @frappe.whitelist()
 def sales_uom_validation(doc, method):
@@ -1088,7 +1078,6 @@ def sales_uom_validation(doc, method):
 	"""
 	doc = _parse_doc(doc)
 	
-	# Skip validation for returns or non-EFRIS invoices
 	if doc.get('is_return') or not doc.get('efris_invoice'):
 		return
 
@@ -1214,7 +1203,7 @@ def validate_company(doc):
 		
 		einvoicing_settings = frappe.get_all(
 			"E Invoicing Settings",
-			fields=["*"],  # Fetch all fields
+			fields=["*"], 
 			filters={"company": company_name}
 		)
 	
