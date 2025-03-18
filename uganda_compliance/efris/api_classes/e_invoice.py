@@ -827,6 +827,13 @@ def get_einvoice(sales_invoice):
 
 #######################################################
 # 
+# in sales_invoice.py
+def validate_payment(doc):
+    if doc.get("efris_payment_mode") and doc.get("payments"):
+        for payment in doc.get("payments"):
+            if payment.get("amount") == 0.0:
+                payment["amount"] = doc.get("grand_total")
+
 
 def after_save_sales_invoice(doc, method):
 	doc = frappe.as_json(doc)
@@ -842,8 +849,7 @@ def on_submit_sales_invoice(doc, method):
 	Handle EFRIS-related logic when a Sales Invoice is submitted.
 	"""
 	sales_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
-	efris_log_info(f"Is EFRIS flag set to: {sales_invoice.efris_invoice}")
-
+	validate_payment(sales_invoice)
 	if not sales_invoice.efris_invoice or sales_invoice.is_consolidated:
 		return
 
