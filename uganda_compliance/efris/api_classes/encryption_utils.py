@@ -89,7 +89,7 @@ def get_private_key(key_file_path, e_settings):
         password_bytes = private_key_password.encode('utf-8') if private_key_password else b""
 
         pfx = pkcs12.load_key_and_certificates(pfx_data, password_bytes, default_backend())
-        private_key = pfx[0]  # The private key is the first element
+        private_key = pfx[0]  
 
         if private_key is None:
             raise Exception("Private key extraction failed: private_key is None")
@@ -98,7 +98,7 @@ def get_private_key(key_file_path, e_settings):
 
     except Exception as e:
         frappe.log_error(f"An error occurred while getting private key: {e}")
-        raise  # Re-raise the exception to be handled by the caller
+        raise  
 
 def sign_data(private_key, data):
     try:
@@ -109,8 +109,7 @@ def sign_data(private_key, data):
             hashes.SHA1()
         )
 
-        efris_log_info("Data signed successfully")
         return signature
     except Exception as e:
-        efris_log_error(f'Error signing data: {e}')
+        frappe.log_error(f"Error signing data: {e}")
         return None
