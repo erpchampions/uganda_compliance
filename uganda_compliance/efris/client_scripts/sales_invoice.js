@@ -37,7 +37,7 @@ frappe.ui.form.on('Sales Invoice', {
     },
     validate: async function(frm) {
         set_efris_flag_based_on_items(frm);
-        await set_efris_invoice_details(frm);
+        set_efris_invoice_details(frm);
     },
     before_save: function(frm) {
         if (frm.doc.is_return) {
@@ -49,7 +49,8 @@ frappe.ui.form.on('Sales Invoice', {
             } else if (frm.doc.payments.length === 1) {
                 let payment_row = frm.doc.payments[0];
 
-                if (!payment_row.amount) {
+                if (payment_row.amount <= 0) {
+                console.log("Here is a payment with an amoyunt", payment_row.base_amount);
                     payment_row.amount = frm.doc.grand_total;
                 }
             }
@@ -117,7 +118,6 @@ frappe.ui.form.on('Sales Invoice', {
                             const include_payment_flag = response.message?.[0]?.include_payment || 0;
 
                             if (include_payment_flag) {
-                                console.log("include_payment is true. Updating payments...");
                                 frm.set_value('is_pos', 1);
                                 frm.set_df_property('is_pos', 'read_only', 0);
 
@@ -129,7 +129,6 @@ frappe.ui.form.on('Sales Invoice', {
 
                                 frm.refresh_field('payments');
                             } else {
-                                console.log("include_payment is false. Clearing payments...");
                                 frm.set_value('is_pos', 0);
                                 frm.set_df_property('is_pos', 'read_only', 1);
                                 frm.clear_table("payments");
@@ -138,7 +137,6 @@ frappe.ui.form.on('Sales Invoice', {
                         }
                     });
                 } else {
-                    console.log("EFRIS Payment Mode is invalid. Clearing payments...");
                     frm.clear_table("payments");
                     frm.refresh_field('payments');
                 }
@@ -157,11 +155,12 @@ frappe.ui.form.on('Sales Invoice Payment', {
 });
 
 // Separate function for EFRIS logic
-async function set_efris_invoice_details(frm) {
+// async function set_efris_invoice_details(frm) {
+function set_efris_invoice_details(frm) {
     if (frm.doc.efris_invoice && !frm.doc.is_return) {
 
         try {
-            const response = await frappe.call({
+            const response = frappe.call({
                 method: 'uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_tax_template',
                 args: { company_name: frm.doc.company, tax_type: 'Sales Tax' },
                 freeze: false 
@@ -185,7 +184,7 @@ async function set_efris_invoice_details(frm) {
                 });
 
                 // Refresh taxes child table to reflect changes
-                await frm.refresh_field('taxes');
+                frm.refresh_field('taxes');
 
                 console.log('Taxes child table updated successfully');
             } else {
