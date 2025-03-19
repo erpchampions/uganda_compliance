@@ -454,13 +454,10 @@ def query_currency_exchange_rate(doc):
         except json.JSONDecodeError:
             frappe.log_error("Failed to decode `doc` JSON string", "query_currency_exchange_rate Error")
             return {"error": "Failed to decode `doc` JSON string"}
-    efris_log_info(f"query_currency_exchange_rate called with doc: {doc}")
     e_company = doc.get('company')
-    efris_log_info(f"The Company is {e_company}")
     today = date.today().strftime("%Y-%m-%d")
     e_currency = doc.get('currency')
     if e_company == 'UGX':
-        efris_log_info(f"The Currency is Default {e_company}")
         return 
     efris_log_info(f"The E-currency is {e_currency}")
     exchange_rate_T121 = {
@@ -475,35 +472,8 @@ def query_currency_exchange_rate(doc):
     if success and response:
        efris_log_info(f"Query successful, response: {response}")   
        #TODO: update the Curency Exchange Rate in the system based on a setting/ check field
-    #    exchange_rate_exists = frappe.get_all('Currency Exchange',filters ={
-    #                                 'date': today,
-    #                                 'from_currency': response.get('currency'),
-    #                                 'to_currency' : 'UGX',
-    #                                 'exchange_rate': response.get('rate'),
-    #                                 'for_buying' :1,
-    #                                 'for_selling' : 1  
-    #                             })  
-       #if not exchange_rate_exists:
-            # If an existing exchange rate is found, update it with the new rate
-            #exchange_rate_doc = frappe.get_doc('Currency Exchange', exchange_rate_exists[0].name)
-            #exchange_rate_doc.exchange_rate = response.get('rate')
-            #exchange_rate_doc.save(ignore_permissions=True)
-            #frappe.msgprint(f"Exchange rate updated for {response.get('currency')} to {exchange_rate_doc.exchange_rate}")
-       #else:
-            # currency_exchange = frappe.get_doc({"doctype":"Currency Exchange",
-            #                             'date': today,
-            #                             'from_currency': response.get('currency'),
-            #                             'to_currency' : 'UGX',
-            #                             'exchange_rate': response.get('rate'),
-            #                             'for_buying' :1,
-            #                             'for_selling' : 1                                   
-                                            
-            #                                 })
-       
-            #currency_exchange.insert(ignore_permissions=True)
-            #frappe.msgprint(f"The Exchange Rate for {response.get('currency')} is created {currency_exchange.name}")
-        
-       return response  # Assuming response contains information if item exists
+   
+       return response 
     
     else:
         efris_log_info("Exchange Rate  not found in EFRIS.")
@@ -530,7 +500,6 @@ def purchase_uom_validation(doc,mehtod):
             items = frappe.get_doc('Item',{'item_code':item_code})
             uoms_detail = items.get('uoms',[])
             efris_log_info(f"Item UOm is {uoms_detail}")
-            # Check if purchase_uom exists in uoms_detail
             uom_exists = any(row.uom == purchase_uom for row in uoms_detail)
             
             if not uom_exists:

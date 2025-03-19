@@ -8,13 +8,10 @@ from functools import lru_cache
 
 @frappe.whitelist()
 def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
-    # Fetch the `efris_warehouse` flag from Warehouse
     is_efris_warehouse = frappe.db.get_value('Warehouse', accept_warehouse, 'efris_warehouse')
 
-    # Fetch the `is_efris_item` flag from the Item master doctype
     is_efris_item = frappe.db.get_value('Item', item_code, 'efris_item')
 
-    # Determine the final value of `is_efris`
     is_efris = bool(is_efris_warehouse and is_efris_item)
 
     return {'is_efris': is_efris}
@@ -65,7 +62,7 @@ def query_item_before_post(doc):
     
     if success and response:
         efris_log_info(f"Query successful, response: {response}")
-        return response  # Assuming response contains information if item exists
+        return response 
     else:
         efris_log_info("Item not found in EFRIS.")
         return None
@@ -76,166 +73,6 @@ def upload_new_item(doc, method, e_company):
 def update_existing_item(doc, method, e_company):
     prepare_and_upload_item(doc, method, operation_type="102", e_company=e_company)  # 102 for update item
 
-# def prepare_and_upload_item(doc, method, operation_type, e_company):
-#     is_efris_item = doc.get('efris_item',0)
-#     goodsCode = ""
-#     item_code = ""
-#     if not is_efris_item:
-#         efris_log_info(f"Item Is Non EFRIS {is_efris_item}")
-#         return
-#     goodsName = doc.get('item_name', '')    
-#     item_code = doc.get('item_code', '')
-#     goodsCode = doc.get('efris_product_code')
-   
-#     if goodsCode:
-#         item_code = goodsCode
-#     hasOtherUnits = doc.get('efris_has_multiple_uom', 0)
-#     item_currency = doc.get('efris_currency','')
-#     if item_currency:
-#         currency = frappe.db.get_value('Currency',{'currency_name':item_currency},'efris_currency_code')
-#      # Fetch the default unit price
-#     if item_currency == 'UGX':
-#         unitPrice = str(doc.get('standard_rate'))
-#         if unitPrice == '0.0':
-#             frappe.throw("Standard Rate cannot be zero")
-#     else:
-#         unitPrice = str(doc.get('uoms', [])[0].get('efris_unit_price', 0))
-        
-
-#     # Fetch the default UOM (measureUnit)
-#     uom = doc.get('stock_uom', '')
-#     measureUnit = frappe.db.get_value('UOM', {'uom_name': uom}, 'efris_uom_code') or ''
-    
-#     if measureUnit == '':
-#         frappe.throw(f"EFRIS UOM code must not be empty on Default UOM: {uom}")
-    
-#     commodityCategoryId = doc.get('efris_commodity_code', '')
-#     efris_log_info(f"The Company Name is: {e_company}")
-
-#     goodsOtherUnit = []  # This will store non-default, non-piece UOMs
-#     pieceMeasureUnit = ''  # Piece unit measure
-#     pieceUnitPrice = ''    # Piece unit price
-#     pieceScaledValue = ''  # Piece unit conversion factor
-#     havePieceUnit = "102"  # Default to no piece unit
-#     if hasOtherUnits:
-#         for item_uom in doc.get('uoms', []):
-#             # Extract the necessary flags
-#             efris_package_unit = item_uom.get('efris_package_unit', 0)
-#             is_efris_uom = item_uom.get('efris_uom', 0)
-#             is_piece_unit = item_uom.get('efris_is_piece_unit', 0)
-#             uom_new = item_uom.get('uom')
-#             efris_unit_price = item_uom.get('efris_unit_price', 0.0)
-#             uom_value = frappe.db.get_value('UOM', {'uom_name': uom_new}, 'efris_uom_code') or ''
-            
-#             efris_log_info(f"Processing UOM: {uom_new}, Is EFRIS UOM: {is_efris_uom}, Is Piece Unit: {is_piece_unit}, Is Default UOM: {efris_package_unit}")
-           
-#             # If it's not an EFRIS UOM, skip it
-#             if not is_efris_uom:
-#                 efris_log_info(f"Skipping {uom_new} as it is not flagged as an EFRIS UOM")
-#                 continue
-
-#             # Ensure the UOM code exists
-#             if uom_value == '':
-#                 frappe.throw(f"EFRIS UOM code is empty for UOM: {uom_new}")
-
-#             # Handle the default UOM separately (efris_package_unit == 1)
-#             if efris_package_unit == 1:
-#                 efris_log_info(f"Skipping {uom_new} as it is the default package unit.")
-#                 packageUnit = item_uom.get('uom')
-#                 measureUnit =  frappe.db.get_value('UOM', {'uom_name': packageUnit}, 'efris_uom_code') or ''
-#                 unitPrice = str(item_uom.get('efris_unit_price', 0.0))
-#                 continue
-
-#             # Handle piece unit separately (is_piece_unit == 1)
-#             if is_piece_unit == 1:
-#                 pieceMeasureUnit = uom_value
-#                 pieceUnitPrice = efris_unit_price
-#                 pieceScaledValue = str(item_uom.get('efris_package_scale_value', 1))
-#                 havePieceUnit = "101"  # Indicate that a piece unit exists
-#                 efris_log_info(f"Piece unit found: {uom_new} with price {pieceUnitPrice} and scaled value {pieceScaledValue}")
-#                 continue
-            
-#             # For other UOMs, add them to goodsOtherUnit[]
-#             conversion_factor = item_uom.get('conversion_factor', '1')
-#             efris_package_scale_value = item_uom.get('efris_package_scale_value', '1')
-#             goodsOtherUnit.append({
-#                 "otherUnit": uom_value,
-#                 "otherPrice": efris_unit_price,
-#                 "otherScaled": str(efris_package_scale_value),
-#                 'packageScaled': "1"
-#             })
-#             efris_log_info(f"Added {uom_new} to goodsOtherUnit with price {efris_unit_price} and scaled value {efris_package_scale_value}")
-
-#     # Prepare goodsUpload array for uploading to EFRIS
-#     goodsUpload = [{
-#         "operationType": operation_type,
-#         "goodsName": goodsName,
-#         "goodsCode": item_code,
-#         "measureUnit": measureUnit,
-#         "unitPrice": unitPrice,
-#         "currency": currency,
-#         "commodityCategoryId": commodityCategoryId if measureUnit else "",
-#         "haveExciseTax": "102",
-#         "stockPrewarning": "0",
-#         "havePieceUnit": havePieceUnit,  # Whether or not there's a piece unit
-#         "pieceMeasureUnit": pieceMeasureUnit,  # Piece unit UOM
-#         "pieceUnitPrice": pieceUnitPrice,      # Price for the piece unit
-#         "packageScaledValue": "1" if havePieceUnit == "101" else "",  # Piece unit scaling
-#         "pieceScaledValue": pieceScaledValue,  # Piece unit conversion factor
-#         "haveOtherUnit": "101" if goodsOtherUnit else "102",  # Whether there are other units
-#         "goodsOtherUnits": goodsOtherUnit  # Non-default, non-piece UOMs
-#     }]
-
-#     efris_log_info(f"The JSON item for Company {e_company} is: {goodsUpload}")
-
-#     # Upload the item to EFRIS
-#     success, response = make_post(interfaceCode="T130", content=goodsUpload, company_name=e_company,reference_doc_type=doc.doctype, reference_document=doc.name)
-    
-    
-#     if success:
-#         efris_log_info(f"Item successfully uploaded to EFRIS for {e_company}")
-#         frappe.msgprint(f"Item successfully uploaded to EFRIS for {e_company}")        
-        
-#         if not doc.efris_registered:
-#             doc.efris_registered = 1
-#             efris_log_info(f"The Value Of Is EFRIS Registered is updated to {doc.get('efris_registered', '')}")
-#     else:
-#         efris_log_error(f"Failed to upload item to EFRIS for {e_company}: {response}")
-#         frappe.throw(f"Failed to upload item to EFRIS for {e_company}: {response}")
-#     goods_other_units = []
-#     piece_measure_unit = ''
-#     piece_unit_price = ''
-#     piece_scaled_value = ''
-#     have_piece_unit = "102"
-
-#     if doc.get('efris_has_multiple_uom', 0):
-#         for item_uom in doc.get('uoms', []):
-#             if not item_uom.get('efris_uom', 0):
-#                 efris_log_info(f"Skipping {item_uom.get('uom')} as it is not flagged as an EFRIS UOM")
-#                 continue
-
-#             uom_value = frappe.db.get_value('UOM', {'uom_name': item_uom.get('uom')}, 'efris_uom_code') or ''
-#             if not uom_value:
-#                 frappe.throw(f"EFRIS UOM code is empty for UOM: {item_uom.get('uom')}")
-
-#             if item_uom.get('efris_package_unit', 0) == 1:
-#                 continue  # Skip default package unit
-
-#             if item_uom.get('efris_is_piece_unit', 0) == 1:
-#                 piece_measure_unit = uom_value
-#                 piece_unit_price = item_uom.get('efris_unit_price', 0.0)
-#                 piece_scaled_value = str(item_uom.get('efris_package_scale_value', 1))
-#                 have_piece_unit = "101"
-#                 continue
-
-#             goods_other_units.append({
-#                 "otherUnit": uom_value,
-#                 "otherPrice": item_uom.get('efris_unit_price', 0.0),
-#                 "otherScaled": str(item_uom.get('efris_package_scale_value', 1)),
-#                 'packageScaled': "1"
-#             })
-
-#     return goods_other_units, piece_measure_unit, piece_unit_price, piece_scaled_value, have_piece_unit
 
 def prepare_and_upload_item(doc, method, operation_type, e_company):
     if not doc.get('efris_item', 0):
@@ -298,7 +135,7 @@ def process_additional_uoms(doc):
                 frappe.throw(f"EFRIS UOM code is empty for UOM: {item_uom.get('uom')}")
 
             if item_uom.get('efris_package_unit', 0) == 1:
-                continue  # Skip default package unit
+                continue  
 
             if item_uom.get('efris_is_piece_unit', 0) == 1:
                 piece_measure_unit = uom_value
