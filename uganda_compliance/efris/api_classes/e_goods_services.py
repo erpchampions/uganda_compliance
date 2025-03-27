@@ -440,3 +440,33 @@ def get_item_tax_template(company, e_tax_category):
     except Exception as e:
         frappe.log_error(f"Error fetching Item Tax Template: {str(e)}")
         return []
+
+
+@frappe.whitelist()
+def has_efris_item_in_stock_ledger_entry(warehouse,company):
+    """
+    Check if there exists a Stock Entry for the given warehouse that includes
+    at least one item with the 'efris_item' flag set to True.
+    """
+    try:
+        # Fetch Stock Entries where the warehouse is either source or target
+        stock_ledger_entries = frappe.get_all(
+            "Stock Ledger Entry",
+            filters={"docstatus": 1, "warehouse": warehouse, "company": company, "is_cancelled": 0},
+            pluck="name"
+        )
+        
+        if not stock_ledger_entries:
+            return False
+        efris_log_info(f"Stock Entries for warehouse {warehouse}: {stock_ledger_entries}") 
+        # Check if any associated Stock Entry Detail has an item marked as 'efris_item'
+        for item in stock_ledger_entries:
+            stock_ledger_doc = frappe.get_doc("Stock Ledger Entry",item)
+            efris_log_info(f"Stock Ledger Entry Doc {stock_ledger_doc}")
+            efris_item = frappe.db.get_value("Item", stock_ledger_doc.item_code, "efris_item")
+            if efris_item:
+                return True
+
+    except Exception as e:
+        frappe.log_error(f"Error checking Stock Entries for warehouse {warehouse}: {str(e)}")
+        return False
