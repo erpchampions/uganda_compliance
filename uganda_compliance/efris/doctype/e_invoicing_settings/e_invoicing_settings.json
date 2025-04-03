@@ -11,6 +11,7 @@
   "company_name",
   "tin",
   "device_no",
+  "brn",
   "column_break_1",
   "sandbox_mode",
   "sandbox_private_key",
@@ -69,11 +70,11 @@
    "label": "Enable Invoice Sync From EFRIS"
   },
   {
-    "default": "0",
-    "fieldname": "sync_days_ago",
-    "fieldtype": "Int",
-    "label": "Sync Days Ago"
-   },
+   "default": "0",
+   "fieldname": "sync_days_ago",
+   "fieldtype": "Int",
+   "label": "Sync Days Ago"
+  },
   {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
@@ -148,8 +149,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Output VAT Account (for Sales)",
-   "options": "Account",
-   "reqd": 0
+   "options": "Account"
   },
   {
    "collapsible": 1,
@@ -233,10 +233,16 @@
    "fieldtype": "HTML",
    "label": "Connection Status",
    "read_only": 1
+  },
+  {
+   "fetch_from": "company.efris_nin_or_brn",
+   "fieldname": "brn",
+   "fieldtype": "Data",
+   "label": "Brn"
   }
  ],
  "links": [],
- "modified": "2025-01-07 14:40:02.556409",
+ "modified": "2025-03-12 18:09:49.872394",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",

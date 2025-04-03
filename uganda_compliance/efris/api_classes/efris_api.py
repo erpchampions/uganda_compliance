@@ -9,45 +9,47 @@ from .request_utils import fetch_data, post_req
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path
 
-
-
-##############
 def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
-    efris_log_info("make_post called...")
     try:
+        # Fetch company settings
         e_settings = get_e_company_settings(company_name)
-        tin, device_no, private_key_path, sandbox_mode = (
+        tin, device_no, private_key_path, sandbox_mode, brn = (
             e_settings.tin,
             e_settings.device_no,
             get_mode_private_key_path(e_settings),
-            e_settings.sandbox_mode
+            e_settings.sandbox_mode,
+            e_settings.brn,
         )
-        brn = ""  # TODO: Add BRN to E Company details under E Invoice Settings
-        
+        brn = brn if brn else ""
+    
         data = fetch_data()
-        efris_log_info("Data fetched successfully")
 
-        try:
-            private_key = get_private_key(private_key_path, e_settings)
-        except Exception as e:
-            return False, f"Failed to retrieve private key: {e}"
+        private_key = get_private_key(private_key_path, e_settings)
 
-        efris_log_info("Private key fetched successfully")
+        aes_key = get_AES_key(tin, device_no, private_key, sandbox_mode, brn)
 
-        aes_key = get_AES_key(tin, device_no, private_key, sandbox_mode)
-        efris_log_info("AES key fetched successfully")
+        encrypted_data = encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, brn, private_key, data)
+        if not encrypted_data:
+            return False, "Failed to encrypt and prepare data"
 
+        # Send the request and handle the response
+        response = send_request_and_handle_response(encrypted_data, aes_key, sandbox_mode, content, reference_doc_type, reference_document)
+        return response
+
+    except Exception as e:
+        frappe.log_error(f"An error occurred while making post request: {e}")
+        return False, str(e)
+
+def encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, brn, private_key, data):
+    try:
         json_content = json.dumps(content)
-        efris_log_info("Content converted to JSON successfully: " + json_content)
 
         isAESEncrypted = encrypt_aes_ecb(json_content, aes_key)
-        efris_log_info("Content encrypted with AES successfully")
 
         isAESEncrypted = base64.b64decode(isAESEncrypted)
         newEncrypteddata = base64.b64encode(isAESEncrypted).decode("utf-8")
 
         if isAESEncrypted:
-            efris_log_info("AES encryption successful")
             data["globalInfo"]["deviceNo"] = device_no
             data["globalInfo"]["tin"] = tin
             data["globalInfo"]["brn"] = brn
@@ -55,30 +57,32 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
             data["data"]["content"] = base64.b64encode(isAESEncrypted).decode("utf-8")
             data["data"]["dataDescription"] = {"codeType": "1", "encryptCode": "2"}
 
+            # Sign the data
             signature = sign_data(private_key, newEncrypteddata.encode())
-            efris_log_info("Signature completed...")
 
             if signature:
                 b4signature = base64.b64encode(signature).decode()
                 data["data"]["signature"] = b4signature
 
-        data_json = json.dumps(data).replace("'", '"').replace("\n", "").replace("\r", "")
-        efris_log_info("Request data converted to JSON successfully")
-        efris_log_info("Request data:\n")
-        efris_log_info(data_json)
-        print("===========================================================")
-        print(str(data_json))
-        json_resp = post_req(data_json, e_settings.sandbox_mode)
+            # Convert the final data to JSON
+            data_json = json.dumps(data).replace("'", '"').replace("\n", "").replace("\r", "")
+            
+            return data_json
+        return None
+    except Exception as e:
+        frappe.log_error(f"An error occurred while encrypting and preparing data: {e}")
+        return None
 
+def send_request_and_handle_response(data_json, aes_key, sandbox_mode, content, reference_doc_type, reference_document):
+    try:
+        json_resp = post_req(data_json, sandbox_mode)
         resp = json.loads(json_resp)
-        efris_log_info("Server response successfully parsed")
 
         errorMsg = resp["returnStateInfo"]["returnMessage"]
-        efris_log_info("returnStateInfoMsg: " + errorMsg)
         if errorMsg != "SUCCESS":
             log_request_to_efris(
                 request_data=content,
-                request_full=data,
+                request_full=data_json,
                 response_data={"error": errorMsg},
                 response_full=resp,
                 reference_doc_type=reference_doc_type,
@@ -86,23 +90,22 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
             )
             return False, errorMsg
 
+        # Decrypt the response content
         respcontent = resp["data"]["content"]
         efris_response = decrypt_aes_ecb(aes_key, respcontent)
-        efris_log_info("Response content decrypted successfully")
 
         resp_json = json.loads(efris_response)
-        efris_log_info("Decrypted JSON Data:")
-        efris_log_info(resp_json)
+
+        # Log the request and response
         log_request_to_efris(
-             request_data=content,
-            request_full=data,
+            request_data=content,
+            request_full=data_json,
             response_data=json.loads(efris_response),
             response_full=resp_json,
             reference_doc_type=reference_doc_type,
             reference_document=reference_document
         )
         return True, resp_json
-
     except Exception as e:
-        efris_log_error(f"An error occurred: {e}")
+        frappe.log_error(f"An error occurred while sending request and handling response: {e}")
         return False, str(e)

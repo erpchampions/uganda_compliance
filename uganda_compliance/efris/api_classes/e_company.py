@@ -49,13 +49,10 @@ def query_customer_details(doc, company, tax_id, nin_brn):
     )
 
     if success:
-        efris_log_info(f"Company details successfully fetched for {doc.name}")
         company_data = response.get('taxpayer', {})
-        efris_log_info(f"Fetched data: {json.dumps(company_data, indent=2)}")
         update_company_details(doc, company_data)
         create_or_update_address(doc, company_data)
     else:
-        efris_log_error(f"Failed to fetch Company details for {doc.name}: {response}")
         frappe.throw(f"Failed to fetch Company details for {doc.name}: {response}")
 
 
@@ -74,8 +71,6 @@ def update_company_details(doc, company_data):
     doc.phone_no = contact_number or doc.phone_no
     doc.email = contact_email or doc.email
     doc.efris_company_sync = 0
-
-    efris_log_info(f"Updated company details for {doc.name}.")
 
 
 def create_or_update_address(doc, company_data):
@@ -104,9 +99,7 @@ def create_or_update_address(doc, company_data):
 
     try:
         frappe.get_doc(address_data).insert()
-        efris_log_info(f"Address created for {doc.name}.")
     except Exception as e:
-        efris_log_error(f"Failed to create address for {doc.name}: {str(e)}")
         frappe.throw(f"Error creating address: {str(e)}")
 
 @frappe.whitelist()
