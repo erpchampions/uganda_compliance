@@ -5,7 +5,6 @@ frappe.ui.form.on("Item", {
         if (efris_currency) {
             console.log(`Currency is ${efris_currency}`);
             
-            // Using a Frappe.call to handle the asynchronous get_value call
             frappe.call({
                 method: "frappe.client.get_value",
                 args: {
@@ -40,12 +39,9 @@ frappe.ui.form.on("Item", {
         frm.refresh_field("taxes")
     },
     item_code:function(frm){
-        // console.log(`On Item Code Change...`)
         let item_code = frm.doc.item_code;
-        // console.log(`Item Code ${item_code} is ${item_code.length} characters long`)
-        if (item_code && item_code !== ''){
+      if (item_code && item_code !== ''){
             item_code = item_code.trim()
-            // console.log(`Trimmed Item Code :${item_code} is ${item_code.length} characters long`)
             frm.set_value('item_code',item_code);
             frm.refresh_field('item_code');
         }
@@ -58,8 +54,7 @@ function set_item_tax_template(frm){
         if (efris_commodity_code) {
             console.log(`The EFRIS commodity code is ${efris_commodity_code}`);
             
-            // Fetch the E Tax Category from the EFRIS Commodity Code
-            frappe.call({
+          frappe.call({
                 method: 'frappe.client.get_value',
                 args: {
                     doctype: 'EFRIS Commodity Code',
@@ -76,7 +71,6 @@ function set_item_tax_template(frm){
                             const company = frm.doc.efris_e_company;
                             console.log(`Item E Company is ${company}`);
                             
-                            // Fetch the Item Tax Template based on E Tax Category and Company
                             frappe.call({
                                 method: 'uganda_compliance.efris.api_classes.e_goods_services.get_item_tax_template',
                                 args: {
@@ -112,7 +106,6 @@ frappe.ui.form.on('Item', {
     after_save: function(frm) {
         console.log("After Save is called...");
 
-        // Check if the item is EFRIS tracked and registered
         if (frm.doc.efris_item && frm.doc.efris_registered) {
             console.log("Item is EFRIS tracked and registered. Proceeding to create item prices...");
 
@@ -141,7 +134,6 @@ frappe.ui.form.on('Item', {
             let purchase_uom = frm.doc.purchase_uom;
             console.log(`Purchase UOM is ${purchase_uom}`);
 
-            // Check if the purchase_uom exists in the UOMs table
             let uom_exists = frm.doc.uoms.some(row => row.uom === purchase_uom);
             if (!uom_exists) {
                 frappe.throw(`The Default Purchase UOM (${purchase_uom}) must be in the item's UOMs list.`);
@@ -155,7 +147,6 @@ frappe.ui.form.on('Item', {
             let sales_uom = frm.doc.sales_uom;
             console.log(`Sales UOM is ${sales_uom}`);
 
-            // Check if the sales_uom exists in the UOMs table
             let uom_exists = frm.doc.uoms.some(row => row.uom === sales_uom);
             if (!uom_exists) {
                 frappe.throw(`The Default Sales UOM (${sales_uom}) must be in the item's UOMs list.`);
@@ -215,7 +206,6 @@ frappe.ui.form.on("Item", {
     }
 });
 
-// Handles changes to `stock_uom`
 function handle_stock_uom_change(frm) {
     if (frm.doc.efris_has_multiple_uom) {
         update_default_uom_row(frm);
@@ -223,7 +213,6 @@ function handle_stock_uom_change(frm) {
     }
 }
 
-// Handles changes to `standard_rate`
 function handle_standard_rate_change(frm) {
     if (frm.doc.efris_has_multiple_uom) {
         update_default_uom_row(frm);
@@ -249,21 +238,18 @@ function update_default_uom_row(frm) {
     frm.doc.uoms = frm.doc.uoms.filter(row => {
         if (row.uom !== default_uom && row.conversion_factor === 1) {
             console.log(`Removing outdated UOM row: ${row.uom}`);
-            return false; // Remove this row
+            return false; 
         }
-        return true; // Keep this row
+        return true; 
     });
 
-    // Check if the default UOM exists in the table
     const existing_row = frm.doc.uoms.find(row => row.uom === default_uom);
 
     if (existing_row) {
-        // Update the existing row
         existing_row.conversion_factor = 1;
         existing_row.efris_uom = 1;
         existing_row.efris_unit_price = default_rate;
     } else {
-        // Add a new row for the default UOM
         const new_row = frm.add_child("uoms");
         new_row.uom = default_uom;
         new_row.conversion_factor = 1;
@@ -271,11 +257,9 @@ function update_default_uom_row(frm) {
         new_row.efris_unit_price = default_rate;
     }
 
-    // Refresh the table to reflect the updates
     frm.refresh_field("uoms");
 }
 
-// Validates the `uoms` table for multiple UOM scenarios
 function validate_uoms_table(frm) {
     const uoms = frm.doc.uoms;
 
@@ -289,7 +273,6 @@ function validate_uoms_table(frm) {
         frappe.throw("Only one UOM can have a conversion factor of 1.");
     }
 
-    // Validate required fields for EFRIS-specific UOMs
     uoms.forEach(row => {
         if (row.efris_uom) {
             if (!row.efris_unit_price) {

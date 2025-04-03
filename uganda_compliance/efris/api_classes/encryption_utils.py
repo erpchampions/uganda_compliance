@@ -32,12 +32,11 @@ def decrypt_aes_ecb(aeskey, ciphertext):
     plaintext = plaintext_with_padding[:-padding_length]
     return plaintext
 
-def get_AES_key(tin, device_no, private_key, sandbox_mode):
+def get_AES_key(tin, device_no, private_key, sandbox_mode, brn):
     try:
         data = fetch_data()
-        efris_log_info("Data fetched successfully - inside get_AES_key")
 
-        brn = "" # TODO: add BRN to E Company details on E Invoice Settings
+        brn = brn 
         dataExchangeId = guidv4()
         
         data["globalInfo"]["interfaceCode"] = "T104"
@@ -46,25 +45,17 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode):
         data["globalInfo"]["tin"] = tin
         data["globalInfo"]["brn"] = brn
 
-        #data_json = json.dumps(data).replace("'", '"').replace("\n", "").replace("\r", "")
-        data_json = json.dumps(data, separators=(',', ':'))  # Minimize JSON size
+        data_json = json.dumps(data, separators=(',', ':'))  
         
-        efris_log_info("Request data converted to JSON successfully")
-
         resp = post_req(data_json, sandbox_mode)
-        efris_log_info("POST request to fetch AES key successful")
 
         jsonresp = json.loads(resp)
-        efris_log_info("Response JSON parsed successfully")
 
         b64content = jsonresp["data"]["content"]
         content = json.loads(base64.b64decode(b64content).decode("utf-8"))
-        efris_log_info("Content extracted from response")
 
         b64passwordDes = content["passowrdDes"]
         passwordDes = base64.b64decode(b64passwordDes)
-        efris_log_info("PasswordDes decoded successfully")
-
 
         # Convert the private key to a PEM format byte string for RSA import
         pkey_str = private_key.private_bytes(
@@ -72,14 +63,10 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode):
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         )
-
-        efris_log_info("pkey_str converted...")
-
         # Decrypt AES key using the private key
         cipher = PKCS1_v1_5.new(RSA.import_key(pkey_str))
         aesKey = cipher.decrypt(passwordDes, None)
 
-        efris_log_info("AES key decrypted successfully")
         return base64.b64decode(aesKey)
 
     except Exception as e:
@@ -89,10 +76,10 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode):
 
 def get_private_key(key_file_path, e_settings):
     try:
-        key_file_path = frappe.get_site_path(key_file_path.lstrip('/'))  # Ensure correct path construction
+        key_file_path = frappe.get_site_path(key_file_path.lstrip('/'))
 
         if not os.path.exists(key_file_path):
-            efris_log_error(f"Key file does not exist at the provided path: {key_file_path}")
+            frappe.log_error(f"Key file does not exist at the provided path: {key_file_path}")
             raise Exception(f"Key file does not exist at the provided path: {key_file_path}")
 
         with open(key_file_path, "rb") as f:
@@ -102,18 +89,16 @@ def get_private_key(key_file_path, e_settings):
         password_bytes = private_key_password.encode('utf-8') if private_key_password else b""
 
         pfx = pkcs12.load_key_and_certificates(pfx_data, password_bytes, default_backend())
-        private_key = pfx[0]  # The private key is the first element
+        private_key = pfx[0]  
 
         if private_key is None:
-            efris_log_error("Private key extraction failed: private_key is None")
             raise Exception("Private key extraction failed: private_key is None")
 
-        efris_log_info("get_private_key()...done")
         return private_key
 
     except Exception as e:
-        efris_log_error(f"Error extracting private key: {e}")
-        raise  # Re-raise the exception to be handled by the caller
+        frappe.log_error(f"An error occurred while getting private key: {e}")
+        raise  
 
 def sign_data(private_key, data):
     try:
@@ -124,8 +109,7 @@ def sign_data(private_key, data):
             hashes.SHA1()
         )
 
-        efris_log_info("Data signed successfully")
         return signature
     except Exception as e:
-        efris_log_error(f'Error signing data: {e}')
+        frappe.log_error(f"Error signing data: {e}")
         return None

@@ -132,7 +132,7 @@ async function fetch_exchange_rate(currency, company, frm) {
                     resolve(r.message.rate);
                 } else {
                     console.warn(`❌ Failed to fetch Exchange Rate for ${currency}`);
-                    resolve(1); // Fallback to default rate of 1
+                    resolve(1); 
                 }
             }
         });
