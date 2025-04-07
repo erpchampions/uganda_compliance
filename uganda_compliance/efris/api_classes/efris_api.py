@@ -1,10 +1,7 @@
 import frappe
 import json
 import base64
-import requests
-from datetime import datetime
 from .encryption_utils import encrypt_aes_ecb, decrypt_aes_ecb, get_AES_key, get_private_key, sign_data
-from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from .request_utils import fetch_data, post_req
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path

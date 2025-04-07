@@ -2,16 +2,12 @@
 # For license information, please see license.txt
 
 from frappe.model.document import Document
-class EInvoiceRequestLog(Document):
-	pass
-
-import json
-from datetime import date
 import frappe
 from frappe.utils import now
-from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from frappe import enqueue
 
+class EInvoiceRequestLog(Document):
+	pass
 
 def log_request_to_efris(request_data, request_full, response_data, response_full, reference_doc_type=None, reference_document=None):
     try:        

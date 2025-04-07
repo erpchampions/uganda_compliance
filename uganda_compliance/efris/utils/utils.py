@@ -1,26 +1,19 @@
-import sys
+
 import json
 import frappe
-import traceback
 from frappe import _
 import os
 from frappe.utils import get_bench_path
 import logging
 
-
 class HandledException(frappe.ValidationError): pass
 
-
-# Get the default site path dynamically
 bench_path = get_bench_path()
 
-# Construct the path to the frappe-bench/logs folder
 log_folder_path = os.path.join(bench_path, 'logs')
 
-# Ensure the logs folder exists
 os.makedirs(log_folder_path, exist_ok=True)
 
-# Set the logging configuration
 log_file_path = os.path.join(log_folder_path, 'efris_logfile.log')
 
 frappe.log_error(f"log_file_path:{log_file_path}")
@@ -35,7 +28,6 @@ if not logger.hasHandlers():
     logger.setLevel(logging.DEBUG)
 
 def safe_load_json(message):
-    #frappe.log_error(f"message received:{message}")
     try:
         json_message = json.loads(message)
     except Exception:
