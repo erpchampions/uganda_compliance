@@ -1,19 +1,15 @@
 import six
 import frappe
 import json
-import math
 from frappe import _
 from uganda_compliance.efris.api_classes.efris_api import make_post
 from uganda_compliance.efris.utils.utils import efris_log_info, safe_load_json, efris_log_error
 from uganda_compliance.efris.api_classes.request_utils import get_ug_time_str
-from json import loads, dumps, JSONDecodeError
 from datetime import datetime
 from pyqrcode import create as qrcreate
 import io
 import os
 from frappe.utils.user import get_users_with_role
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path
@@ -1121,7 +1117,7 @@ def calculate_additional_discounts(doc, method):
 		return
 
 	# Load item tax details
-	item_taxes = loads(doc.taxes[0].item_wise_tax_detail)
+	item_taxes = json.loads(doc.taxes[0].item_wise_tax_detail)
 	initial_tax = doc.total_taxes_and_charges
 	efris_log_info(f"Initial Tax: {initial_tax}")
 

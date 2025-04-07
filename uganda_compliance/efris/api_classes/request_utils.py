@@ -3,7 +3,6 @@ import requests
 import uuid
 from datetime import datetime
 import pytz
-from uganda_compliance.efris.utils.utils import efris_log_info
 
 def fetch_data():
     now = get_ug_time_str()

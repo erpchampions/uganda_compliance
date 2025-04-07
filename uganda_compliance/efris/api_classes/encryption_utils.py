@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
-from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
+from uganda_compliance.efris.utils.utils import efris_log_error
 from .request_utils import fetch_data, guidv4, post_req
 from cryptography.hazmat.primitives import hashes
 import os
