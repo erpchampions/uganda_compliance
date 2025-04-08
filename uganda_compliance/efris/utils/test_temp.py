@@ -1,8 +1,4 @@
 import frappe
-import os
-from frappe.utils import get_bench_path
-import logging
-
 
 def get_private_key_for_company(company):
    
@@ -11,20 +7,6 @@ def get_private_key_for_company(company):
         fields=["parent", "tin", "private_key"],
         filters={"company_name": "EZZY COMPANY GROUP LTD", "parenttype": "E Invoicing Settings"}
     )
-
-   #  if not einvoicing_settings:
-   #      frappe.throw(f"No E Invoicing Settings found for company: {company}")
-
-   #  if len(einvoicing_settings) > 1:
-   #      frappe.throw(f"Multiple E Invoicing Settings found for company: {company}. Ensure only one active setting.")
-
-   #  tin = einvoicing_settings[0].tin
-   #  private_key = einvoicing_settings[0].private_key
-   #  print(f"The fetched Company Tin is: {tin}")
-   #  print(f"The device private key is: {private_key}")
-   #  return private_key
-
-
 
 def main():
     print("Starting...")
@@ -37,7 +19,6 @@ def main():
     print(f"DeviceNo:{deviceNo}")
     print(f"BusinessName:{businessName}")
     private_key = get_private_key_for_company(businessName)
-    #print(f"private_key:{private_key}")
 
 
 print(f"Main finished")
