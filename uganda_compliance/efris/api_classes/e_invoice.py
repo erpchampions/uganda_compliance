@@ -6,9 +6,8 @@ from uganda_compliance.efris.api_classes.efris_api import make_post
 from uganda_compliance.efris.utils.utils import efris_log_info, safe_load_json, efris_log_error
 from uganda_compliance.efris.api_classes.request_utils import get_ug_time_str
 from datetime import datetime
-from pyqrcode import create as qrcreate
-import io
-import os
+from uganda_compliance.efris.utils.utils import get_qr_code
+ 
 from frappe.utils.user import get_users_with_role
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
@@ -135,7 +134,8 @@ class EInvoiceAPI:
 			irn = response["basicInformation"]["invoiceNo"]
 			invoice_id = response["basicInformation"]["invoiceId"]
 			antifake_code = response["basicInformation"]["antifakeCode"]
-			qrcode = EInvoiceAPI.generate_qrcode(response["summary"]["qrCode"], einvoice)
+			efris_qr_code = response["summary"]["qrCode"]
+			qrcode = get_qr_code(efris_qr_code)
 			invoice_datetime = datetime.strptime(response["basicInformation"]["issuedDate"], '%d/%m/%Y %H:%M:%S')
 			data_source = response["basicInformation"]["dataSource"] or "103"
 
@@ -144,10 +144,11 @@ class EInvoiceAPI:
 				'invoice_id': invoice_id,
 				'antifake_code': antifake_code,
 				'status': status,
-				'qrcode_path': qrcode,
+				'qr_code_data': qrcode,
 				'invoice_date': invoice_datetime.date(),
 				'issued_time': invoice_datetime.time(),
-				'data_source' : data_source
+				'data_source' : data_source,
+				'efris_qr_code': efris_qr_code
 
 			})
 			einvoice.flags.ignore_permissions = True
@@ -159,25 +160,6 @@ class EInvoiceAPI:
 		except Exception as e:
 			frappe.throw(f"Unexpected error occurred: {e}", title="IRN Generation Error")
 
-
-	@staticmethod
-	def generate_qrcode(signed_qrcode, einvoice):
-		filename = '{} - QRCode.png'.format(einvoice.name).replace(os.path.sep, "__")
-		qr_image = io.BytesIO()
-		url = qrcreate(signed_qrcode, error='L')
-		url.png(qr_image, scale=2, quiet_zone=1)
-		_file = frappe.get_doc({
-			'doctype': 'File',
-			'file_name': filename,
-			'attached_to_doctype': einvoice.doctype,
-			'attached_to_name': einvoice.name,
-			'attached_to_field': 'qrcode_path',
-			'is_private': 0,
-			'content': qr_image.getvalue()
-		})
-		_file.save()
-		efris_log_info("qr_code is being generated")
-		return _file.file_url
 
 	@staticmethod
 	def cancel_irn(sales_invoice, reasonCode, remark):
@@ -420,7 +402,7 @@ def create_summary(einvoice):
 		"grossAmount": einvoice.gross_amount,
 		"itemCount": str(einvoice.item_count),
 		"modeCode": "0",
-		"qrCode": einvoice.qrcode_path
+		"qrCode": einvoice.efris_qr_code
 	}
 
 def create_buyer_details(einvoice):
@@ -499,137 +481,141 @@ def negate_credit_note_values(credit_note):
 
 ##Handle credit note cancelation
 def handle_rejected_credit_note(einvoice, response):
-    efris_log_info(f"The Approval status is {response['records'][0]['approveStatus']}")
+	efris_log_info(f"The Approval status is {response['records'][0]['approveStatus']}")
 
-    einvoice.flags.ignore_permissions = True
-    einvoice.status = 'Credit Note Rejected'
-    einvoice.credit_note_approval_status = '103:Rejected'
-    einvoice.docstatus = '2'
-    einvoice.save()
+	einvoice.flags.ignore_permissions = True
+	einvoice.status = 'Credit Note Rejected'
+	einvoice.credit_note_approval_status = '103:Rejected'
+	einvoice.docstatus = '2'
+	einvoice.save()
 
-    sales_invoice_return = frappe.get_doc("Sales Invoice", einvoice.name)
-    sales_invoice_return.efris_einvoice_status = "Credit Note Rejected"
-    sales_invoice_return.flags.ignore_permissions = True
-    sales_invoice_return.docstatus = 'Return Cancelled'
-    sales_invoice_return.save()
-    notify_system_managers(sales_invoice_return)
+	sales_invoice_return = frappe.get_doc("Sales Invoice", einvoice.name)
+	sales_invoice_return.efris_einvoice_status = "Credit Note Rejected"
+	sales_invoice_return.flags.ignore_permissions = True
+	sales_invoice_return.docstatus = 'Return Cancelled'
+	sales_invoice_return.save()
+	notify_system_managers(sales_invoice_return)
 
-    original_einvoice = get_einvoice(sales_invoice_return.return_against)
-    original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
-    original_sales_invoice.efris_einvoice_status = "EFRIS Generated"
-    original_sales_invoice.status = 'Return Cancelled'
-    original_sales_invoice.save()
+	original_einvoice = get_einvoice(sales_invoice_return.return_against)
+	original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
+	original_sales_invoice.efris_einvoice_status = "EFRIS Generated"
+	original_sales_invoice.status = 'Return Cancelled'
+	original_sales_invoice.save()
 
-    original_einvoice.status = "EFRIS Generated"
-    original_einvoice.save()
+	original_einvoice.status = "EFRIS Generated"
+	original_einvoice.save()
 
-    return True, "Credit Note Cancelled Successfully"
+	return True, "Credit Note Cancelled Successfully"
 
 def notify_system_managers(credit_note_name):
-    """
-    Fetch users with the 'System Manager' role and send them an email notification
-    about the rejected credit note.
-    """
-    system_managers = get_users_with_role("Sales Manager")
-    if not system_managers:
-        efris_log_info("No system managers found to notify.")
-        return
+	"""
+	Fetch users with the 'System Manager' role and send them an email notification
+	about the rejected credit note.
+	"""
+	system_managers = get_users_with_role("Sales Manager")
+	if not system_managers:
+		efris_log_info("No system managers found to notify.")
+		return
 
-    subject = f"Credit Note Rejected: {credit_note_name}"
-    message = f"""
-    Dear System Manager,
+	subject = f"Credit Note Rejected: {credit_note_name}"
+	message = f"""
+	Dear System Manager,
 
-    The credit note with reference {credit_note_name} has been rejected.
-    Please follow up with the relevant team to resolve this issue.
+	The credit note with reference {credit_note_name} has been rejected.
+	Please follow up with the relevant team to resolve this issue.
 
-    Best regards,
-    ERPNext System
-    """
+	Best regards,
+	ERPNext System
+	"""
 
-    for user in system_managers:
-        frappe.sendmail(
-            recipients=[user.email],
-            subject=subject,
-            message=message
-        )
-        efris_log_info(f"Email sent to {user.email} about rejected credit note {credit_note_name}.")
-        
+	for user in system_managers:
+		frappe.sendmail(
+			recipients=[user.email],
+			subject=subject,
+			message=message
+		)
+		efris_log_info(f"Email sent to {user.email} about rejected credit note {credit_note_name}.")
+		
 def handle_approved_credit_note(einvoice, response):
-    credit_invoice_no = response["records"][0]["invoiceNo"]
-    oriInvoiceNo = response["records"][0]["oriInvoiceNo"]
+	credit_invoice_no = response["records"][0]["invoiceNo"]
+	oriInvoiceNo = response["records"][0]["oriInvoiceNo"]
 
-    fdn_response = fetch_fdn_details(einvoice, credit_invoice_no)
-    if not fdn_response:
-        frappe.throw("Failed to get credit note invoice details.")
+	fdn_response = fetch_fdn_details(einvoice, credit_invoice_no)
+	if not fdn_response:
+		frappe.throw("Failed to get credit note invoice details.")
 
-    update_einvoice_with_fdn_details(einvoice, fdn_response, credit_invoice_no, oriInvoiceNo)
+	update_einvoice_with_fdn_details(einvoice, fdn_response, credit_invoice_no, oriInvoiceNo)
 
-    update_sales_invoice_return_status(einvoice)
+	update_sales_invoice_return_status(einvoice)
 
-    update_original_invoice_status(einvoice)
+	update_original_invoice_status(einvoice)
 
-    return True, f"Credit Note Approved! New Credit Note Invoice No: {credit_invoice_no}"
+	return True, f"Credit Note Approved! New Credit Note Invoice No: {credit_invoice_no}"
 
 def fetch_fdn_details(einvoice, credit_invoice_no):
-    """
-    Fetch FDN details using the T108 interface.
-    """
-    credit_note_no_query = {"invoiceNo": credit_invoice_no}
-    status, fdn_response = make_post(
-        interfaceCode="T108",
-        content=credit_note_no_query,
-        company_name=einvoice.company,
-        reference_doc_type=einvoice.doctype,
-        reference_document=einvoice.name
-    )
-    return fdn_response if status else None
+	"""
+	Fetch FDN details using the T108 interface.
+	"""
+	credit_note_no_query = {"invoiceNo": credit_invoice_no}
+	status, fdn_response = make_post(
+		interfaceCode="T108",
+		content=credit_note_no_query,
+		company_name=einvoice.company,
+		reference_doc_type=einvoice.doctype,
+		reference_document=einvoice.name
+	)
+	return fdn_response if status else None
 
 def update_einvoice_with_fdn_details(einvoice, fdn_response, credit_invoice_no, oriInvoiceNo):
-    """
-    Update the e-invoice with FDN details.
-    """
-    invoice_id = fdn_response["basicInformation"]["invoiceId"]
-    efris_creditnote_reasoncode = fdn_response["extend"]["reason"]
-    antifake_code = fdn_response["basicInformation"]["antifakeCode"]
-    qrcode = EInvoiceAPI.generate_qrcode(fdn_response["summary"]["qrCode"], einvoice)
-    invoice_datetime = datetime.strptime(fdn_response["basicInformation"]["issuedDate"], '%d/%m/%Y %H:%M:%S')
+	"""
+	Update the e-invoice with FDN details.
+	"""
+	invoice_id = fdn_response["basicInformation"]["invoiceId"]
+	efris_creditnote_reasoncode = fdn_response["extend"]["reason"]
+	antifake_code = fdn_response["basicInformation"]["antifakeCode"]
+	efris_qr_code = fdn_response["summary"]["qrCode"]
+	# qrcode = EInvoiceAPI.generate_qrcode(fdn_response["summary"]["qrCode"], einvoice)
+	qrcode = get_qr_code(efris_qr_code)
+	invoice_datetime = datetime.strptime(fdn_response["basicInformation"]["issuedDate"], '%d/%m/%Y %H:%M:%S')
 
-    einvoice.update({
-        'irn': credit_invoice_no,
-        'credit_note_approval_status': "101:Approved",
-        'antifake_code': antifake_code,
-        'invoice_id': invoice_id,
-        'qrcode_path': qrcode,
-        'invoice_date': invoice_datetime.date(),
-        'issued_time': invoice_datetime.time(),
-        'status': "EFRIS Generated",
-        'original_fdn': oriInvoiceNo,
-        'efris_creditnote_reasoncode': efris_creditnote_reasoncode,
-        'is_return': 1
-    })
-    einvoice.flags.ignore_permissions = True
-    einvoice.save()
-    einvoice.submit()
+	einvoice.update({
+		'irn': credit_invoice_no,
+		'credit_note_approval_status': "101:Approved",
+		'antifake_code': antifake_code,
+		'invoice_id': invoice_id,
+		# 'qrcode_path': qrcode,
+		'qr_code_data':qrcode,
+		'invoice_date': invoice_datetime.date(),
+		'issued_time': invoice_datetime.time(),
+		'status': "EFRIS Generated",
+		'original_fdn': oriInvoiceNo,
+		'efris_creditnote_reasoncode': efris_creditnote_reasoncode,
+		'is_return': 1,
+		'efris_qr_code': efris_qr_code
+	})
+	einvoice.flags.ignore_permissions = True
+	einvoice.save()
+	einvoice.submit()
 
 def update_sales_invoice_return_status(einvoice):
-    """
-    Update the Sales Invoice Return status to "EFRIS Generated".
-    """
-    sales_invoice_return = frappe.get_doc("Sales Invoice", einvoice.name)
-    sales_invoice_return.efris_einvoice_status = "EFRIS Generated"
-    sales_invoice_return.submit()
+	"""
+	Update the Sales Invoice Return status to "EFRIS Generated".
+	"""
+	sales_invoice_return = frappe.get_doc("Sales Invoice", einvoice.name)
+	sales_invoice_return.efris_einvoice_status = "EFRIS Generated"
+	sales_invoice_return.submit()
 
 def update_original_invoice_status(einvoice):
-    """
-    Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
-    """
-    original_einvoice = get_einvoice(einvoice.return_against)
-    original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
-    original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
-    original_sales_invoice.save()
+	"""
+	Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
+	"""
+	original_einvoice = get_einvoice(einvoice.return_against)
+	original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
+	original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
+	original_sales_invoice.save()
 
-    original_einvoice.status = "EFRIS Cancelled"
-    original_einvoice.save()
+	original_einvoice.status = "EFRIS Cancelled"
+	original_einvoice.save()
 #####End of credit note status update
 
 def get_credit_note_reason(sale_invoice):
@@ -684,7 +670,7 @@ def get_summary_details(einvoice):
 		"grossAmount": einvoice.gross_amount,
 		"itemCount": str(einvoice.item_count),
 		"modeCode": "0",
-		"qrCode": einvoice.qrcode_path
+		"qrCode": einvoice.efris_qr_code
 	}
 
 def get_buyer_details(einvoice):
@@ -825,10 +811,10 @@ def get_einvoice(sales_invoice):
 # 
 # in sales_invoice.py
 def validate_payment(doc):
-    if doc.get("efris_payment_mode") and doc.get("payments"):
-        for payment in doc.get("payments"):
-            if payment.get("amount") == 0.0:
-                payment["amount"] = doc.get("grand_total")
+	if doc.get("efris_payment_mode") and doc.get("payments"):
+		for payment in doc.get("payments"):
+			if payment.get("amount") == 0.0:
+				payment["amount"] = doc.get("grand_total")
 
 
 def after_save_sales_invoice(doc, method):
