@@ -2,7 +2,6 @@
 import json
 import frappe
 from frappe import _
-import os
 from frappe.utils import get_bench_path
 import logging
 
@@ -10,22 +9,22 @@ class HandledException(frappe.ValidationError): pass
 
 bench_path = get_bench_path()
 
-log_folder_path = os.path.join(bench_path, 'logs')
+#Lets handle the logging using 
+# log_folder_path = os.path.join(bench_path, 'logs')
 
-os.makedirs(log_folder_path, exist_ok=True)
+# os.makedirs(log_folder_path, exist_ok=True)
 
-log_file_path = os.path.join(log_folder_path, 'efris_logfile.log')
+# log_file_path = os.path.join(log_folder_path, 'efris_logfile.log')
 
-frappe.log_error(f"log_file_path:{log_file_path}")
 
 # Configure logging
 logger = logging.getLogger(__name__)
-if not logger.hasHandlers():
-    handler = logging.FileHandler(log_file_path)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
+# if not logger.hasHandlers():
+#     handler = logging.FileHandler(log_file_path)
+#     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#     handler.setFormatter(formatter)
+#     logger.addHandler(handler)
+#     logger.setLevel(logging.DEBUG)
 
 def safe_load_json(message):
     try:
@@ -36,13 +35,14 @@ def safe_load_json(message):
     return json_message
 
 def efris_log_info(message):
-    logger.info(message)
+    frappe.logger().info(message)
+    
 
 def efris_log_warning(message):
-    logger.warning(message)
+    frappe.msgprint(_("Warning: ") + message, alert=True, indicator='orange')
 
 def efris_log_error(message):
-    logger.error(message)
+    frappe.log_error("efris_log_error", message)
 
 def format_amount(amount):
     amt_float = float(amount)    
