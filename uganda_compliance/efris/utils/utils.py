@@ -4,6 +4,11 @@ import frappe
 from frappe import _
 from frappe.utils import get_bench_path
 import logging
+import frappe
+from base64 import b64encode
+from io import BytesIO
+import qrcode
+from frappe import _
 
 class HandledException(frappe.ValidationError): pass
 
@@ -51,3 +56,39 @@ def format_amount(amount):
 
 def test_job():
     print("Test job executed!")
+    
+@frappe.whitelist()
+def get_qr_code(data: str) -> str:
+    """Generate QR Code data
+
+    Args:
+        data (str): The information used to generate the QR Code
+
+    Returns:
+        str: The QR Code.
+    """
+    qr_code_bytes = get_qr_code_bytes(data, format="PNG")
+    base_64_string = bytes_to_base64_string(qr_code_bytes)
+
+    return add_file_info(base_64_string)
+
+
+def add_file_info(data: str) -> str:
+    """Add info about the file type and encoding.
+
+    This is required so the browser can make sense of the data."""
+    return f"data:image/png;base64, {data}"
+
+def get_qr_code_bytes(data: bytes | str, format: str = "PNG") -> bytes:
+    """Create a QR code and return the bytes."""
+    img = qrcode.make(data)
+
+    buffered = BytesIO()
+    img.save(buffered, format=format)
+
+    return buffered.getvalue()
+
+
+def bytes_to_base64_string(data: bytes) -> str:
+    """Convert bytes to a base64 encoded string."""
+    return b64encode(data).decode("utf-8")
