@@ -16,8 +16,8 @@ def execute():
                 'fieldtype': 'Link',
                 'options': 'Company',  
                 'insert_after': 'territory',                
-                'depends_on': 'eval: doc.efris_customer_type', 
-                'mandatory_depends_on': 'eval: doc.efris_customer_type',
+                'depends_on': 'efris_customer_type', 
+                'mandatory_depends_on': 'efris_customer_type',
                 'in_list_view': 1,  
                 'hidden': 0,  
             })
