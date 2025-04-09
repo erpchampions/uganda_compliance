@@ -1,7 +1,6 @@
 import frappe
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from uganda_compliance.efris.api_classes.efris_api import make_post
-import json
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 
 
