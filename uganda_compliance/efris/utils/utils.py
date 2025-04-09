@@ -1,41 +1,37 @@
-import sys
+
 import json
 import frappe
-import traceback
 from frappe import _
-import os
 from frappe.utils import get_bench_path
 import logging
-
+import frappe
+from base64 import b64encode
+from io import BytesIO
+import qrcode
+from frappe import _
 
 class HandledException(frappe.ValidationError): pass
 
-
-# Get the default site path dynamically
 bench_path = get_bench_path()
 
-# Construct the path to the frappe-bench/logs folder
-log_folder_path = os.path.join(bench_path, 'logs')
+#Lets handle the logging using 
+# log_folder_path = os.path.join(bench_path, 'logs')
 
-# Ensure the logs folder exists
-os.makedirs(log_folder_path, exist_ok=True)
+# os.makedirs(log_folder_path, exist_ok=True)
 
-# Set the logging configuration
-log_file_path = os.path.join(log_folder_path, 'efris_logfile.log')
+# log_file_path = os.path.join(log_folder_path, 'efris_logfile.log')
 
-frappe.log_error(f"log_file_path:{log_file_path}")
 
 # Configure logging
 logger = logging.getLogger(__name__)
-if not logger.hasHandlers():
-    handler = logging.FileHandler(log_file_path)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
+# if not logger.hasHandlers():
+#     handler = logging.FileHandler(log_file_path)
+#     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#     handler.setFormatter(formatter)
+#     logger.addHandler(handler)
+#     logger.setLevel(logging.DEBUG)
 
 def safe_load_json(message):
-    #frappe.log_error(f"message received:{message}")
     try:
         json_message = json.loads(message)
     except Exception:
@@ -44,13 +40,14 @@ def safe_load_json(message):
     return json_message
 
 def efris_log_info(message):
-    logger.info(message)
+    frappe.logger().info(message)
+    
 
 def efris_log_warning(message):
-    logger.warning(message)
+    frappe.msgprint(_("Warning: ") + message, alert=True, indicator='orange')
 
 def efris_log_error(message):
-    logger.error(message)
+    frappe.log_error("efris_log_error", message)
 
 def format_amount(amount):
     amt_float = float(amount)    
@@ -59,3 +56,39 @@ def format_amount(amount):
 
 def test_job():
     print("Test job executed!")
+    
+@frappe.whitelist()
+def get_qr_code(data: str) -> str:
+    """Generate QR Code data
+
+    Args:
+        data (str): The information used to generate the QR Code
+
+    Returns:
+        str: The QR Code.
+    """
+    qr_code_bytes = get_qr_code_bytes(data, format="PNG")
+    base_64_string = bytes_to_base64_string(qr_code_bytes)
+
+    return add_file_info(base_64_string)
+
+
+def add_file_info(data: str) -> str:
+    """Add info about the file type and encoding.
+
+    This is required so the browser can make sense of the data."""
+    return f"data:image/png;base64, {data}"
+
+def get_qr_code_bytes(data: bytes | str, format: str = "PNG") -> bytes:
+    """Create a QR code and return the bytes."""
+    img = qrcode.make(data)
+
+    buffered = BytesIO()
+    img.save(buffered, format=format)
+
+    return buffered.getvalue()
+
+
+def bytes_to_base64_string(data: bytes) -> str:
+    """Convert bytes to a base64 encoded string."""
+    return b64encode(data).decode("utf-8")
