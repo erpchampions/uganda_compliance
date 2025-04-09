@@ -3,18 +3,15 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-import six
-import math
 import frappe
 
 import json
 from collections import defaultdict
 from frappe import _
-from json import JSONEncoder, loads, JSONDecodeError
+from json import JSONEncoder
 from frappe.model.document import Document
 from datetime import datetime
-from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
-from frappe.utils.data import cint, format_date, getdate, flt, get_link_to_form
+from uganda_compliance.efris.utils.utils import efris_log_info
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.api_classes.e_invoice import EInvoiceAPI, decode_e_tax_rate, validate_company
 
@@ -337,7 +334,7 @@ class EInvoice(Document):
 	def fetch_items_from_invoice(self):	   
 		if not self.sales_invoice.taxes:
 			frappe.throw("taxes table can't be empty")
-		item_taxes = loads(self.sales_invoice.taxes[0].item_wise_tax_detail)
+		item_taxes = json.loads(self.sales_invoice.taxes[0].item_wise_tax_detail)
 		conversion_rate = self.sales_invoice.conversion_rate
 		
 		for i, item in enumerate(self.sales_invoice.items):
@@ -691,7 +688,7 @@ def calculate_additional_discounts(invoice):
     if not doc.taxes:
         return
 
-    item_taxes = loads(doc.taxes[0].item_wise_tax_detail)
+    item_taxes = json.loads(doc.taxes[0].item_wise_tax_detail)
     total_item_tax, total_discount_tax = _calculate_taxes_and_discounts(doc, item_taxes, discount_percentage)
 
     calculated_total_tax = round(total_item_tax + total_discount_tax, 2)
@@ -772,7 +769,7 @@ def calculate_tax_by_category(invoice):
 	if not doc.taxes:
 		return
 
-	item_taxes = loads(doc.taxes[0].item_wise_tax_detail)
+	item_taxes = json.loads(doc.taxes[0].item_wise_tax_detail)
 
 	tax_category_totals = defaultdict(float)
 

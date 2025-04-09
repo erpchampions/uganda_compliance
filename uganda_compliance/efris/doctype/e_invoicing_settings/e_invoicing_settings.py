@@ -3,8 +3,6 @@ from frappe.model.document import Document
 from frappe import _
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 
-import json
-import subprocess
 from frappe.utils.password import get_decrypted_password, set_encrypted_password    
 
 

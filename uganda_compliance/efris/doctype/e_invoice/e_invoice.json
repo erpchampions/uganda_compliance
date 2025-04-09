@@ -15,6 +15,8 @@
   "basic_information_section",
   "qrcode_path",
   "qrcode",
+  "qr_code_data",
+  "efris_qr_code",
   "column_break_6",
   "invoice_type",
   "invoice",
@@ -269,16 +271,14 @@
   {
    "fieldname": "qrcode_path",
    "fieldtype": "Attach Image",
-   "hidden": 1,
-   "label": "QRCode File Path",
-   "read_only": 1
+   "label": "QRCode File Path"
   },
   {
    "depends_on": "eval: !doc.irn_cancelled && doc.irn",
    "fieldname": "qrcode",
    "fieldtype": "Image",
    "label": "QRCode",
-   "options": "qrcode_path"
+   "options": "qr_code_data"
   },
   {
    "default": "0",
@@ -391,12 +391,27 @@
    "fieldname": "credit_amount",
    "fieldtype": "Currency",
    "label": "Credit Amount"
+  },
+  {
+   "fieldname": "qr_code_data",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "QR Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "efris_qr_code",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Efris QR Code",
+   "read_only": 1
   }
  ],
+ "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-05 16:48:03.060973",
+ "modified": "2025-04-08 13:15:37.510904",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoice",

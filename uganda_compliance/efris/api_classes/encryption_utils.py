@@ -6,10 +6,9 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
-from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
+from uganda_compliance.efris.utils.utils import efris_log_error
 from .request_utils import fetch_data, guidv4, post_req
 from cryptography.hazmat.primitives import hashes
-import os
 import json
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_mode_decrypted_password
 
@@ -72,37 +71,38 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode, brn):
     except Exception as e:
         efris_log_error("An error occurred in get_AES_key(): " + str(e))
         return None
-
-
+    
 def get_private_key(key_file_path, e_settings):
     try:
-        key_file_path = frappe.get_site_path(key_file_path.lstrip('/'))
-
-        if not os.path.exists(key_file_path):
-            frappe.log_error(f"Key file does not exist at the provided path: {key_file_path}")
-            raise Exception(f"Key file does not exist at the provided path: {key_file_path}")
-
-        with open(key_file_path, "rb") as f:
-            pfx_data = f.read()
-
+        if key_file_path.startswith('/private/files/'):
+            file_name = key_file_path.split('/')[-1]
+            
+            file_docs = frappe.get_all("File", filters={"file_name": file_name}, fields=["name"])
+            if file_docs:
+                key_file_path = file_docs[0].name 
+                fname, pfx_data = frappe.utils.file_manager.get_file(key_file_path)
+            else:
+                site_path = frappe.get_site_path("private", "files", file_name)
+                pfx_data = frappe.safe_decode(frappe.read_file(site_path, mode='rb'))
+        
         private_key_password = get_mode_decrypted_password(e_settings)
         password_bytes = private_key_password.encode('utf-8') if private_key_password else b""
-
+        
         pfx = pkcs12.load_key_and_certificates(pfx_data, password_bytes, default_backend())
-        private_key = pfx[0]  
-
+        private_key = pfx[0]
+        
         if private_key is None:
             raise Exception("Private key extraction failed: private_key is None")
-
+            
         return private_key
-
+        
     except Exception as e:
         frappe.log_error(f"An error occurred while getting private key: {e}")
-        raise  
+        raise
+    
 
 def sign_data(private_key, data):
     try:
-        # Use the private key to sign the data
         signature = private_key.sign(
             data,
             asym_padding.PKCS1v15(),
@@ -113,3 +113,4 @@ def sign_data(private_key, data):
     except Exception as e:
         frappe.log_error(f"Error signing data: {e}")
         return None
+
