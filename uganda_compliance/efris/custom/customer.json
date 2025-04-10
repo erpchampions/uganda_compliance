@@ -13,7 +13,7 @@
    "columns": 0,
    "creation": "2024-07-31 20:53:53.415440",
    "default": null,
-   "depends_on": "efris_customer_type",
+   "depends_on": "eval: doc.efris_customer_type",
    "description": null,
    "docstatus": 0,
    "dt": "Customer",
