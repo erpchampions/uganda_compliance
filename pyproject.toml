@@ -15,7 +15,6 @@ dependencies = [
     "PyQRCode==1.2.1",
     "pillow==10.2.0",
     "pypng==0.20220715.0"
-
 ]
 
 [build-system]
