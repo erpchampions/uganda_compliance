@@ -5,8 +5,6 @@ from frappe import _
 from frappe.utils import get_bench_path
 import logging
 import frappe
-from base64 import b64encode
-# from io import BytesIO
 import qrcode
 from frappe import _
 from PIL import Image
@@ -18,22 +16,9 @@ class HandledException(frappe.ValidationError): pass
 
 bench_path = get_bench_path()
 
-#Lets handle the logging using 
-# log_folder_path = os.path.join(bench_path, 'logs')
-
-# os.makedirs(log_folder_path, exist_ok=True)
-
-# log_file_path = os.path.join(log_folder_path, 'efris_logfile.log')
-
-
 # Configure logging
 logger = logging.getLogger(__name__)
-# if not logger.hasHandlers():
-#     handler = logging.FileHandler(log_file_path)
-#     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-#     handler.setFormatter(formatter)
-#     logger.addHandler(handler)
-#     logger.setLevel(logging.DEBUG)
+
 
 def safe_load_json(message):
     try:
