@@ -16,6 +16,7 @@ dependencies = [
     "pillow==10.2.0",
     "pypng==0.20220715.0",
     "numpy==2.2.4"
+
 ]
 
 [build-system]
