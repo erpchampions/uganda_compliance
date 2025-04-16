@@ -6,7 +6,7 @@ from frappe.utils import get_bench_path
 import logging
 import frappe
 from base64 import b64encode
-from io import BytesIO
+# from io import BytesIO
 import qrcode
 from frappe import _
 from PIL import Image
