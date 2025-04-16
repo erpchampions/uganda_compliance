@@ -71,7 +71,7 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode, brn):
     except Exception as e:
         efris_log_error("An error occurred in get_AES_key(): " + str(e))
         return None
-    
+
 def get_private_key(key_file_path, e_settings):
     try:
         if key_file_path.startswith('/private/files/'):
@@ -82,8 +82,11 @@ def get_private_key(key_file_path, e_settings):
                 key_file_path = file_docs[0].name 
                 fname, pfx_data = frappe.utils.file_manager.get_file(key_file_path)
             else:
-                site_path = frappe.get_site_path("private", "files", file_name)
-                pfx_data = frappe.safe_decode(frappe.read_file(site_path, mode='rb'))
+                file_doc = frappe.get_doc("File", {"file_name": file_name})
+                if file_doc:
+                    fname, pfx_data = frappe.utils.file_manager.get_file(file_doc.name)
+                else:
+                    raise Exception(f"Certificate file {file_name} not found in the system")
         
         private_key_password = get_mode_decrypted_password(e_settings)
         password_bytes = private_key_password.encode('utf-8') if private_key_password else b""
@@ -99,7 +102,6 @@ def get_private_key(key_file_path, e_settings):
     except Exception as e:
         frappe.log_error(f"An error occurred while getting private key: {e}")
         raise
-    
 
 def sign_data(private_key, data):
     try:
