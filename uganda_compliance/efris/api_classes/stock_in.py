@@ -43,6 +43,7 @@ def send_stock_entry(doc):
     e_company = doc.get("company")
     efris_log_info(f"The Company is: {e_company}")
     purpose = doc.get("purpose")
+    purchase_ref_no = ""
     if purpose == "Material Transfer": 
 
         # Group items by reference purchase receipt number
@@ -60,7 +61,8 @@ def send_stock_entry(doc):
         for reference_purchase, items in items_by_receipt.items():
             efris_log_info(f"Processing items for Purchase Receipt: {reference_purchase}")
 
-            goodsStockInItem, supplier, tax_Id, stockInType = stock_entry_item_data(items, reference_purchase)
+            goodsStockInItem, supplier, tax_Id, stockInType, shipment_no, purchase_ref_no = stock_entry_item_data(items, reference_purchase)
+
 
             if not goodsStockInItem:
                 efris_log_info(f"Skipping, no items found for Purchase Receipt: {reference_purchase}")
@@ -69,7 +71,10 @@ def send_stock_entry(doc):
             # Construct the EFRIS payload for the current purchase receipt
             stockin_date = doc.get("posting_date") or frappe.utils.today()
             supplierTin=tax_Id if tax_Id else ""
-            remarks=doc.get("remarks") if doc.get('remarks') else ""
+            remarks = doc.get("remarks") if doc.get('remarks') else ""            
+            if not shipment_no:
+                shipment_no = purchase_ref_no
+            remarks = f"Shipment No: {shipment_no} {remarks}"
             stockInDate=str(stockin_date)
             supplier=supplier if supplier else ""
             goods_Stock_upload_T131 = goods_Stock_T131_data("101", "", remarks,stockInDate, stockInType, "", "", "", "", "", "", "101", goodsStockInItem, supplier, supplierTin)
@@ -84,6 +89,8 @@ def stock_entry_item_data(items, reference_purchase):
     stockInType = "102"
     goodsCode = ""
     item_code = ""
+    shipment_no = None
+    purchase_ref_no = ""
     for data in items:
         is_efris = data.get("efris_transfer")
         
@@ -103,9 +110,15 @@ def stock_entry_item_data(items, reference_purchase):
                 efris_log_info(f"The target Purchase Receipt is: {reference_purchase}")
                 purchase_rec = frappe.get_doc("Purchase Receipt", reference_purchase)
                 supplier = purchase_rec.supplier_name
+                purchase_ref_no = purchase_rec.name
+                efris_log_info(f"The Purchase Receipt No is: {purchase_ref_no}")               
                 efris_log_info(f"The supplier name is: {supplier}")
                 stockInType = purchase_rec.efris_stockin_type.split(":")[0]
                 efris_log_info(f"The Stock In type for {purchase_rec} is {stockInType}")
+                shipment_no = purchase_rec.get("shipment_no") or ""
+                if not shipment_no:
+                    shipment_no = purchase_ref_no
+                efris_log_info(f"The Shipment No for {purchase_rec} is {shipment_no}")
                 
                 tax_Id = frappe.db.get_value("Supplier", {'supplier_name': supplier}, "tax_id")
             
@@ -116,7 +129,7 @@ def stock_entry_item_data(items, reference_purchase):
                     "measureUnit": efris_uom_code,
                     "quantity": data.get("qty"),
                     "unitPrice": efris_unit_price,
-                    "remarks": data.get("remarks") if data.get('remarks') else "",
+                    "remarks": shipment_no if shipment_no else "Stock Transfer",
                     "fuelTankId": "",
                     "lossQuantity": "",
                     "originalQuantity": "",
@@ -124,7 +137,7 @@ def stock_entry_item_data(items, reference_purchase):
             )
             efris_log_info(f"Total items to be processed: {len(goodsStockInItem)}")
             
-    return goodsStockInItem, supplier, tax_Id, stockInType
+    return goodsStockInItem, supplier, tax_Id, stockInType,shipment_no,purchase_ref_no
 
 
 def send_stock_reconciliation(doc):
@@ -248,6 +261,7 @@ def send_purchase_receipt(doc):
         unitPrice = 0
         goodsCode = ""
         item_code = ""
+        shipment_no = None
 
         items = doc.get("items", [])
         for efris_item in doc.get("items", []):
@@ -261,6 +275,10 @@ def send_purchase_receipt(doc):
         goodsStockInItem = []
         stockInType = ""
         stockInOption = doc.get("efris_stockin_type",'')
+        shipment_no = doc.get("shipment_no") 
+        remarks = doc.get("remarks") if doc.get('remarks') else ""
+        if shipment_no:
+            remarks = f'Shipment No: {shipment_no} {remarks}'
         efris_log_info(f"Stock In Type for  Purchase Receipt {doc} is {stockInOption}")
         stockInType = stockInOption.split(":")[0]
         efris_log_info(f"The Stock In type for Purchase Receipt {doc} is {stockInType}")
@@ -273,7 +291,7 @@ def send_purchase_receipt(doc):
         supplier_Tin=doc.get("supplier_tin") if doc.get('supplier_tin') else ""
         supplier=doc.get("supplier_name")
         stockInDate=str(doc.get("posting_date"))
-        remarks=doc.get("remarks") if doc.get('remarks') else ""
+        
         branchId=doc.get("branch_id") if doc.get('branch_id') else ""
         goods_Stock_upload_T131 = goods_Stock_T131_data("101", "", remarks,stockInDate, stockInType, "", "", branchId, "", "", "", "101", goodsStockInItem, supplier, supplier_Tin)
 
