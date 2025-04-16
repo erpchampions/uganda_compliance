@@ -62,7 +62,6 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode, brn):
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         )
-        # Decrypt AES key using the private key
         cipher = PKCS1_v1_5.new(RSA.import_key(pkey_str))
         aesKey = cipher.decrypt(passwordDes, None)
 
