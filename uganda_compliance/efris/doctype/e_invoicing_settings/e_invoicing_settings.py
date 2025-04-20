@@ -84,7 +84,7 @@ def get_mode_private_key_path(e_settings):
     else:
         frappe.throw("E Invoicing Settings are disabled")
 
-    
+@frappe.whitelist()    
 def get_e_company_settings(company_name):
     # Check if settings are already cached
     if company_name in e_company_settings_cache:
