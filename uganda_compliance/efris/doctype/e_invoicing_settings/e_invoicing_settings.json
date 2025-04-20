@@ -26,6 +26,8 @@
   "sales_taxes_and_charges_template",
   "purchase_taxes_and_charges_template",
   "column_break_umjz3",
+  "stock_settings_section",
+  "enforce_update_stock",
   "e_invoice_price_list_section",
   "efris_price_list",
   "efris_synchronization_section",
@@ -69,11 +71,11 @@
    "label": "Enable Invoice Sync From EFRIS"
   },
   {
-    "default": "0",
-    "fieldname": "sync_days_ago",
-    "fieldtype": "Int",
-    "label": "Sync Days Ago"
-   },
+   "default": "0",
+   "fieldname": "sync_days_ago",
+   "fieldtype": "Int",
+   "label": "Sync Days Ago"
+  },
   {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
@@ -148,8 +150,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Output VAT Account (for Sales)",
-   "options": "Account",
-   "reqd": 0
+   "options": "Account"
   },
   {
    "collapsible": 1,
@@ -233,14 +234,25 @@
    "fieldtype": "HTML",
    "label": "Connection Status",
    "read_only": 1
+  },
+  {
+   "fieldname": "stock_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Stock Settings"
+  },
+  {
+   "default": "0",
+   "description": "update stock is set to true for EFRIS unless a delivery note is linked to any item on the sales invoice.",
+   "fieldname": "enforce_update_stock",
+   "fieldtype": "Check",
+   "label": "Enforce Update Stock on Sales Invoice"
   }
  ],
  "links": [],
- "modified": "2025-01-07 14:40:02.556409",
+ "modified": "2025-04-20 12:46:40.617316",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",
- "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
@@ -252,6 +264,5 @@
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC",
- "states": []
+ "sort_order": "DESC"
 }
