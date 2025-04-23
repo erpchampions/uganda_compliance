@@ -1,7 +1,7 @@
 {
  "absolute_value": 0,
  "align_labels_right": 0,
- "creation": "2025-03-27 08:49:59.662787",
+ "creation": "2025-04-08 17:35:25.901166",
  "css": ".table_data {\n    text-align: left;\n    padding-left: 10px !important;\n    /*line-height: 0px;*/\n}\n.section_head {\n    text-align: center;\n    font-weight: 700;\n    /*line-height: 0px;*/\n}\n td { \n    border: 1px solid black;\n}\n\n.top_info{\n    border: none;\n    font-weight: bold; \n    font-size: 16px; \n    text-align: center; \n    vertical-align: bottom;\n}\n.main {\n    width: 100%; \n    border: 1px solid black;\n    font-size: 10px;\n    color: #000000;\n    vertical-align: bottom;\n}\n.top_left td:nth-child(1){\n    border-right: none; \n}\n.top_left td:nth-child(2){\n    border-left: none; \n}\n.qrcode{\n    text-align: center;\n    vertical-align: middle;\n}\n.footer{\n    text-align: center;\n    font-weight: bold;\n}\n.no_left_border{\n    border-left: none;\n}",
  "custom_format": 1,
  "default_print_language": "en",
@@ -17,7 +17,7 @@
  "margin_left": 15.0,
  "margin_right": 15.0,
  "margin_top": 15.0,
- "modified": "2025-04-08 13:21:39.692528",
+ "modified": "2025-04-24 00:31:04.680371",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "EFRIS E Invoice",
