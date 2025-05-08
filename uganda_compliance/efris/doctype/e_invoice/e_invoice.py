@@ -43,7 +43,7 @@ class EInvoice(Document):
             msg = _("Cannot submit e-invoice without EFRIS.") + ' '
             msg += _("You must generate EFRIS for the sales invoice to submit this e-invoice.")
             frappe.throw(msg, title=_("Missing EFRIS"))
-
+                    
     def on_update(self):
         efris_log_info("On update EInvoice")
         self.update_sales_invoice()
@@ -210,54 +210,54 @@ class EInvoice(Document):
         for tax_item in self.sales_invoice.taxes:
             accnt_id = tax_item.account_head
             accnt = frappe.get_doc('Account', accnt_id)
-            if tax_item.charge_type == "On Net Total" and accnt.account_name == "VAT":
-                e_taxes_table = {}
-                for e_invoice_item in self.items:
-                    e_tax_category = e_invoice_item.e_tax_category
-                    tax_amount = e_invoice_item.tax
-                    # Calculate the discount amount if any, based on the additional_discount_percentage
-                    discount_amount = 0
-                    net_amount = 0.0
-                    gross_amount = 0.0
-                    if self.sales_invoice.additional_discount_percentage:
-                        discount_amount = e_invoice_item.amount * (self.sales_invoice.additional_discount_percentage / 100)
-                        efris_log_info(f"The Discount Amount for Discout {self.sales_invoice.additional_discount_percentage} is {discount_amount}")
-                        # Adjust gross amount by subtracting the discount amount
-                        gross_amount = round((e_invoice_item.amount - discount_amount),2)
-                        efris_log_info(f"Discounted Gross Amount for item {e_invoice_item.item_code}: {gross_amount}")
-                    else:
-                        gross_amount = round(e_invoice_item.amount,2)
-                    # Calculate net amount using the discounted gross amount
-                                    
-                    net_amount = gross_amount - tax_amount
-                    tax_rate = decode_e_tax_rate(e_invoice_item.gst_rate, e_tax_category)
-                    if e_tax_category in e_taxes_table:
-                        e_taxes_table[e_tax_category]["gross_amount"] += gross_amount
-                        e_taxes_table[e_tax_category]["net_amount"] += net_amount
-                        e_taxes_table[e_tax_category]["tax_amount"] += tax_amount
-                        e_taxes_table[e_tax_category]["nr_items"] += 1
-                    else:
-                        e_taxes_table[e_tax_category] = {
-                            'net_amount': net_amount,
-                            'tax_rate': tax_rate,
-                            'tax_amount': tax_amount,
-                            'gross_amount': round(gross_amount,2),
-                            'nr_items': 1
-                        }
-                sorted_e_taxes_table_keys = sorted(e_taxes_table.keys())
-                for e_tax_category in sorted_e_taxes_table_keys:
-                    data = e_taxes_table[e_tax_category]
-                    taxes = frappe._dict({
-                        "tax_category_code": e_tax_category,
-                        "net_amount": round(data['net_amount'], 2),  
-                        "tax_rate": data['tax_rate'],
-                        "tax_amount": round(data['tax_amount'], 2),
-                        "gross_amount": round(data['gross_amount'], 2),
-                        "excise_unit": "",
-                        "excise_currency": "",
-                        "tax_rate_name": ""
-                    })
-                    self.append("taxes", taxes)
+            # if tax_item.charge_type == "On Net Total" and accnt.account_name == "VAT":
+            e_taxes_table = {}
+            for e_invoice_item in self.items:
+                e_tax_category = e_invoice_item.e_tax_category
+                tax_amount = e_invoice_item.tax
+                # Calculate the discount amount if any, based on the additional_discount_percentage
+                discount_amount = 0
+                net_amount = 0.0
+                gross_amount = 0.0
+                if self.sales_invoice.additional_discount_percentage:
+                    discount_amount = e_invoice_item.amount * (self.sales_invoice.additional_discount_percentage / 100)
+                    efris_log_info(f"The Discount Amount for Discout {self.sales_invoice.additional_discount_percentage} is {discount_amount}")
+                    # Adjust gross amount by subtracting the discount amount
+                    gross_amount = round((e_invoice_item.amount - discount_amount),2)
+                    efris_log_info(f"Discounted Gross Amount for item {e_invoice_item.item_code}: {gross_amount}")
+                else:
+                    gross_amount = round(e_invoice_item.amount,2)
+                # Calculate net amount using the discounted gross amount
+                                
+                net_amount = gross_amount - tax_amount
+                tax_rate = decode_e_tax_rate(e_invoice_item.gst_rate, e_tax_category)
+                if e_tax_category in e_taxes_table:
+                    e_taxes_table[e_tax_category]["gross_amount"] += gross_amount
+                    e_taxes_table[e_tax_category]["net_amount"] += net_amount
+                    e_taxes_table[e_tax_category]["tax_amount"] += tax_amount
+                    e_taxes_table[e_tax_category]["nr_items"] += 1
+                else:
+                    e_taxes_table[e_tax_category] = {
+                        'net_amount': net_amount,
+                        'tax_rate': tax_rate,
+                        'tax_amount': tax_amount,
+                        'gross_amount': round(gross_amount,2),
+                        'nr_items': 1
+                    }
+            sorted_e_taxes_table_keys = sorted(e_taxes_table.keys())
+            for e_tax_category in sorted_e_taxes_table_keys:
+                data = e_taxes_table[e_tax_category]
+                taxes = frappe._dict({
+                    "tax_category_code": e_tax_category,
+                    "net_amount": round(data['net_amount'], 2),  
+                    "tax_rate": data['tax_rate'],
+                    "tax_amount": round(data['tax_amount'], 2),
+                    "gross_amount": round(data['gross_amount'], 2),
+                    "excise_unit": "",
+                    "excise_currency": "",
+                    "tax_rate_name": ""
+                })
+                self.append("taxes", taxes)
 
     def set_payment_details(self):
         efris_log_info("Setting Payment details")
@@ -741,8 +741,3 @@ class EInvoice(Document):
     def get_additional_discount(self):
         efris_log_info("Getting Additional discounts Json")
         return {"additional_discount_percentage":self.additional_discount_percentage}
-
-
-
-
-

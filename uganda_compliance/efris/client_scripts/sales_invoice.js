@@ -29,7 +29,7 @@ frappe.ui.form.on('Sales Invoice', {
                             console.error(`Error confirming IRN cancellation: ${error}`);
                         }
                     });
-                }
+              }
             } catch (error) {
                 console.error(`Error in refresh: ${error}`);
             }
@@ -136,6 +136,9 @@ frappe.ui.form.on('Sales Invoice', {
     before_save: function (frm) {
         console.log("Validating EFRIS Payment Mode before save...");
         
+        if (frm.doc.is_return){
+            reset_discounts(frm);
+    }
         if (frm.doc.efris_payment_mode) {
             if (frm.doc.payments.length > 1) {
                 console.log("Multiple payment modes detected. Clearing EFRIS Payment Mode...");
@@ -151,7 +154,7 @@ frappe.ui.form.on('Sales Invoice', {
         }
 
         frm.refresh_field('payments');
-    }
+    },
 
 
 });
@@ -218,11 +221,10 @@ async function set_efris_invoice_details(frm) {
     // Set `update_stock` field when `efris_invoice` is enabled
     const is_efris_invoice = frm.doc.efris_invoice == 1;
 
-    frm.set_value("update_stock", is_efris_invoice ? 1 : 0);
-    frm.refresh_field("update_stock");
-
     frm.set_value("disable_rounded_total", is_efris_invoice ? 1 : 0);
     frm.refresh_field("disable_rounded_total");
+
+    handle_update_stock_setting(frm);
 }
 
 const set_efris_flag_based_on_items = (frm) => {
@@ -279,3 +281,72 @@ function update_parent_field(frm) {
     // Update the parent field (e.g., total_payment_amount)
     frm.refresh_field("efris_payment_mode");
 }
+
+function reset_discounts(frm) {
+    (frm.doc.items || []).forEach(function(row) {
+        row.discount_percentage = 0;
+        row.discount_amount = 0;
+    });
+
+    frm.set_value('discount_amount', 0);
+    frm.set_value('additional_discount_percentage', 0);
+
+    frm.refresh_field('items');
+    frm.refresh_field('discount_amount');
+    frm.refresh_field('additional_discount_percentage');
+}
+
+function has_delivery_note(frm) {
+    let has_dn = false;
+    
+    if (frm.doc.items && frm.doc.items.length > 0) {
+        // Loop through each item to check for a delivery note reference
+        has_dn = frm.doc.items.some(item => {
+            return item.delivery_note || item.dn_detail;
+        });
+    }
+    
+    return has_dn;
+}
+
+function handle_update_stock_setting(frm) {
+    // Skip this entirely if it's a sales return
+    if (frm.doc.is_return) {
+        return;
+    }
+    
+    // Get the EFRIS invoice status
+    let is_efris_invoice = frm.doc.efris_invoice === 1;
+    
+    // Only proceed if this is an EFRIS invoice
+    if (is_efris_invoice) {
+        // Get the e_company from the current doc
+        const e_company = frm.doc.company;
+        
+        // Use the existing get_e_company_settings function to get the enforce setting
+        frappe.call({
+            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
+            
+            args: { 
+                company_name: e_company 
+            },
+            callback: function(r) {
+                
+                if (r.message && r.message.enforce_update_stock == 1) {
+                    
+                    // Check if any items have delivery notes
+                    let has_dn = has_delivery_note(frm);
+                    // Set update_stock based on delivery note presence
+                    // Logic: Set to 1 (true) if there's no delivery note, 0 if there is one
+                    let should_update_stock = !has_dn ? 1 : 0;
+                    
+                    // Set the value and refresh the field
+                    frm.set_value("update_stock", should_update_stock);
+                    frm.refresh_field("update_stock");
+                }
+            }
+        });
+    }
+}
+
+
