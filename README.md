@@ -11,7 +11,7 @@ Uganda Compliance is a localization app for ERPNext designed to ensure complianc
 - Multi-Currency & Multi-UOM Support  
 - Stock-in / Stock Adjustments  
 - Invoicing, including Item-level Discounts  
-- Payment Mode Support (e.g. Credit, Cash, Cheque, SWIFT Transfer, Mobile Money)  
+- Report Payment Modes (e.g. Credit, Cash, Cheque, SWIFT Transfer, Mobile Money)  
 - POS Awesome Integration  
 - EFRIS Sales Invoice / POS Invoice Print Formats  
 - Credit Note Management  
