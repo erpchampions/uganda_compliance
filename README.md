@@ -2,20 +2,32 @@
 
 Uganda Compliance is a localization app for ERPNext designed to ensure compliance with Uganda's statutory requirements, focusing on **EFRIS (Electronic Fiscal Receipting and Invoicing Solution)** integration.
 
-## **Key Features**
-- Multi-company EFRIS Integration  
-- Automatic Tax Template Generation  
-- EFRIS Commodity Code Mapping  
-- Company & Customer Synchronization with EFRIS  
-- Goods & Services Synchronization with EFRIS  
-- Multi-Currency & Multi-UOM Support  
-- Stock-in / Stock Adjustments  
-- Invoicing, including Item-level Discounts  
-- Report Payment Modes (e.g. Credit, Cash, Cheque, SWIFT Transfer, Mobile Money)  
-- POS Awesome Integration  
-- EFRIS Sales Invoice / POS Invoice Print Formats  
-- Credit Note Management  
-- Request/Response Logging
+## **Features**
+- Configure Goods & Services in ERPNext and keep them synchronized with EFRIS
+
+- Manage Inventory - add new stock or adjust stock in ERPNext via local purchase or import (Purchase Request/Stock Entry/Stock Reconciliation)
+
+- Issue & Print compliant invoices with all required EFRIS elements (FDN, QR Code, Antifake Code) using custom print formats for both standard invoices and POS receipts
+
+- Issue Credit notes for returns or adjustments
+
+- Fetch Company or Customer data from EFRIS
+
+- Generate Tax Templates automatically based on URA requirements
+
+- Register the various invoice payment modes used (Credit, Cash, Cheque, SWIFT, Mobile Money)
+
+- Support for multiple currencies - purchase or sell in UGX, USD, CNY, EURO, GBP (as currently supported by EFRIS)
+
+- Support for multiple units of measurement (UOM) when purchasing or selling
+
+- Set up and track multiple EFRIS companies/businesses under one site or ERPNext installation
+
+- Seamlessly work with POS Awesome for retail operations
+
+- 2-Way synchronization between EFRIS and ERPNext allowing users to maintain accurate records across multiple sales channels (EFD devices, online portal, ERPNext)
+
+- Comprehensive request/response logging for troubleshooting
 
 ---
 
