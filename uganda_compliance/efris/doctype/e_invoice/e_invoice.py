@@ -692,6 +692,7 @@ class EInvoice(Document):
     def get_tax_details(self):
         efris_log_info("Getting tax details JSON")
         tax_details_list = []
+        calculated_tax = 0.0
         
         tax_per_category = calculate_tax_by_category(self.invoice)
         trimmed_response = {}
