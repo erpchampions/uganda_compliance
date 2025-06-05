@@ -9,8 +9,6 @@ from .request_utils import fetch_data, post_req
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path
 
-
-
 ##############
 def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
     efris_log_info("make_post called...")
