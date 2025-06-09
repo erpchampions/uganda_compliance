@@ -6,6 +6,41 @@ from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings i
 from functools import lru_cache
 
 @frappe.whitelist()
+def has_efris_item_in_stock_ledger_entry(warehouse, company):
+    """
+    Check if there exists a Stock Ledger Entry for the given warehouse that includes
+    at least one item with the 'efris_item' flag set to True.
+    """
+    try:
+        efris_log_info(f"Checking EFRIS items in warehouse {warehouse} for company {company}")
+        
+        # Optimized single query using SQL JOIN
+        result = frappe.db.sql("""
+            SELECT sle.name 
+            FROM `tabStock Ledger Entry` sle
+            INNER JOIN `tabItem` item ON sle.item_code = item.name
+            WHERE sle.warehouse = %(warehouse)s 
+                AND sle.company = %(company)s
+                AND sle.docstatus = 1 
+                AND sle.is_cancelled = 0
+                AND item.efris_item = 1
+            LIMIT 1
+        """, {
+            'warehouse': warehouse,
+            'company': company
+        })
+        
+        has_efris_items = bool(result)
+        efris_log_info(f"Warehouse {warehouse} has EFRIS items: {has_efris_items}")
+        
+        return has_efris_items
+
+    except Exception as e:
+        efris_log_error(f"Error checking EFRIS items for warehouse {warehouse}: {str(e)}")
+        frappe.log_error(frappe.get_traceback(), "EFRIS Warehouse Validation Error")
+        return False
+    
+@frappe.whitelist()
 def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
     is_efris_warehouse = frappe.db.get_value('Warehouse', accept_warehouse, 'efris_warehouse')
 
