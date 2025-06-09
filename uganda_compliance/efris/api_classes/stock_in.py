@@ -43,10 +43,17 @@ def send_stock_entry(doc):
     e_company = doc.get("company")
     efris_log_info(f"The Company is: {e_company}")
     purpose = doc.get("purpose")
-    reference_purchase = '' 
-    productionBatchNo = doc.get("production_batch_no") or ""
-    efris_log_info(f"The Production Batch No is: {productionBatchNo}")     
-    if purpose == "Material Transfer" and not productionBatchNo: 
+    if purpose not in ["Manufacture", "Material Transfer"]:
+        efris_log_info(f"Skipping EFRIS processing for Material Transfer for Manufacture purpose.")
+        return
+    details = get_stock_entry_details(doc.get("items", [])) or {}
+    if not details:
+        efris_log_info(f"No EFRIS details found in Stock Entry: {doc.name}")
+        return
+    efris_production_batch_no = details.get("efris_production_batch_no", "")
+    efris_purchase_receipt_no = details.get("efris_purchase_receipt_no", "")
+    efris_log_info(f"The Production Batch No is: {efris_production_batch_no}")     
+    if purpose == "Material Transfer" and not efris_production_batch_no: 
 
         # Group items by reference purchase receipt number
         items_by_receipt = {}
@@ -80,7 +87,7 @@ def send_stock_entry(doc):
             success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
             handle_response(success,"Stock Entry Detail", response, items, e_company, reference_purchase)
 
-    if purpose == "Manufacture" or purpose == "Material Transfer" and productionBatchNo:
+    if purpose == "Manufacture" or purpose == "Material Transfer" and efris_production_batch_no:
         efris_log_info(f"Processing Stock Entry for Manufacture: {doc.name}")
         # goodsStockInItem = []
         items = doc.get("items", [])
@@ -89,9 +96,9 @@ def send_stock_entry(doc):
         if work_order:
             bom_no = frappe.db.get_value("Work Order", work_order, "bom_no")
             efris_log_info(f"The BOM No for Work Order {work_order} is {bom_no}")
-        productionBatchNo = bom_no if not productionBatchNo else productionBatchNo
+        productionBatchNo = bom_no if not efris_production_batch_no else efris_production_batch_no
         productionDate = str(doc.get("posting_date")) or frappe.utils.today()
-        efris_log_info(f"Production Batch No: {productionBatchNo}, Production Date: {productionDate}")
+        efris_log_info(f"Production Batch No: {efris_production_batch_no}, Production Date: {productionDate}")
         goodsStockInItem = stock_entry_item_data(items, None)[0]  # Get the first item from the list
        
         if not goodsStockInItem:
@@ -127,8 +134,8 @@ def stock_entry_item_data(items, reference_purchase):
                 item_code = goodsCode
             efris_uom_code = frappe.db.get_value('UOM', {'uom_name': item_uom}, 'efris_uom_code') or ''
             efris_unit_price = data.get("efris_unit_price")
-            #if efris_unit_price:
-            #    efris_unit_price = round(efris_unit_price,2) 
+            if efris_unit_price:
+               efris_unit_price = round(efris_unit_price,2) 
 
             # Fetch purchase receipt details
             if reference_purchase:                       
@@ -147,7 +154,7 @@ def stock_entry_item_data(items, reference_purchase):
                     "goodsCode": item_code,
                     "measureUnit": efris_uom_code,
                     "quantity": data.get("qty"),
-                    "unitPrice": efris_unit_price,
+                    "unitPrice": str(round(efris_unit_price,2)) if efris_unit_price else "0.00",
                     "remarks": data.get("remarks") if data.get('remarks') else "",
                     "fuelTankId": "",
                     "lossQuantity": "",
@@ -427,6 +434,9 @@ def before_save_on_stock_entry(doc, method):
                 is_efris_warehouse = warehouse.get('efris_warehouse', False)
                 efris_log_info(f"The Target warehouse {t_warehouse} is IS EFRIS Warehouse {is_efris_warehouse}")
     
+        if not is_efris:
+            efris_log_info(f"The Stock Entry {doc.name} is non EFRIS")
+            continue
         if is_efris:
             is_efris_count +=1
             efris_log_info(f"The number of efris Items in Items table is {is_efris_count}")
@@ -463,53 +473,31 @@ def before_save_on_stock_entry(doc, method):
                 item.efris_unit_price = unit_price
             else:
                 efris_log_info(f"Item {item.item_code} not found in Purchase Receipt {purchase_doc.name}")
-    elif purpose == 'Manufacture' or 'Material Transfer' and is_efris_warehouse:
-        # doc.production_batch_no = doc.get('work_order') if doc.get('work_order') else ''
-        # Get efris_currency from Purchase Receipt
-        # item.efris_transfer = is_efris_warehouse
-        # is_efris_count +=1
+    elif purpose == 'Manufacture' or 'Material Transfer' and is_efris_warehouse:       
         #TODO : add dummy efris_production_batch no for Manufacture Stock Entry on stock entry detail
-        # add efris_batch_no to the item 
-        # if manufacture set to work order set ot work_order if material transfer 
+       
         if not efris_production_batch_no and purpose == 'Manufacture':
-            efris_production_batch_no = doc.get('work_order') or doc.get('production_batch_no') or ''
-        elif not efris_production_batch_no and purpose == 'Material Transfer':
-        # Find a stock entry that includes this item
-            stock_entry_detail = frappe.get_list(
-                'Stock Entry Detail',
-                filters={
-                    'item_code': item_code,
-                    'parenttype': 'Stock Entry',
-                    'docstatus': 1  # Only submitted entries
-                },
-                fields=['parent'],
-                order_by='creation desc',
-                limit=1
-            )
-
-            if stock_entry_detail:
-                stock_entry = frappe.get_doc('Stock Entry', stock_entry_detail[0].parent)
-                efris_production_batch_no = stock_entry.get('work_order') or stock_entry.get('production_batch_no') or ''           
-        
-        if not efris_production_batch_no:
-            efris_production_batch_no = doc.get('production_batch_no') or '' 
-        item_master = frappe.get_doc('Item', item_code)
-        efris_log_info(f"Processing Manufacture Stock Entry for Item: {item_code}")
-        efris_currency = item_master.get('efris_currency') or 'UGX'
-        efris_log_info(f"The efris currency is {efris_currency}")           
-        
-        unit_price = item.basic_rate
-        efris_log_info(f"The efris Unit Price for {item_code} is {unit_price}")        
-        # Set the values for this specific item in Stock Entry
-        item.efris_currency = efris_currency
-        item.efris_unit_price = unit_price          
+            item.efris_production_batch_no = doc.get('work_order') or item.get("serial_and_batch_bundle")
+            
+        elif not efris_production_batch_no and purpose == 'Material Transfer':        
+            if not efris_production_batch_no:
+                item.efris_production_batch_no =  'BNO-0' + frappe.generate_hash(length=6)
+            item_master = frappe.get_doc('Item', item_code)                    
+            efris_log_info(f"Created Serial and Batch Bundle for: {item_code}")
+            efris_log_info(f"Processing Manufacture Stock Entry for Item: {item_code}")
+            efris_currency = item_master.get('efris_currency') or 'UGX'
+            efris_log_info(f"The efris currency is {efris_currency}")           
+            
+            unit_price = item.basic_rate
+            efris_log_info(f"The efris Unit Price for {item_code} is {unit_price}")        
+            # Set the values for this specific item in Stock Entry
+            item.efris_currency = efris_currency
+            item.efris_unit_price = unit_price          
     else:
         efris_log_info(f"Purchase Receipt not found for {item.efris_purchase_receipt_no}")
     if not is_efris_count:
         efris_log_info(f"Purchase Receipt List Items are Non EFRIS")
-        return 
-    
-
+        return    
 
 @frappe.whitelist()
 def before_save_on_purchase_receipt(doc,method):
@@ -590,3 +578,34 @@ def purchase_uom_validation(doc,mehtod):
                 frappe.throw(f"The Purchase UOM ({purchase_uom}) must be in the Item's UOMs list for item {item_code}.")
 
 
+def get_stock_entry_details(items):
+    """
+    Fetches the details of a Stock Entry by its name.
+    """
+    try:
+        stock_entry = items
+        if not stock_entry:
+            efris_log_error(f"No items found in Stock Entry .")
+            return None
+        for item in stock_entry:
+            if not item.get("efris_transfer"):
+                efris_log_info(f"Item {item.get('item_code')} is not marked for EFRIS transfer. Skipping.")
+                continue
+            efris_purchase_receipt_no = item.get("efris_purchase_receipt_no")
+            efris_production_batch_no = item.get("efris_production_batch_no")
+            if efris_purchase_receipt_no:
+                efris_log_info(f"Processing EFRIS Purchase Receipt No: {efris_purchase_receipt_no}")
+                
+            elif efris_production_batch_no:
+                efris_log_info(f"Processing EFRIS Production Batch No: {item.get('efris_production_batch_no')}")
+            return {
+                        "efris_purchase_receipt_no": efris_purchase_receipt_no,
+                        "efris_production_batch_no": efris_production_batch_no
+                    }
+
+    except frappe.DoesNotExistError:
+        efris_log_error(f"Stock Entry {stock_entry} does not exist.")
+        return None
+    except Exception as e:
+        efris_log_error(f"Error fetching Stock Entry {stock_entry}: {str(e)}")
+        return None

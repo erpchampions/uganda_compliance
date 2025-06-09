@@ -200,7 +200,7 @@ function set_efris_invoice_details(frm) {
     // Set `update_stock` field when `efris_invoice` is enabled
     const is_efris_invoice = frm.doc.efris_invoice == 1;
 
-    frm.set_value("update_stock", is_efris_invoice ? 1 : 0);
+    handle_update_stock_setting(frm);
     frm.refresh_field("update_stock");
 
     frm.set_value("disable_rounded_total", is_efris_invoice ? 1 : 0);
@@ -216,6 +216,28 @@ const set_efris_flag_based_on_items = (frm) => {
     });
     frm.set_value('efris_invoice', is_efris_flag);
 };
+
+function handle_update_stock_setting(frm) {
+    if (frm.doc.is_return) {
+        return;
+    }
+    
+    let is_efris_invoice = frm.doc.efris_invoice === 1;
+    
+    if (is_efris_invoice) {
+        frappe.call({
+            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
+            args: { company_name: frm.doc.company },
+            callback: function(r) {
+                if (r.message && r.message.enforce_update_stock == 1) {
+                    frm.set_value("update_stock", 1);
+                    frm.refresh_field("update_stock");
+                }
+                // If enforce_update_stock = 0, do nothing - let user/ERPNext decide
+            }
+        });
+    }
+}
 
 const get_irn_cancellation_fields = () => {
     return [

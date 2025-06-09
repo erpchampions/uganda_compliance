@@ -27,6 +27,8 @@
   "sales_taxes_and_charges_template",
   "purchase_taxes_and_charges_template",
   "column_break_umjz3",
+  "stock_settings_section",
+  "enforce_update_stock",
   "e_invoice_price_list_section",
   "efris_price_list",
   "efris_synchronization_section",
@@ -150,6 +152,20 @@
    "in_list_view": 1,
    "label": "Output VAT Account (for Sales)",
    "options": "Account"
+  },
+  {
+  "collapsible": 1,
+  "depends_on": "eval:doc.enabled == 1", 
+  "fieldname": "stock_settings_section",
+  "fieldtype": "Section Break",
+  "label": "Stock Settings"
+  }, 
+ {
+  "default": "0",
+  "description": "Force update stock to be checked for EFRIS invoices. When disabled, users can control the update stock flag as per standard ERPNext behavior.",
+  "fieldname": "enforce_update_stock",
+  "fieldtype": "Check",
+  "label": "Enforce Update Stock on Sales Invoice"
   },
   {
    "collapsible": 1,

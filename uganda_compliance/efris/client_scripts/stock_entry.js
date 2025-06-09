@@ -9,18 +9,7 @@ frappe.ui.form.on("Stock Entry", {
     before_submit: async function(frm) {
         await process_efris_fields(frm);
         await set_efris_stockin_for_all_items(frm);
-    },
-    onload: async function(frm) {
-        let purpose = frm.doc.purpose;  
-        if(!purpose === "Manufacture" && !frm.doc.work_order) return;
-        let work_order = frm.doc.work_order;
-        console.log("Form loaded with purpose:", purpose, "and work_order:", work_order);
-        if (purpose == "Manufacture" && work_order ){
-            console.log("Set Production Batch No to Work Order");
-            await frm.set_value('production_batch_no', work_order); 
-            frm.refresh_field('production_batch_no');  
-    }
-}
+    }   
 });
 
 frappe.ui.form.on("Stock Entry Detail", {
@@ -64,6 +53,21 @@ async function set_efris_stockin(frm, cdt, cdn) {
     let row = locals[cdt][cdn];
 
     if (frm.doc.purpose === "Material Transfer") {
+        item_code = row.item_code;
+        console.log(`Checking EFRIS warehouse for Material Transfer purpose: ${item_code}`);
+        if (!item_code) {
+            console.warn("Item code is not set, skipping EFRIS stock-in validation.");
+            return;
+        }
+        // Check if the item is EFRIS compliant
+        let is_efris_item = await frappe.db.get_value('Item', item_code, 'efris_item');
+        console.log("Is EFRIS item:", is_efris_item);
+        if (!is_efris_item?.message?.efris_item) {
+            console.warn(`Item ${item_code} is not EFRIS compliant, skipping stock-in validation.`);
+            frappe.model.set_value(cdt, cdn, 'efris_transfer', 0);
+            frappe.meta.get_docfield(cdt, 'efris_purchase_receipt_no', frm.doc.name).reqd = 0;
+            return; 
+        }
 
         if (row.s_warehouse && row.t_warehouse) {
             let [s_warehouse, t_warehouse] = await Promise.all([
@@ -74,14 +78,18 @@ async function set_efris_stockin(frm, cdt, cdn) {
             let s_is_efris = s_warehouse?.message?.efris_warehouse;
             let t_is_efris = t_warehouse?.message?.efris_warehouse;
 
-            if (!s_is_efris && t_is_efris) {
+            if (!s_is_efris && t_is_efris && !row.serial_and_batch_bundle) {
                 frappe.model.set_value(cdt, cdn, 'efris_transfer', 1);
-                frappe.meta.get_docfield(cdt, 'efris_purchase_receipt_no', frm.doc.name).reqd = 1;
+                frappe.meta.get_docfield(cdt, 'efris_purchase_receipt_no', frm.doc.name).reqd = 0;
             } else if (s_is_efris && !t_is_efris) {
                 frappe.throw(`❌ Transfer from EFRIS warehouse ${row.s_warehouse} to Non-EFRIS warehouse ${row.t_warehouse} is not allowed.`);
             } else if (s_is_efris && t_is_efris) {
                 frappe.msgprint("Stock Transfer From EFRIS warehouse to EFRIS warehouse does not Stock In");
-            } else {
+            }else if (!s_is_efris && t_is_efris && row.serial_and_batch_bundle) {
+                frappe.model.set_value(cdt, cdn, 'efris_transfer', 1);
+                console.log("No EFRIS stock-in validation for purpose:", frm.doc.purpose);      
+            }      
+            else {
                 frappe.model.set_value(cdt, cdn, 'efris_transfer', 0);
                 frappe.meta.get_docfield(cdt, 'efris_purchase_receipt_no', frm.doc.name).reqd = 0;
             }
@@ -101,7 +109,8 @@ async function set_efris_stockin(frm, cdt, cdn) {
                 frappe.model.set_value(cdt, cdn, 'efris_transfer', 0);
             }
         }
-    }     
+    } 
+    
 }
 
 /**
@@ -143,28 +152,15 @@ async function set_efris_fields_for_row(frm, cdt, cdn) {
     if (row.item_code) {
         let item = await frappe.db.get_value('Item', row.item_code, 'has_batch_no');
         console.log("Item batch_on status:", item?.message?.has_batch_no);
+        console.log("Row Serial and Batch Bundle:", row.serial_and_batch_bundle);
         if(!item?.message?.has_batch_no)return
         // If batch_on is true, set efris_production_batch_no as required
         if (item?.message?.has_batch_no) {            
-            frappe.model.set_value(cdt, cdn, 'efris_production_batch_no', '');
+            frappe.model.set_value(cdt, cdn, 'efris_production_batch_no', row.serial_and_batch_bundle);
             frappe.meta.get_docfield(cdt, 'efris_production_batch_no', frm.doc.name).reqd = 1;
-            // Fetch batch numbers for the item
-            let batches = await frappe.db.get_list('Batch', {
-                filters: {
-                    item: row.item_code,
-                    docstatus: 1
-                },
-                fields: ['name']
-            });
-            console.log("Fetched batches:", batches);
-            // If batches exist, set the first batch number
-            if (batches.length > 0) {
-                frappe.model.set_value(cdt, cdn, 'efris_production_batch_no', batches[0].name);
-            } else {
-                frappe.model.set_value(cdt, cdn, 'efris_production_batch_no', '');
-            }
+            
         } else {
-            frappe.meta.get_docfield(cdt, 'batch_no', frm.doc.name).reqd = 0;
+            frappe.meta.get_docfield(cdt, 'efris_production_batch_no', frm.doc.name).reqd = 0;
         }
     }
 }
