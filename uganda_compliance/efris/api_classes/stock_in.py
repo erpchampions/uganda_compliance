@@ -482,7 +482,7 @@ def before_submit_on_stock_entry(doc, method):
         t_warehouse = item.get('t_warehouse')   
         if not t_warehouse and s_warehouse:
             continue
-        if purpose == 'Manufacture':
+        if purpose == 'Manufacture' or (purpose == 'Material Transfer' and not item.get('efris_purchase_receipt_no')):
             has_batch_no = frappe.db.get_value('Item', {'item_code': item_code}, 'has_batch_no')
             if not has_batch_no and item.get("efris_transfer") and not item.get("efris_production_batch_no"):
                 frappe.throw(f"The Item {item_code} does not have Batch No enabled. Please enter the EFRIS producntion batch no.")
