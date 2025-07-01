@@ -29,7 +29,7 @@
       },
       {
         "allow_in_quick_entry": 0,
-        "allow_on_submit": 0,
+        "allow_on_submit": 1,
         "bold": 0,
         "collapsible": 0,
         "columns": 0,
@@ -84,7 +84,7 @@
       },
       {
         "allow_in_quick_entry": 0,
-        "allow_on_submit": 0,
+        "allow_on_submit": 1,
         "bold": 0,
         "collapsible": 0,
         "columns": 0,
@@ -98,7 +98,7 @@
         "hidden": 0,
         "idx": 5,
         "in_list_view": 0,
-        "depends_on": "",       
+        "depends_on": "eval:doc.efris_transfer",       
         "insert_after": "efris_purchase_receipt_no",
         "label": "EFRIS Production Batch No",
         "module": "EFRIS",

@@ -154,18 +154,18 @@
    "options": "Account"
   },
   {
-  "collapsible": 1,
-  "depends_on": "eval:doc.enabled == 1", 
-  "fieldname": "stock_settings_section",
-  "fieldtype": "Section Break",
-  "label": "Stock Settings"
-  }, 
- {
-  "default": "0",
-  "description": "Force update stock to be checked for EFRIS invoices. When disabled, users can control the update stock flag as per standard ERPNext behavior.",
-  "fieldname": "enforce_update_stock",
-  "fieldtype": "Check",
-  "label": "Enforce Update Stock on Sales Invoice"
+   "collapsible": 1,
+   "depends_on": "eval:doc.enabled == 1",
+   "fieldname": "stock_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Stock Settings"
+  },
+  {
+   "default": "0",
+   "description": "Force update stock to be checked for EFRIS invoices. When disabled, users can control the update stock flag as per standard ERPNext behavior.",
+   "fieldname": "enforce_update_stock",
+   "fieldtype": "Check",
+   "label": "Enforce Update Stock on Sales Invoice"
   },
   {
    "collapsible": 1,
@@ -258,7 +258,7 @@
   }
  ],
  "links": [],
- "modified": "2025-03-12 18:09:49.872394",
+ "modified": "2025-06-26 08:27:43.144612",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",

@@ -29,7 +29,9 @@ def safe_load_json(message):
     return json_message
 
 def efris_log_info(message):
-    frappe.logger().info(message)
+    #frappe.logger().info(message)
+    frappe.log_error("efris_log_info", message)
+    
     
 
 def efris_log_warning(message):
