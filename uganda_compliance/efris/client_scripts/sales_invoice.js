@@ -210,7 +210,7 @@ function set_efris_invoice_details(frm) {
 const set_efris_flag_based_on_items = (frm) => {
     let is_efris_flag = 0;
     frm.doc.items.forEach(item => {
-        if (item.efris_commodity_code) {
+        if (item.efris_commodity_code && item.is_efris_item === 1) {
             is_efris_flag = 1;                       
         }
     });

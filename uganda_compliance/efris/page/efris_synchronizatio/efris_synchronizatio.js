@@ -35,6 +35,21 @@ frappe.pages['efris-synchronizatio'].on_page_load = function(wrapper) {
     });
 
     $('#send-e-invoice').on('click', function () {
+        frappe.call({
+            method: 'uganda_compliance.efris.page.efris_synchronizatio.efris_synchronization_center.process_pending_efris_stock_entries',
+            callback: function(r) {
+				frappe.msgprint(__('Processing EFRIS Stock Entries...', r.message));
+				if (!r.message || !Array.isArray(r.message)) {	
+				
+                frappe.msgprint(__('EFRIS Stock Entries processed.'));
+
+            } else {
+				let message = r.message.length > 0 ? r.message.join('<br>') : 'No EFRIS Stock Entries to process.';
+				frappe.msgprint(__('EFRIS Stock Entries processed: <br>' + message));
+				render_report_table(r.message);
+			}
+		}
+        });
         frappe.msgprint('Sending E-Invoice... (hook up logic)');
     });
 
