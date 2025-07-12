@@ -1,5 +1,5 @@
 frappe.ui.form.on('Sales Invoice', {
-    refresh(frm) {
+    refresh: async function(frm) {
         if (frm.is_dirty()) return;
 
         let is_efris = frm.doc.efris_invoice;
@@ -33,7 +33,8 @@ frappe.ui.form.on('Sales Invoice', {
             } catch (error) {
                 console.error(`Error in refresh: ${error}`);
             }
-        }
+        } 
+        add_custom_buttons(frm);       
     },
     validate: async function(frm) {
         set_efris_flag_based_on_items(frm);
@@ -59,9 +60,12 @@ frappe.ui.form.on('Sales Invoice', {
         frm.refresh_field('payments');
     },
     on_submit: function(frm) {
-        setTimeout(() => {
+        setTimeout(() => {            
             frm.reload_doc();
         }, 1000);
+    },   
+    after_submit: async function(frm) {         
+         add_custom_buttons(frm);
     }
 });
 
@@ -198,7 +202,7 @@ function set_efris_invoice_details(frm) {
     }
 
     // Set `update_stock` field when `efris_invoice` is enabled
-    const is_efris_invoice = frm.doc.efris_invoice == 1;
+    const is_efris_invoice = frm.doc.efris_invoice == 1;   
 
     handle_update_stock_setting(frm);
     frm.refresh_field("update_stock");
@@ -210,7 +214,7 @@ function set_efris_invoice_details(frm) {
 const set_efris_flag_based_on_items = (frm) => {
     let is_efris_flag = 0;
     frm.doc.items.forEach(item => {
-        if (item.efris_commodity_code && item.is_efris_item === 1) {
+        if (item.efris_commodity_code) {
             is_efris_flag = 1;                       
         }
     });
@@ -222,8 +226,7 @@ function handle_update_stock_setting(frm) {
         return;
     }
     
-    let is_efris_invoice = frm.doc.efris_invoice === 1;
-    
+    let is_efris_invoice = frm.doc.efris_invoice === 1; 
     if (is_efris_invoice) {
         frappe.call({
             method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
@@ -233,10 +236,33 @@ function handle_update_stock_setting(frm) {
                     frm.set_value("update_stock", 1);
                     frm.refresh_field("update_stock");
                 }
+               
                 // If enforce_update_stock = 0, do nothing - let user/ERPNext decide
             }
         });
     }
+}
+
+function get_auto_send_submitted_invoice_flag(frm) {
+    console.log("Checking EFRIS company settings for auto send submitted invoice flag");
+    return new Promise((resolve) => {
+        if (!frm.doc.efris_company || frm.doc.efris_invoice !== 1) {
+            return resolve(0);
+        }
+
+        frappe.call({
+            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
+            args: { company_name: frm.doc.company },
+            callback: function(r) {
+                if (r.message && r.message.auto_send_submitted_invoice == 1) {
+                    console.log("Auto send submitted invoice is enabled in EFRIS settings");
+                    resolve(1);
+                } else {
+                    resolve(0);
+                }
+            }
+        });
+    });
 }
 
 const get_irn_cancellation_fields = () => {
@@ -292,3 +318,38 @@ function reset_discounts(frm) {
     frm.refresh_field('discount_amount');
     frm.refresh_field('additional_discount_percentage');
 }
+
+async function add_custom_buttons(frm) {
+    console.log("Adding custom buttons for EFRIS submission");
+
+    if (frm.doc.docstatus != 1 || !frm.doc.efris_company || frm.doc.efris_irn || !frm.doc.efris_invoice ) {
+        console.log("Skipping EFRIS submission button for non-EFRIS or return invoices");
+        return;
+    }
+
+    const auto_send_submitted_invoice = await get_auto_send_submitted_invoice_flag(frm);
+    console.log("Auto send submitted invoice flag:", auto_send_submitted_invoice);
+
+    if ( auto_send_submitted_invoice != 1 ) {
+        frm.add_custom_button(__('Submit To EFRIS'), async function () {
+            await frappe.call({
+                method: 'uganda_compliance.efris.api_classes.e_invoice.send_to_efris',
+                args: { doc: frm.doc },
+                freeze: true,
+                freeze_message: __('Submitting to EFRIS...')
+            }).then(response => {
+                if (response.message) { 
+                    frappe.msgprint(__('Sales Invoice submitted to EFRIS successfully.'));                
+                    frm.reload_doc();                    
+                } else {
+                    console.log(__('Failed to submit Sales Invoice to EFRIS.'));
+                }
+            }).catch(error => {
+                console.error("Error submitting to EFRIS:", error);
+                frappe.msgprint(__('An error occurred while submitting to EFRIS.'));
+            });
+        });
+    }
+    
+}
+
