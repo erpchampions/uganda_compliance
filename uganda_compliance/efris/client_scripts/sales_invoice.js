@@ -330,26 +330,38 @@ async function add_custom_buttons(frm) {
     const auto_send_submitted_invoice = await get_auto_send_submitted_invoice_flag(frm);
     console.log("Auto send submitted invoice flag:", auto_send_submitted_invoice);
 
-    if ( auto_send_submitted_invoice != 1 ) {
+    if (auto_send_submitted_invoice != 1) {
         frm.add_custom_button(__('Submit To EFRIS'), async function () {
-            await frappe.call({
-                method: 'uganda_compliance.efris.api_classes.e_invoice.send_to_efris',
-                args: { doc: frm.doc },
-                freeze: true,
-                freeze_message: __('Submitting to EFRIS...')
-            }).then(response => {
-                if (response.message) { 
-                    frappe.msgprint(__('Sales Invoice submitted to EFRIS successfully.'));                
-                    frm.reload_doc();                    
-                } else {
-                    console.log(__('Failed to submit Sales Invoice to EFRIS.'));
+            frappe.confirm(
+                __('Are you sure you want to submit?'),
+                async function () {
+                    // Yes callback
+                    try {
+                        const response = await frappe.call({
+                            method: 'uganda_compliance.efris.api_classes.e_invoice.send_to_efris',
+                            args: { doc: frm.doc },
+                            freeze: true,
+                            freeze_message: __('Submitting to EFRIS...')
+                        });
+
+                        if (response.message) {
+                            frappe.msgprint(__('Sales Invoice submitted to EFRIS successfully.'));
+                            frm.reload_doc();
+                        } else {
+                            console.log(__('Failed to submit Sales Invoice to EFRIS.'));
+                        }
+                    } catch (error) {
+                        console.error("Error submitting to EFRIS:", error);
+                        frappe.msgprint(__('An error occurred while submitting to EFRIS.'));
+                    }
+                },
+                function () {
+                    // No callback (do nothing)
+                    console.log("Submission to EFRIS was cancelled by the user.");
                 }
-            }).catch(error => {
-                console.error("Error submitting to EFRIS:", error);
-                frappe.msgprint(__('An error occurred while submitting to EFRIS.'));
-            });
+            );
         });
     }
-    
 }
+
 
