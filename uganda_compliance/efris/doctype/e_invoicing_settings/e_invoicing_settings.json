@@ -66,11 +66,9 @@
   },
   {
    "default": "1",
-   "depends_on": "doc.sandbox_mode",
    "fieldname": "sandbox_mode",
    "fieldtype": "Check",
-   "label": "Sandbox Mode",
-   "mandatory_depends_on": "doc.sandbox_mode"
+   "label": "Sandbox Mode"
   },
   {
    "default": "0",
@@ -299,7 +297,7 @@
   }
  ],
  "links": [],
- "modified": "2025-07-21 08:16:29.233210",
+ "modified": "2025-07-21 11:06:42.186040",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",
