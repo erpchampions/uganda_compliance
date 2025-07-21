@@ -17,7 +17,9 @@
   "sandbox_private_key",
   "live_private_key",
   "sandbox_private_key_password",
+  "sandbox_portal_url",
   "live_private_key_password",
+  "live_portal_url",
   "test_connection",
   "connection_status_display",
   "section_break_2",
@@ -64,9 +66,11 @@
   },
   {
    "default": "1",
+   "depends_on": "doc.sandbox_mode",
    "fieldname": "sandbox_mode",
    "fieldtype": "Check",
-   "label": "Sandbox Mode"
+   "label": "Sandbox Mode",
+   "mandatory_depends_on": "doc.sandbox_mode"
   },
   {
    "default": "0",
@@ -275,11 +279,27 @@
    "default": "1",
    "fieldname": "auto_send_submitted_invoice",
    "fieldtype": "Check",
-   "label": "Automatic Submit To EFRIS"   
+   "label": "Automatic Submit To EFRIS"
+  },
+  {
+   "default": "https://efrisws.ura.go.ug/ws/taapp/getInformation",
+   "depends_on": "eval:!doc.sandbox_mode",
+   "fieldname": "live_portal_url",
+   "fieldtype": "Data",
+   "label": "Live Portal URL",
+   "mandatory_depends_on": "eval:!doc.sandbox_mode"
+  },
+  {
+   "default": "https://efristest.ura.go.ug/efrisws/ws/taapp/getInformation",
+   "depends_on": "eval:doc.sandbox_mode",
+   "fieldname": "sandbox_portal_url",
+   "fieldtype": "Data",
+   "label": "SandBox Portal URL",
+   "mandatory_depends_on": "eval:doc.sandbox_mode"
   }
  ],
  "links": [],
- "modified": "2025-07-12 11:08:07.250574",
+ "modified": "2025-07-21 08:16:29.233210",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",
