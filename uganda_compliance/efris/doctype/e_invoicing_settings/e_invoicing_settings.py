@@ -80,6 +80,16 @@ def get_mode_private_key_path(e_settings):
     else:
         frappe.throw("E Invoicing Settings are disabled")
 
+def get_mode_post_url(e_settings):
+    
+    if e_settings.enabled:
+        if e_settings.sandbox_mode:
+            return e_settings.sandbox_portal_url
+        else:
+            return e_settings.live_portal_url
+    else:
+        frappe.throw("E Invoicing Settings are disabled")
+
 @frappe.whitelist()    
 def get_e_company_settings(company_name):
     if company_name in e_company_settings_cache:
