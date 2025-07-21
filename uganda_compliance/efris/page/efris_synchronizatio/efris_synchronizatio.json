@@ -1,0 +1,55 @@
+{ 
+
+ "content": null,
+ "creation": "2025-06-12 13:50:00.069489",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2025-06-12 13:58:30.475980",
+ "modified_by": "Administrator",
+ "module": "EFRIS",
+ "name": "efris-synchronizatio",
+ "owner": "Administrator",
+ "page_name": "efris-synchronizatio",
+  "field_order": [
+  "Sync Type"
+ ],
+ "fields": [
+  {
+   "fieldname": "sync_type",
+   "fieldtype": "Data",
+   "label": "Sync Type"
+  }
+ ],
+ "roles": [
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Agent"
+  },
+  {
+   "role": "Desk User"
+  },
+  {
+   "role": "Employee"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Website Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "efris synchronization center"
+}

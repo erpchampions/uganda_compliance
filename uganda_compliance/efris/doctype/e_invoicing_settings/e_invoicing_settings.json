@@ -17,7 +17,9 @@
   "sandbox_private_key",
   "live_private_key",
   "sandbox_private_key_password",
+  "sandbox_portal_url",
   "live_private_key_password",
+  "live_portal_url",
   "test_connection",
   "connection_status_display",
   "section_break_2",
@@ -27,6 +29,11 @@
   "sales_taxes_and_charges_template",
   "purchase_taxes_and_charges_template",
   "column_break_umjz3",
+  "stock_settings_section",
+  "enforce_update_stock",
+  "invoicing_settings_section",
+  "column_break_nvrr",
+  "auto_send_submitted_invoice",
   "e_invoice_price_list_section",
   "efris_price_list",
   "efris_synchronization_section",
@@ -59,9 +66,11 @@
   },
   {
    "default": "1",
+   "depends_on": "doc.sandbox_mode",
    "fieldname": "sandbox_mode",
    "fieldtype": "Check",
-   "label": "Sandbox Mode"
+   "label": "Sandbox Mode",
+   "mandatory_depends_on": "doc.sandbox_mode"
   },
   {
    "default": "0",
@@ -154,6 +163,20 @@
   {
    "collapsible": 1,
    "depends_on": "eval:doc.enabled == 1",
+   "fieldname": "stock_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Stock Settings"
+  },
+  {
+   "default": "0",
+   "description": "Force update stock to be checked for EFRIS invoices. When disabled, users can control the update stock flag as per standard ERPNext behavior.",
+   "fieldname": "enforce_update_stock",
+   "fieldtype": "Check",
+   "label": "Enforce Update Stock on Sales Invoice"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.enabled == 1",
    "fieldname": "e_invoice_price_list_section",
    "fieldtype": "Section Break",
    "label": "E invoice Price Lists"
@@ -239,10 +262,44 @@
    "fieldname": "brn",
    "fieldtype": "Data",
    "label": "Brn"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.enabled == 1",
+   "fieldname": "invoicing_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Invoicing Settings"
+  },
+  {
+   "description": "Automatically send to EFRIS during submission of Sales Invoice",
+   "fieldname": "column_break_nvrr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_send_submitted_invoice",
+   "fieldtype": "Check",
+   "label": "Automatic Submit To EFRIS"
+  },
+  {
+   "default": "https://efrisws.ura.go.ug/ws/taapp/getInformation",
+   "depends_on": "eval:!doc.sandbox_mode",
+   "fieldname": "live_portal_url",
+   "fieldtype": "Data",
+   "label": "Live Portal URL",
+   "mandatory_depends_on": "eval:!doc.sandbox_mode"
+  },
+  {
+   "default": "https://efristest.ura.go.ug/efrisws/ws/taapp/getInformation",
+   "depends_on": "eval:doc.sandbox_mode",
+   "fieldname": "sandbox_portal_url",
+   "fieldtype": "Data",
+   "label": "SandBox Portal URL",
+   "mandatory_depends_on": "eval:doc.sandbox_mode"
   }
  ],
  "links": [],
- "modified": "2025-03-12 18:09:49.872394",
+ "modified": "2025-07-21 08:16:29.233210",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",
@@ -257,6 +314,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

@@ -11,7 +11,7 @@ from uganda_compliance.efris.utils.utils import get_qr_code
 from frappe.utils.user import get_users_with_role
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
-from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
 
 class EInvoiceAPI:
 	@staticmethod
@@ -823,21 +823,36 @@ def after_save_sales_invoice(doc, method):
 	is_return = sales_invoice.is_return
 	if is_return:
 		return
-	
-def on_submit_sales_invoice(doc, method):
-	
-	
+@frappe.whitelist()	
+def send_to_efris(doc):	 
+	if isinstance(doc, str):
+		doc = json.loads(doc)
+	# Convert dict to Frappe Document
+	if isinstance(doc, dict):
+		doc = frappe.get_doc(doc) 
+	on_submit_sales_invoice(doc,'manual_submit')
+	return {
+		"message": "Sales Invoice sent to EFRIS successfully.",
+		"status": "success"
+	}
+
+def on_submit_sales_invoice(doc, method):	
 	"""
 	Handle EFRIS-related logic when a Sales Invoice is submitted.
 	"""
-	sales_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
-	validate_payment(sales_invoice)
-	if not sales_invoice.efris_invoice or sales_invoice.is_consolidated:
-		return
+	auto_send_submitted_invoice = get_e_company_settings(doc.get("company")).auto_send_submitted_invoice
+	
+	if (auto_send_submitted_invoice == 1) or (method == 'manual_submit'):
 
-	if not validate_company(sales_invoice):
-		return
-	_handle_efris_logic(sales_invoice, doc)
+		sales_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
+		validate_payment(sales_invoice)
+		if not sales_invoice.efris_invoice or sales_invoice.is_consolidated:
+			return
+
+		if not validate_company(sales_invoice):
+			return
+		_handle_efris_logic(sales_invoice, doc)
+
 	
 def _handle_efris_logic(sales_invoice, doc):
 	"""

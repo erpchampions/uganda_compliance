@@ -2,6 +2,10 @@ const BASE_CURRENCY = 'UGX';
 
 frappe.ui.form.on("Purchase Receipt", {
     validate: async function(frm) {
+        if(!frm.doc.efris_company) {
+            console.warn("❌ EFRIS Company not set. Cannot validate EFRIS items.");
+            return;
+        }
         console.log("✅ Validate Triggered");
 
         // Ensure Document-Level Exchange Rate is Set
