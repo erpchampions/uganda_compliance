@@ -839,8 +839,8 @@ def send_to_efris(doc):
 def on_submit_sales_invoice(doc, method):	
 	"""
 	Handle EFRIS-related logic when a Sales Invoice is submitted.
-	"""
-	auto_send_submitted_invoice = get_e_company_settings(doc.get("company")).auto_send_submitted_invoice
+	"""	
+	auto_send_submitted_invoice = doc.get("efris_invoice") and get_e_company_settings(doc.get("company")).auto_send_submitted_invoice
 	
 	if (auto_send_submitted_invoice == 1) or (method == 'manual_submit'):
 
