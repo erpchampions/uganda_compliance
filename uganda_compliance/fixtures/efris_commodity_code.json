@@ -1,5 +1,32 @@
 [
  {
+  "commodity_code": "50201717",
+  "commodity_name": "Coffee, green",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-05-28 13:15:42.742845",
+  "name": "50201717"
+ },
+ {
+  "commodity_code": "90101501",
+  "commodity_name": "Restaurants",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2025-05-28 13:16:15.202779",
+  "name": "90101501"
+ },
+ {
+  "commodity_code": "50422709",
+  "commodity_name": "Dried Coffee Sleeve",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-06-10 10:44:42.078043",
+  "name": "50422709"
+ },
+ {
   "commodity_code": "50181905",
   "commodity_name": "Sweet biscuits or cookies",
   "docstatus": 0,
@@ -322,5 +349,14 @@
   "e_tax_category": null,
   "modified": "2024-10-22 00:00:00",
   "name": "15101606"
+ },
+ {
+  "commodity_code": "50201706",
+  "commodity_name": "Coffee",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-05-28 11:25:37.039055",
+  "name": "50201706"
  }
 ]
