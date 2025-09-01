@@ -71,7 +71,7 @@
   "name": "GBP",
   "number_format": "#,###.##",
   "smallest_currency_fraction_value": 0.0,
-  "symbol": "\u00a3",
+  "symbol": "£",
   "symbol_on_right": 1
  },
  {
@@ -86,7 +86,7 @@
   "name": "EUR",
   "number_format": "#,###.##",
   "smallest_currency_fraction_value": 0.01,
-  "symbol": "\u20ac",
+  "symbol": "€",
   "symbol_on_right": 0
  },
  {
@@ -101,7 +101,7 @@
   "name": "JPY",
   "number_format": null,
   "smallest_currency_fraction_value": 0.0,
-  "symbol": "\u00a5",
+  "symbol": "¥",
   "symbol_on_right": 1
  },
  {

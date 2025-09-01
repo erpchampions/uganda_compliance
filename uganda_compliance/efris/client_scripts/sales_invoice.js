@@ -2,11 +2,18 @@ frappe.ui.form.on('Sales Invoice', {
     refresh: async function(frm) {
         if (frm.is_dirty()) return;
 
-        let is_efris = frm.doc.efris_invoice;
+        // Check if EFRIS Invoice
+        const is_efris = frm.doc.efris_invoice;
+        const add_einvoice_button = (label, action) => {
+                    if (!frm.custom_buttons[label]) {
+                        frm.add_custom_button(label, action, __('E-Invoicing'));
+                    }
+                };
 
         if (is_efris == 1) {
             try {
-                const { einvoice_status } = frm.doc;
+                const einvoice_status  = frm.doc.efris_einvoice_status;
+                console.log(`EFRIS Invoice Status: ${einvoice_status}`);
 
                 if (einvoice_status === 'EFRIS Credit Note Pending') {
                     add_einvoice_button(__('Check EFRIS Approval Status'), async () => {
@@ -322,7 +329,7 @@ function reset_discounts(frm) {
 async function add_custom_buttons(frm) {
     console.log("Adding custom buttons for EFRIS submission");
 
-    if (frm.doc.docstatus != 1 || !frm.doc.efris_company || frm.doc.efris_irn || !frm.doc.efris_invoice ) {
+    if (frm.doc.docstatus != 1 || !frm.doc.efris_company || frm.doc.efris_irn || !frm.doc.efris_invoice || frm.doc.is_return) {
         console.log("Skipping EFRIS submission button for non-EFRIS or return invoices");
         return;
     }
