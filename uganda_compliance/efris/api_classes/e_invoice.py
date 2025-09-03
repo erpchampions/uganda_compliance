@@ -605,17 +605,42 @@ def update_sales_invoice_return_status(einvoice):
 	sales_invoice_return.efris_einvoice_status = "EFRIS Generated"
 	sales_invoice_return.submit()
 
-def update_original_invoice_status(einvoice):
-	"""
-	Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
-	"""
-	original_einvoice = get_einvoice(einvoice.return_against)
-	original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
-	original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
-	original_sales_invoice.save()
+# def update_original_invoice_status(einvoice):
+# 	"""
+# 	Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
+# 	"""
+# 	sales_invoice = frappe.get_doc("Sales Invoice", einvoice.name)
+# 	original_einvoice = get_einvoice(sales_invoice.return_against)
+# 	original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
+# 	original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
+# 	original_sales_invoice.save()
 
-	original_einvoice.status = "EFRIS Cancelled"
-	original_einvoice.save()
+# 	original_einvoice.status = "EFRIS Cancelled"
+# 	original_einvoice.save()
+
+def update_original_invoice_status(einvoice):
+    """
+    Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
+    """
+
+    # Get the linked Sales Invoice (names match)
+    sales_invoice = frappe.get_doc("Sales Invoice", einvoice.name)
+
+    # Get the original invoice name from the return_against field
+    if not sales_invoice.return_against:
+        frappe.throw(f"No return_against found for Sales Invoice {sales_invoice.name}")
+
+    # Fetch the original e-invoice using the original sales invoice name
+    original_einvoice = get_einvoice(sales_invoice.return_against)
+    original_sales_invoice = frappe.get_doc("Sales Invoice", sales_invoice.return_against)
+
+    # Update statuses
+    original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
+    original_sales_invoice.save()
+
+    original_einvoice.status = "EFRIS Cancelled"
+    original_einvoice.save()
+
 #####End of credit note status update
 
 def get_credit_note_reason(sale_invoice):
