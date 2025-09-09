@@ -41,7 +41,8 @@ frappe.ui.form.on('Sales Invoice', {
                 console.error(`Error in refresh: ${error}`);
             }
         } 
-        add_custom_buttons(frm);       
+        add_custom_buttons(frm);        
+        frm.refresh_field('items');      
     },
     validate: async function(frm) {
         set_efris_flag_based_on_items(frm);
@@ -153,7 +154,28 @@ frappe.ui.form.on('Sales Invoice', {
                 }
             }
         });
-    }
+    },
+    customer: function(frm) {
+        console.log("Customer changed, checking tax category and non Resident Flag");
+        if (frm.doc.efris_non_resident_flag) {
+            frappe.db.get_value('Customer', frm.doc.customer, 'tax_category', (r) => {
+                console.log("Fetched customer tax category:", r.tax_category);  
+                if (!r.tax_category || r.tax_category !== 'Foreign') {
+                    frm.set_value('tax_category', 'Foreign');
+                }
+            });
+        }
+    },
+    efris_non_resident_flag: function(frm) {
+        console.log("efris_non Resident Flag changed, updating tax category if needed");
+        if (frm.doc.efris_non_resident_flag) {
+            console.log("efris_non Resident Flag is set, checking customer tax category");
+            if (!frm.doc.tax_category || frm.doc.tax_category !== 'Foreign') {
+                frm.set_value('tax_category', 'Foreign');
+            }
+        }
+    }    
+    
 });
 
 frappe.ui.form.on('Sales Invoice Payment', {
@@ -370,5 +392,65 @@ async function add_custom_buttons(frm) {
         });
     }
 }
+
+frappe.ui.form.on('Sales Invoice Item', {   
+    efris_total_weight: function(frm, cdt, cdn) {
+        console.log("efris_total Weight changed, recalculating piece qty");
+        calculate_piece_qty(frm, cdt, cdn);
+        set_export_fields_reqd(frm, cdt, cdn)
+    },
+    item_code: function(frm, cdt, cdn) {
+        console.log("item_code changed, recalculating piece qty");
+        calculate_piece_qty(frm, cdt, cdn);
+        set_export_fields_reqd(frm, cdt, cdn)
+    }
+});
+
+// 1️⃣ Set fields required when export_type and nonResidentFlag match
+function set_export_fields_reqd(frm, cdt, cdn) {
+    let efris_nonResidentFlag = frm.doc.efris_non_resident_flag;
+    console.log("Setting export fields required status based on efris_nonResidentFlag:", efris_nonResidentFlag);    
+    if (!efris_nonResidentFlag) return;
+
+    let row = locals[cdt][cdn];
+    if (efris_nonResidentFlag === 1) {
+        frm.fields_dict.items.grid.toggle_reqd('efris_total_weight', true);
+        frm.fields_dict.items.grid.toggle_reqd('efris_piece_qty', true);
+        frm.fields_dict.items.grid.toggle_reqd('efris_piece_measure_unit', true);
+    }
+}
+
+// 2️⃣ Calculate pieceQty and set measure unit from Item Master → UOMs
+function calculate_piece_qty(frm, cdt, cdn) {
+    let row = locals[cdt][cdn];
+    if (!row.item_code || !row.efris_total_weight) return;
+
+    frappe.db.get_doc('Item', row.item_code).then(item_doc => {
+        if (!item_doc.uoms || !item_doc.uoms.length) return;
+
+        // Find piece unit row in Item UOMs table
+        let piece_uom_row = item_doc.uoms.find(u => {
+            return u.efris_is_piece_unit === 1 || u.efris_is_piece_unit === true;
+        });
+
+        if (piece_uom_row) {
+            console.log(`Found piece UOM: ${piece_uom_row.uom} with conversion factor: ${piece_uom_row.conversion_factor}`);
+
+            // Set the measure unit field
+            frappe.model.set_value(cdt, cdn, 'efris_piece_measure_unit', piece_uom_row.uom);
+
+            // --- Calculate qty ---
+            // totalWeight is assumed in stock UOM           
+            let qty = row.efris_total_weight * piece_uom_row.efris_package_scale_value;
+
+            console.log(`Calculated pieceQty: ${qty} using conversion factor: ${piece_uom_row.efris_package_scale_value}`);
+            frappe.model.set_value(cdt, cdn, 'efris_piece_qty', qty);
+        } else {
+            console.warn(`No UOM with efris_is_piece_unit = 1 found for Item ${row.item_code}`);
+        }
+    });
+}
+
+
 
 

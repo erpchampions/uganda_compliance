@@ -132,9 +132,12 @@ class EInvoice(Document):
 		self.invoiceType = self.set_invoice_type()
 		self.invoiceKind = 1 
 		self.dataSource = 103 
-		self.invoiceIndustryCode = 101 
+		# self.invoiceIndustryCode = 101 
 		self.isBatch = 0 
-		self.is_return = self.sales_invoice.is_return
+		self.is_return = self.sales_invoice.is_return,
+		if self.sales_invoice.efris_invoice_industry_code:
+			frappe.log_error(f"Industry Code :{self.sales_invoice.efris_invoice_industry_code}")
+			self.invoice_industry_code = self.sales_invoice.efris_invoice_industry_code
 
 	def set_summary_details(self):
 		self.net_amount = 0
@@ -323,7 +326,12 @@ class EInvoice(Document):
 		self.buyer_citizenship = ""
 		self.buyer_sector = ""
 		self.buyer_reference_no = ""
-		self.non_resident_flag = 0 
+		if self.sales_invoice.efris_non_resident_flag and self.sales_invoice.efris_non_resident_flag == 1:
+			self.non_resident_flag = 1
+		else:
+			self.non_resident_flag = 0
+		self.delivery_terms_code = self.sales_invoice.efris_delivery_terms_code
+
 
 	def set_item_details(self):
 		self.update_items_from_invoice()
@@ -341,14 +349,34 @@ class EInvoice(Document):
 		
 		for i, item in enumerate(self.sales_invoice.items):
 			if not item.efris_commodity_code:
-				frappe.throw(_('Row #{}: Item {} must have EFRIS Commodity code set to be able to generate e-invoice.').format(item.idx, item.item_code))
+				frappe.throw(_('Row #{}: Item {} must have EFRIS Commodity code set to be able to generate e-invoice.')
+							.format(item.idx, item.item_code))
+
 			is_service_item = item.efris_commodity_code[:2] == "99"
 			item_doc = frappe.get_doc("Item", item.item_code)
-			if item_doc.taxes:
+
+			# Case 1: If Sales Invoice has a tax_category (e.g. 'Foreign')
+			if self.sales_invoice.tax_category and self.sales_invoice.efris_non_resident_flag == 1:
+				matching_taxes = [
+					t for t in item_doc.taxes
+					if t.tax_category == self.sales_invoice.tax_category
+				]
+				if matching_taxes:
+					tax_template = frappe.get_doc("Item Tax Template", matching_taxes[0].item_tax_template)
+				else:
+					frappe.throw(_('Row #{}: Item {} must have Tax Template with tax category "{}" set under Tax tab.')
+								.format(item.idx, item.item_code, self.sales_invoice.tax_category))
+
+			# Case 2: No tax_category on Sales Invoice → use original logic
+			elif item_doc.taxes and len(item_doc.taxes) > 0:
 				tax_template = frappe.get_doc("Item Tax Template", item_doc.taxes[0].item_tax_template)
+
 			else:
-				frappe.throw(_('Row #{}: Item {} must have Tax Template set under Tax tab').format(item.idx, item.item_code))
-			efris_tax_category = tax_template.taxes[0].efris_e_tax_category
+				frappe.throw(_('Row #{}: Item {} must have Tax Template set under Tax tab')
+							.format(item.idx, item.item_code))
+
+			efris_tax_category = tax_template.taxes[0].efris_e_tax_category				
+			
 			if not efris_tax_category:
 				frappe.throw(_("Missing EFRIS Tax Category on Row #{}: Item {}. Ensure all Items have E Tax Category set under Item Tax Template Detail").format(item.idx, item.item_code))
 			
@@ -379,7 +407,10 @@ class EInvoice(Document):
 				'efris_dsct_item_tax' : item.efris_dsct_item_tax,
 				'efris_dsct_taxable_amount' : round(item.efris_dsct_taxable_amount,4),
 				'efris_dsct_item_discount' : item.efris_dsct_item_discount,
-				'commodity_code_description': frappe.get_doc("EFRIS Commodity Code", item.efris_commodity_code).commodity_name
+				'commodity_code_description': frappe.get_doc("EFRIS Commodity Code", item.efris_commodity_code).commodity_name,
+				'total_weight': item.efris_total_weight,
+				'piece_qty': item.efris_piece_qty,	
+				'piece_measure_unit': item.efris_piece_measure_unit
 			})
 			self.append('items', einvoice_item)
 
@@ -434,6 +465,9 @@ class EInvoice(Document):
 
 
 	def get_basic_information_json(self):
+		industry_code = ""
+		if self.invoice_industry_code:
+			industry_code = self.invoice_industry_code.split(":")[0].strip()	
 		return {
 			"basicInformation": {
 				"invoiceNo": "",
@@ -446,12 +480,20 @@ class EInvoice(Document):
 				"invoiceType": str(self.invoiceType),
 				"invoiceKind": str(self.invoiceKind),
 				"dataSource": str(self.dataSource),
-				"invoiceIndustryCode": str(self.invoiceIndustryCode),
+				"invoiceIndustryCode": industry_code,# str(industry_code),
 				"isBatch": str(self.isBatch)
 			}
 		}
 	
 	def get_buyer_details_json(self):
+		delivery_code = ""
+		if self.delivery_terms_code:
+			delivery_code = self.delivery_terms_code.split(":")[0].strip()
+		
+		nonResidentFlag = "0"
+		if self.non_resident_flag == 1:
+			nonResidentFlag = "1"
+		
 		return {
 			"buyerDetails": {
 				"buyerTin": self.buyer_gstin if self.buyer_gstin is not None else "",
@@ -463,7 +505,8 @@ class EInvoice(Document):
 				"buyerCitizenship": self.buyer_citizenship,
 				"buyerSector": self.buyer_sector,
 				"buyerReferenceNo": self.buyer_reference_no,
-				"nonResidentFlag": self.non_resident_flag
+				"nonResidentFlag": nonResidentFlag,
+				"deliveryTermsCode": delivery_code
 			}
 		}
 
@@ -492,6 +535,7 @@ class EInvoice(Document):
 		goodsCode = ""      
 		discount_tax = 0.0    
 		discountTaxRate = ""
+		piece_unit_code = ""
 		for row in self.items:
 			taxRate = decode_e_tax_rate(str(row.gst_rate), row.e_tax_category)
 			item_code = row.item_code
@@ -504,6 +548,9 @@ class EInvoice(Document):
 
 			inv_uom = frappe.get_doc("UOM", row.unit)
 			efris_uom_code = inv_uom.efris_uom_code
+			piece_unit_uom = frappe.get_doc("UOM", row.piece_measure_unit) if row.piece_measure_unit else None	
+			if piece_unit_uom:
+				piece_unit_code = piece_unit_uom.efris_uom_code
 
 			# Calculate the discount amount if applicable
 			discount_amount = 0.0
@@ -514,7 +561,7 @@ class EInvoice(Document):
 			if discount_percentage > 0:
 				discount_amount, discountFlag, discounted_item, discountTaxRate = self.calculate_discounts(row, discount_percentage, taxRate)
 
-			item, discount_item = self._prepare_item_details(row, item_code, taxRate, efris_uom_code, discount_percentage, orderNumber, discount_amount, discountFlag, discounted_item, discountTaxRate)
+			item, discount_item = self._prepare_item_details(row, item_code, taxRate, efris_uom_code, discount_percentage, orderNumber, discount_amount, discountFlag, discounted_item, discountTaxRate,piece_unit_code)
 			item_list.append(item)
 			orderNumber += 1
    
@@ -544,7 +591,7 @@ class EInvoice(Document):
 		unique_items.add(unique_identifier)
 		return False
 	
-	def _prepare_item_details(self, row, item_code, tax_rate, efris_uom_code, discount_percentage, order_number, discount_amount, discount_flag, discounted_item, discount_tax_rate):
+	def _prepare_item_details(self, row, item_code, tax_rate, efris_uom_code, discount_percentage, order_number, discount_amount, discount_flag, discounted_item, discount_tax_rate,piece_unit_code):
 		tax = row.efris_dsct_item_tax if tax_rate == '0.18' and discount_percentage > 0 else row.tax
 
 		item = {
@@ -567,6 +614,9 @@ class EInvoice(Document):
 			"goodsCategoryId": row.efris_commodity_code,
 			"goodsCategoryName": row.commodity_code_description,
 			"vatApplicableFlag": "1",
+			"totalWeight": row.total_weight,
+  			"pieceQty": row.piece_qty,
+  			"pieceMeasureUnit":piece_unit_code
 		}
 
 		discount_item = None
@@ -592,6 +642,9 @@ class EInvoice(Document):
 				"goodsCategoryId": row.efris_commodity_code,
 				"goodsCategoryName": "",
 				"vatApplicableFlag": "1",
+				"totalWeight": row.total_weight,
+  				"pieceQty": row.piece_qty,
+  				"pieceMeasureUnit":piece_unit_code
 			}
 
 		return item, discount_item
@@ -609,7 +662,7 @@ class EInvoice(Document):
 			tax_category = key.split('(')[1].split(')')[0]
 			tax_category = tax_category.replace('%', '')
 			trimmed_response[tax_category] = value
-		
+		calculated_tax = 0.0
 		for row in self.taxes:
 			tax_rate_key='0'
 			if row.tax_rate=='0.18':

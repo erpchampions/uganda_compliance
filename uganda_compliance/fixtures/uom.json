@@ -2,6 +2,36 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
+  "efris_uom_code": "114",
+  "enabled": 1,
+  "modified": "2025-09-02 09:48:18.429752",
+  "must_be_whole_number": 0,
+  "name": "Per week",
+  "uom_name": "Per week"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PA",
+  "enabled": 1,
+  "modified": "2025-09-02 19:03:31.523686",
+  "must_be_whole_number": 0,
+  "name": "PCK-250",
+  "uom_name": "PCK-250"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PA",
+  "enabled": 1,
+  "modified": "2025-09-02 19:03:40.850804",
+  "must_be_whole_number": 0,
+  "name": "PCK-500",
+  "uom_name": "PCK-500"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
   "efris_uom_code": null,
   "enabled": 1,
   "modified": "2025-06-10 22:09:06.905192",
@@ -7288,5 +7318,15 @@
   "must_be_whole_number": 0,
   "name": "GRM-Gram",
   "uom_name": "GRM-Gram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PD",
+  "enabled": 1,
+  "modified": "2025-09-02 09:46:35.419184",
+  "must_be_whole_number": 0,
+  "name": "Per day",
+  "uom_name": "Per day"
  }
 ]

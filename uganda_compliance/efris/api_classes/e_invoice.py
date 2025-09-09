@@ -356,6 +356,7 @@ def create_credit_note(einvoice, reason_code, remark):
 	return credit_note
 
 def create_goods_details(items):
+
 	return [{
 		"item": item.item_name,
 		"itemCode": item.item_code,
@@ -375,12 +376,15 @@ def create_goods_details(items):
 		"exciseRate": "",
 		"exciseRule": "",
 		"exciseTax": "",
-		"pack": "",
-		"stick": "",
+		# "pack": "",
+		# "stick": "",
 		"exciseUnit": "",
 		"exciseCurrency": "",
 		"exciseRateName": "",
-		"vatApplicableFlag": "1"
+		"vatApplicableFlag": "1",
+		"totalWeight": item.total_weight,
+		"pieceQty":item.piece_qty,
+		"pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit)
 	} for item in items]
 
 def create_tax_details(taxes):
@@ -766,6 +770,7 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 	"""
 	item_list = []
 	discountFlag = "2" 
+	efris_piece_unit_code = ""
 
 	for item in einvoice.items:
 		qty = item.quantity
@@ -794,7 +799,9 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 				efris_log_info(f"Item Taxes: {taxes}")
 
 			if not taxRate or taxRate in ["-", "Exempt"]:
-				discountTaxRate = "0.0"
+				discountTaxRate = "0.0"	
+			
+				
 
 		item_list.append({
 			"item": item.item_name,
@@ -816,15 +823,26 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 			"exciseRate": "",
 			"exciseRule": "",
 			"exciseTax": "",
-			"pack": "",
-			"stick": "",
+			# "pack": "",
+			# "stick": "",
 			"exciseUnit": "",
 			"exciseCurrency": "",
 			"exciseRateName": "",
-			"vatApplicableFlag": "1"
+			"vatApplicableFlag": "1",
+			"totalWeight": item.total_weight,
+			"pieceQty":item.piece_qty,
+			"pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit)
 		})
 
 	return item_list
+
+def get_efris_uom_code(uom_name):
+	if uom_name:
+		uom = frappe.get_doc("UOM", uom_name)	
+		if uom:
+			return uom.efris_uom_code
+	return ""
+
 
 def get_einvoice(sales_invoice):
 		if frappe.db.exists('E Invoice', {'invoice': sales_invoice}):
@@ -848,6 +866,8 @@ def after_save_sales_invoice(doc, method):
 	is_return = sales_invoice.is_return
 	if is_return:
 		return
+	
+
 @frappe.whitelist()	
 def send_to_efris(doc):	 
 	if isinstance(doc, str):
@@ -1296,3 +1316,14 @@ def get_efris_product_code(item_code):
 	if not product_code:
 		frappe.throw(f"No EFRIS Product Code found for item: {item_code}")
 	return product_code
+
+#functioin to copy efris fields from original invoice to return invoice
+def copy_efris_fields(doc, method):
+    if doc.is_return and doc.return_against:
+        original = frappe.get_doc("Sales Invoice", doc.return_against)
+        for orig_item, new_item in zip(original.items, doc.items):
+            new_item.efris_piece_qty = -(orig_item.efris_piece_qty or 0)
+            new_item.efris_total_weight = -(orig_item.efris_total_weight or 0)
+            new_item.efris_piece_measure_unit = orig_item.efris_piece_measure_unit
+
+

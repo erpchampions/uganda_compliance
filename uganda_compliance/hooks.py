@@ -234,7 +234,8 @@ doc_events = {
                         "uganda_compliance.efris.api_classes.e_invoice.calculate_additional_discounts",
                                                 "uganda_compliance.efris.api_classes.e_invoice.before_save"                      
                       
-                        ]                
+                        ] ,
+        "validate": "uganda_compliance.efris.api_classes.e_invoice.copy_efris_fields"               
         
     },
     "Item": {
@@ -338,6 +339,14 @@ fixtures = [
             "efris_currency_code": ["!=", None]
         }
     },
-    "EFRIS Payment Mode"
+    "EFRIS Payment Mode",
+    "Tax Category" ,
+    {
+        "doctype":"File",
+        "filters":{
+            "file_url":["like","%/files/ura_efris_logo.png%"]
+    }   
+    }    
+
 ]
 
