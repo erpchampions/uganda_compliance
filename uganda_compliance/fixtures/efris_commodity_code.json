@@ -1,5 +1,95 @@
 [
  {
+  "commodity_code": "90111502",
+  "commodity_name": "Lodges or resorts",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-02 09:21:51.166913",
+  "name": "90111502"
+ },
+ {
+  "commodity_code": "90111801",
+  "commodity_name": "Single Room",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-02 09:22:30.025856",
+  "name": "90111801"
+ },
+ {
+  "commodity_code": "90111802",
+  "commodity_name": "Double room",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-02 09:23:37.577308",
+  "name": "90111802"
+ },
+ {
+  "commodity_code": "90111803",
+  "commodity_name": "Suite",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-02 09:24:09.401055",
+  "name": "90111803"
+ },
+ {
+  "commodity_code": "10152008",
+  "commodity_name": "Coffee seed or seedlings",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "02:B: Zero (0%)",
+  "modified": "2025-09-02 09:52:51.878956",
+  "name": "10152008"
+ },
+ {
+  "commodity_code": "10161502",
+  "commodity_name": "Coffee shrubs",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "03:C: Exempt (-)",
+  "modified": "2025-09-02 09:54:04.514971",
+  "name": "10161502"
+ },
+ {
+  "commodity_code": "10201603",
+  "commodity_name": "Live coffee break rose bush",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "03:C: Exempt (-)",
+  "modified": "2025-09-02 09:55:47.848347",
+  "name": "10201603"
+ },
+ {
+  "commodity_code": "10301603",
+  "commodity_name": "Fresh cut coffee break rose",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "03:C: Exempt (-)",
+  "modified": "2025-09-02 09:56:30.691525",
+  "name": "10301603"
+ },
+ {
+  "commodity_code": "10401603",
+  "commodity_name": "Dried cut coffee break rose",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-02 09:57:31.763480",
+  "name": "10401603"
+ },
+ {
+  "commodity_code": "23181801",
+  "commodity_name": "Coffee roasting equipment",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "03:C: Exempt (-)",
+  "modified": "2025-09-02 09:58:59.333394",
+  "name": "23181801"
+ },
+ {
   "commodity_code": "50201717",
   "commodity_name": "Coffee, green",
   "docstatus": 0,
@@ -358,5 +448,14 @@
   "e_tax_category": "01:A: Standard (18%)",
   "modified": "2025-05-28 11:25:37.039055",
   "name": "50201706"
+ },
+ {
+  "commodity_code": "90111504",
+  "commodity_name": "Cottage rental services",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-02 09:21:10.300169",
+  "name": "90111504"
  }
 ]

@@ -34,10 +34,10 @@ frappe.ui.form.on("Item", {
         frm.refresh_field("taxes");
         frm.refresh_field("efris_commodity_code")
     },
-    validate:function(frm){
-        set_item_tax_template(frm)
-        frm.refresh_field("taxes")
-    },
+    // validate:function(frm){
+    //     set_item_tax_template(frm)
+    //     frm.refresh_field("taxes")
+    // },
     item_code:function(frm){
         let item_code = frm.doc.item_code;
       if (item_code && item_code !== ''){

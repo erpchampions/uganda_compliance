@@ -229,6 +229,7 @@ async function set_efris_fields_for_row(frm, cdt, cdn) {
 function add_custom_buttons(frm) {
     // Check if any item has efris_transfer == 1
     const has_efris_items = (frm.doc.items || []).some(row => row.efris_transfer);
+    const has_efris_purchase = (frm.doc.items || []).some(row => row.efris_purchase_receipt_no);
 
     if (
         frm.doc.docstatus === 1 &&
