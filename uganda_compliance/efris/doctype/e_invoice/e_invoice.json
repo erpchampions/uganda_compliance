@@ -62,6 +62,7 @@
   "other_details_section",
   "company",
   "column_break_106",
+  "reference_doctype",
   "tax_scheme",
   "amended_from"
  ],
@@ -246,13 +247,20 @@
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Select",
+   "label": "Reference DocType",
+   "options": "Sales Invoice\nPOS Invoice",
+   "reqd": 1,
+   "default": "Sales Invoice"
+  },
+  {
    "fieldname": "invoice",
-   "fieldtype": "Link",
+   "fieldtype": "Dynamic Link",
    "in_list_view": 1,
    "label": "Invoice Number",
-   "options": "Sales Invoice",
-   "reqd": 1,
-   "unique": 1
+   "options": "reference_doctype",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_1",
