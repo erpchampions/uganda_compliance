@@ -91,6 +91,11 @@ frappe.ui.form.on('Sales Invoice Item', {
 });
 
 frappe.ui.form.on('Sales Invoice', {
+    onload: function(frm,cdt,cdn) {
+        if (!frm.doc.efris_non_resident_flag) {
+            frm.set_value('efris_invoice_industry_code', '101:General Industry');                     
+        }
+    },
     efris_payment_mode: function (frm) {
         const selected_payment_mode = frm.doc.efris_payment_mode;
         const number_of_payments = frm.doc.payments.length;
@@ -155,24 +160,25 @@ frappe.ui.form.on('Sales Invoice', {
             }
         });
     },
-    customer: function(frm) {
-        console.log("Customer changed, checking tax category and non Resident Flag");
+    customer: function(frm) {        
         if (frm.doc.efris_non_resident_flag) {
-            frappe.db.get_value('Customer', frm.doc.customer, 'tax_category', (r) => {
-                console.log("Fetched customer tax category:", r.tax_category);  
+            frappe.db.get_value('Customer', frm.doc.customer, 'tax_category', (r) => { 
                 if (!r.tax_category || r.tax_category !== 'Foreign') {
                     frm.set_value('tax_category', 'Foreign');
                 }
             });
         }
     },
-    efris_non_resident_flag: function(frm) {
-        console.log("efris_non Resident Flag changed, updating tax category if needed");
-        if (frm.doc.efris_non_resident_flag) {
-            console.log("efris_non Resident Flag is set, checking customer tax category");
+    efris_non_resident_flag: function(frm,cdt, cdn) {        
+        if (frm.doc.efris_non_resident_flag) {         
             if (!frm.doc.tax_category || frm.doc.tax_category !== 'Foreign') {
-                frm.set_value('tax_category', 'Foreign');
+                frm.set_value('tax_category', 'Foreign');                            
+                
             }
+            frm.set_value("efris_invoice_industry_code","102:Export"); 
+            set_export_fields_reqd(frm,cdt, cdn);
+        }else{           
+            frm.set_value('efris_invoice_industry_code', '101:General Industry');            
         }
     }    
     
@@ -272,8 +278,7 @@ function handle_update_stock_setting(frm) {
     }
 }
 
-function get_auto_send_submitted_invoice_flag(frm) {
-    console.log("Checking EFRIS company settings for auto send submitted invoice flag");
+function get_auto_send_submitted_invoice_flag(frm) {    
     return new Promise((resolve) => {
         if (!frm.doc.efris_company || frm.doc.efris_invoice !== 1) {
             return resolve(0);
@@ -348,16 +353,14 @@ function reset_discounts(frm) {
     frm.refresh_field('additional_discount_percentage');
 }
 
-async function add_custom_buttons(frm) {
-    console.log("Adding custom buttons for EFRIS submission");
+async function add_custom_buttons(frm) {  
 
     if (frm.doc.docstatus != 1 || !frm.doc.efris_company || frm.doc.efris_irn || !frm.doc.efris_invoice || frm.doc.is_return) {
         console.log("Skipping EFRIS submission button for non-EFRIS or return invoices");
         return;
     }
 
-    const auto_send_submitted_invoice = await get_auto_send_submitted_invoice_flag(frm);
-    console.log("Auto send submitted invoice flag:", auto_send_submitted_invoice);
+    const auto_send_submitted_invoice = await get_auto_send_submitted_invoice_flag(frm);   
 
     if (auto_send_submitted_invoice != 1) {
         frm.add_custom_button(__('Submit To EFRIS'), async function () {
@@ -394,13 +397,11 @@ async function add_custom_buttons(frm) {
 }
 
 frappe.ui.form.on('Sales Invoice Item', {   
-    efris_total_weight: function(frm, cdt, cdn) {
-        console.log("efris_total Weight changed, recalculating piece qty");
+    efris_total_weight: function(frm, cdt, cdn) {        
         calculate_piece_qty(frm, cdt, cdn);
         set_export_fields_reqd(frm, cdt, cdn)
     },
-    item_code: function(frm, cdt, cdn) {
-        console.log("item_code changed, recalculating piece qty");
+    item_code: function(frm, cdt, cdn) {        
         calculate_piece_qty(frm, cdt, cdn);
         set_export_fields_reqd(frm, cdt, cdn)
     }
@@ -408,15 +409,20 @@ frappe.ui.form.on('Sales Invoice Item', {
 
 // 1️⃣ Set fields required when export_type and nonResidentFlag match
 function set_export_fields_reqd(frm, cdt, cdn) {
-    let efris_nonResidentFlag = frm.doc.efris_non_resident_flag;
-    console.log("Setting export fields required status based on efris_nonResidentFlag:", efris_nonResidentFlag);    
+    let efris_nonResidentFlag = frm.doc.efris_non_resident_flag;   
     if (!efris_nonResidentFlag) return;
-
     let row = locals[cdt][cdn];
     if (efris_nonResidentFlag === 1) {
         frm.fields_dict.items.grid.toggle_reqd('efris_total_weight', true);
         frm.fields_dict.items.grid.toggle_reqd('efris_piece_qty', true);
         frm.fields_dict.items.grid.toggle_reqd('efris_piece_measure_unit', true);
+        frm.fields_dict.items.grid.toggle_display('efris_total_weight', true);
+        frm.fields_dict.items.grid.toggle_display('efris_piece_qty', true);
+        frm.fields_dict.items.grid.toggle_display('efris_piece_measure_unit', true);
+    } else {        
+        frm.fields_dict.items.grid.toggle_display('efris_total_weight', false);
+        frm.fields_dict.items.grid.toggle_display('efris_piece_qty', false);
+        frm.fields_dict.items.grid.toggle_display('efris_piece_measure_unit', false);
     }
 }
 
@@ -433,17 +439,13 @@ function calculate_piece_qty(frm, cdt, cdn) {
             return u.efris_is_piece_unit === 1 || u.efris_is_piece_unit === true;
         });
 
-        if (piece_uom_row) {
-            console.log(`Found piece UOM: ${piece_uom_row.uom} with conversion factor: ${piece_uom_row.conversion_factor}`);
+        if (piece_uom_row) {         
 
             // Set the measure unit field
             frappe.model.set_value(cdt, cdn, 'efris_piece_measure_unit', piece_uom_row.uom);
-
             // --- Calculate qty ---
             // totalWeight is assumed in stock UOM           
             let qty = row.efris_total_weight * piece_uom_row.efris_package_scale_value;
-
-            console.log(`Calculated pieceQty: ${qty} using conversion factor: ${piece_uom_row.efris_package_scale_value}`);
             frappe.model.set_value(cdt, cdn, 'efris_piece_qty', qty);
         } else {
             console.warn(`No UOM with efris_is_piece_unit = 1 found for Item ${row.item_code}`);

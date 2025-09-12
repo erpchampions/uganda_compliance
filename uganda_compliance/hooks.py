@@ -320,7 +320,12 @@ doctype_list_js = {
 fixtures = [
     "E Tax Category", 
     "EFRIS Commodity Code",
-    "UOM",
+    {
+        "doctype": "UOM",
+        "filters": {
+            "enabled": 1
+        }
+    },
     {
         "doctype": "Print Format",
         "filters": {
