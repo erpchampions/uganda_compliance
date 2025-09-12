@@ -34,6 +34,7 @@
   "invoicing_settings_section",
   "column_break_nvrr",
   "auto_send_submitted_invoice",
+  "auto_send_submitted_pos_invoice",
   "e_invoice_price_list_section",
   "efris_price_list",
   "efris_synchronization_section",
@@ -278,6 +279,13 @@
    "fieldname": "auto_send_submitted_invoice",
    "fieldtype": "Check",
    "label": "Automatic Submit To EFRIS"
+  },
+  {
+   "default": "1",
+   "description": "Automatically send POS Invoice to EFRIS during submission",
+   "fieldname": "auto_send_submitted_pos_invoice",
+   "fieldtype": "Check",
+   "label": "Auto Submit POS Invoice To EFRIS"
   },
   {
    "default": "https://efrisws.ura.go.ug/ws/taapp/getInformation",

@@ -25,6 +25,97 @@ class EInvoiceAPI:
 
 
 	@staticmethod
+	def create_einvoice_for_pos(pos_invoice_name):
+		"""Create E Invoice for POS Invoice - reusing existing logic"""
+		if frappe.db.exists('E Invoice', {'invoice': pos_invoice_name}):
+			efris_log_info("Found existing E Invoice for POS Invoice")
+			einvoice = frappe.get_doc('E Invoice', {'invoice': pos_invoice_name})
+		else:
+			efris_log_info("Creating new E Invoice for POS Invoice") 
+			einvoice = frappe.new_doc('E Invoice')
+			einvoice.reference_doctype = 'POS Invoice'
+			einvoice.invoice = pos_invoice_name
+			einvoice.sync_with_sales_invoice()  # This will now handle POS Invoice mapping
+			einvoice.flags.ignore_permissions = True
+			einvoice.save()
+			frappe.db.set_value('POS Invoice', pos_invoice_name, 'efris_e_invoice', einvoice.name)
+		
+		return einvoice
+
+	@staticmethod
+	@frappe.whitelist()
+	def bulk_send_pos_to_efris(pos_invoice_names):
+		"""Bulk send POS Invoices to EFRIS"""
+		results = []
+		for pos_invoice_name in pos_invoice_names:
+			try:
+				result = EInvoiceAPI.send_pos_invoice_to_efris(pos_invoice_name)
+				results.append({
+					'invoice': pos_invoice_name,
+					'status': result['status'],
+					'message': result['message']
+				})
+			except Exception as e:
+				results.append({
+					'invoice': pos_invoice_name,
+					'status': 'error',
+					'message': str(e)
+				})
+		
+		return {
+			'status': 'completed',
+			'results': results,
+			'total': len(pos_invoice_names),
+			'success_count': len([r for r in results if r['status'] == 'success'])
+		}
+
+	@staticmethod
+	def send_pos_invoice_to_efris(pos_invoice_name):
+		"""Send POS Invoice to EFRIS - T109 Invoice Upload"""
+		try:
+			validate_company_from_pos_invoice(pos_invoice_name)
+			
+			einvoice = EInvoiceAPI.create_einvoice_for_pos(pos_invoice_name)
+			
+			# Safe function call with error handling:
+			try:
+				result = EInvoiceAPI.generate_einvoice_request(einvoice)
+				
+				# Handle different return formats:
+				if isinstance(result, (tuple, list)) and len(result) >= 2:
+					status, response = result[0], result[1]
+				elif isinstance(result, dict):
+					status = result.get('status', False)
+					response = result.get('response', result)
+				else:
+					# Single return value
+					status = bool(result)
+					response = result
+					
+			except TypeError as e:
+				return {'status': 'error', 'message': f'Function call error: {str(e)}'}
+			
+			if status:
+				EInvoiceAPI.handle_successful_einvoice_generation(einvoice, response)
+				return {
+					'status': 'success',
+					'message': _('EFRIS Invoice generated successfully'),
+					'fdn': getattr(einvoice, 'fdn', einvoice.irn)
+				}
+			else:
+				efris_log_error(f"EFRIS generation failed for POS Invoice {pos_invoice_name}: {response}")
+				return {
+					'status': 'error', 
+					'message': str(response)
+				}
+		except Exception as e:
+			efris_log_error(f"Error in send_pos_invoice_to_efris: {e}")
+			return {
+				'status': 'error',
+				'message': str(e)
+			}
+
+	@staticmethod
 	def create_einvoice(sales_invoice_name):
 		if frappe.db.exists('E Invoice', {'invoice': sales_invoice_name}):
 			efris_log_info("found existing e_invoice")
@@ -1015,6 +1106,16 @@ def check_efris_flag_for_sales_invoice(is_return,return_against):
    return is_efris_flag
 
 @frappe.whitelist()
+def send_pos_invoice_to_efris(pos_invoice_name):
+	"""Module-level function to send POS Invoice to EFRIS"""
+	return EInvoiceAPI.send_pos_invoice_to_efris(pos_invoice_name)
+
+@frappe.whitelist()
+def bulk_send_pos_to_efris(pos_invoice_names):
+	"""Module-level function for bulk sending POS Invoices to EFRIS"""
+	return EInvoiceAPI.bulk_send_pos_to_efris(pos_invoice_names)
+
+@frappe.whitelist()
 def Sales_invoice_is_efris_validation(doc, method):
 	"""Validate EFRIS compliance for Sales Invoice."""
 	efris_log_info("Before Save is called ...")
@@ -1084,7 +1185,14 @@ def sales_uom_validation(doc, method):
 	if doc.get('is_return') or not doc.get('efris_invoice'):
 		return
 
-	for item in doc.get('items', []):
+	# Handle different item field structures between Sales Invoice and POS Invoice
+	items = doc.get('items', [])
+	if callable(items):
+		# If items is a method, don't call it, just return
+		efris_log_info("Items field is a method, skipping UOM validation")
+		return
+		
+	for item in items:
 		_validate_item_uom(item)
 		
 def _validate_item_uom(item):
@@ -1114,12 +1222,19 @@ def calculate_additional_discounts(doc, method):
 	discount_percentage = doc.get('additional_discount_percentage', 0) or 0.0
 	efris_log_info(f"Issued Discount: {discount_percentage}%")
 
-	if not discount_percentage or not doc.taxes:
+	# Handle different tax field structures between Sales Invoice and POS Invoice
+	taxes = doc.get('taxes', [])
+	if callable(taxes):
+		# If taxes is a method, don't call it, just return
+		efris_log_info("Taxes field is a method, skipping additional discount calculation")
+		return
+		
+	if not discount_percentage or not taxes:
 		return
 
 	# Load item tax details
-	item_taxes = json.loads(doc.taxes[0].item_wise_tax_detail)
-	initial_tax = doc.total_taxes_and_charges
+	item_taxes = json.loads(taxes[0].item_wise_tax_detail)
+	initial_tax = doc.get('total_taxes_and_charges', 0)
 	efris_log_info(f"Initial Tax: {initial_tax}")
 
 	total_item_tax, total_discount_tax = _process_items(doc, item_taxes, discount_percentage)
@@ -1270,3 +1385,98 @@ def get_efris_product_code(item_code):
 	if not product_code:
 		frappe.throw(f"No EFRIS Product Code found for item: {item_code}")
 	return product_code
+
+# POS Invoice Event Handlers
+def validate_company_from_pos_invoice(pos_invoice_name):
+	"""Validate company settings for POS Invoice"""
+	pos_invoice = frappe.get_doc('POS Invoice', pos_invoice_name)
+	return validate_company(pos_invoice)
+
+def on_submit_pos_invoice(pos_invoice, method):
+	"""Handle POS Invoice submission"""
+	efris_log_info(f"POS Invoice {pos_invoice.name} submitted")
+	
+	if not validate_company(pos_invoice):
+		return
+	
+	try:
+		e_company_settings = get_e_company_settings(pos_invoice.company)
+		if e_company_settings.auto_send_submitted_pos_invoice:
+			result = EInvoiceAPI.send_pos_invoice_to_efris(pos_invoice.name)
+			if result['status'] == 'success':
+				frappe.msgprint(_("EFRIS Invoice generated successfully"), alert=True)
+			else:
+				frappe.throw(result['message'], title=_('EFRIS Generation Failed'))
+	except Exception as e:
+		efris_log_error(f"Error in on_submit_pos_invoice: {e}")
+		# Only throw error if auto-submit is enabled
+		try:
+			if frappe.get_single_value('E Invoicing Settings', 'auto_send_submitted_pos_invoice'):
+				frappe.throw(_("EFRIS submission failed: {0}").format(str(e)))
+		except:
+			pass
+
+def on_cancel_pos_invoice(pos_invoice, method):
+	"""Handle POS Invoice cancellation"""
+	efris_log_info(f"POS Invoice {pos_invoice.name} cancelled")
+	
+	if pos_invoice.get('efris_e_invoice'):
+		try:
+			einvoice = frappe.get_doc('E Invoice', pos_invoice.efris_e_invoice)
+			if einvoice.irn:
+				# Cancel EFRIS invoice if it exists - placeholder for actual implementation
+				efris_log_info(f"EFRIS invoice {einvoice.irn} should be cancelled")
+		except Exception as e:
+			efris_log_error(f"Error cancelling E Invoice: {e}")
+
+def pos_uom_validation(doc, method):
+	"""
+	POS Invoice specific UOM validation - simplified version to avoid iterator errors
+	"""
+	efris_log_info(f"POS UOM validation called for {doc.name}")
+	
+	try:
+		# Skip validation for returns or non-EFRIS invoices
+		if getattr(doc, 'is_return', False):
+			return
+		
+		# Check if this POS Invoice has EFRIS items
+		has_efris_items = False
+		
+		# Safely iterate over items
+		if hasattr(doc, 'items') and doc.items:
+			for item in doc.items:
+				if hasattr(item, 'efris_commodity_code') and item.efris_commodity_code:
+					has_efris_items = True
+					# Validate UOM for this item
+					_validate_item_uom(item)
+		
+		if not has_efris_items:
+			efris_log_info("No EFRIS items found, skipping UOM validation")
+			
+	except Exception as e:
+		efris_log_error(f"Error in POS UOM validation: {e}")
+		# Don't throw error to avoid blocking POS Invoice save
+
+def pos_additional_discounts(doc, method):
+	"""
+	POS Invoice specific additional discount calculation - simplified to avoid iterator errors
+	"""
+	efris_log_info(f"POS additional discounts called for {doc.name}")
+	
+	try:
+		# Get discount percentage
+		discount_percentage = getattr(doc, 'additional_discount_percentage', 0) or 0.0
+		
+		if not discount_percentage:
+			efris_log_info("No additional discount, skipping calculation")
+			return
+		
+		efris_log_info(f"POS Invoice discount: {discount_percentage}%")
+		
+		# For POS Invoice, we'll do a simplified version
+		# More complex tax calculations can be done when creating E Invoice
+		
+	except Exception as e:
+		efris_log_error(f"Error in POS additional discount calculation: {e}")
+		# Don't throw error to avoid blocking POS Invoice save

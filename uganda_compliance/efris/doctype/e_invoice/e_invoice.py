@@ -28,27 +28,60 @@ class DateTimeEncoder(JSONEncoder):
 class EInvoice(Document):
 	def validate(self):
 		efris_log_info("Validating EInvoice")
+		self.validate_invoice_uniqueness()
 		self.validate_uom()
 		self.validate_items()
 
+	def validate_invoice_uniqueness(self):
+		"""Ensure invoice + reference_doctype combination is unique"""
+		if not self.invoice or not self.reference_doctype:
+			return
+			
+		filters = {
+			'invoice': self.invoice,
+			'reference_doctype': self.reference_doctype,
+			'name': ['!=', self.name] if not self.is_new() else ['!=', '']
+		}
+		
+		existing = frappe.db.exists('E Invoice', filters)
+		if existing:
+			frappe.throw(
+				_('E Invoice already exists for {0} {1}').format(
+					self.reference_doctype, self.invoice
+				),
+				title=_('Duplicate Entry')
+			)
+
 	def before_submit(self):
-		original_invoice = frappe.get_doc('Sales Invoice',{'name':self.name})
-		efris_log_info(f"Sales Invoice IRN :{original_invoice}")
-		fdn = original_invoice.efris_irn
+		# Get the source document based on reference_doctype
+		source_doctype = self.get_source_doctype()
+		original_invoice = frappe.get_doc(source_doctype, {'name': self.invoice})
+		efris_log_info(f"{source_doctype} IRN: {original_invoice}")
+		
+		# Check for existing FDN/IRN
+		fdn = getattr(original_invoice, 'efris_irn', None)
 		if fdn:
 			self.irn = fdn
 		
-		if not self.irn :
+		if not self.irn:
 			msg = _("Cannot submit e-invoice without EFRIS.") + ' '
-			msg += _("You must generate EFRIS for the sales invoice to submit this e-invoice.")
+			msg += _("You must generate EFRIS for the {0} to submit this e-invoice.").format(source_doctype.lower())
 			frappe.throw(msg, title=_("Missing EFRIS"))
 					
 	def on_update(self):
-		self.update_sales_invoice()
+		source_doctype = self.get_source_doctype()
+		if source_doctype == 'POS Invoice':
+			self.update_pos_invoice()
+		else:
+			self.update_sales_invoice()
 
 	def on_update_after_submit(self):
 		efris_log_info("On update after submit EInvoice")
-		self.update_sales_invoice()
+		source_doctype = self.get_source_doctype()
+		if source_doctype == 'POS Invoice':
+			self.update_pos_invoice()
+		else:
+			self.update_sales_invoice()
 
 	def update_sales_invoice(self):
 		dataSource = self.data_source
@@ -67,11 +100,35 @@ class EInvoice(Document):
 			'efris_irn_cancel_date': self.irn_cancel_date,
 			'efris_irn': self.irn,
 			'efris_data_source':f"{dataSource}:{data_source}"
+		})
+
+	def update_pos_invoice(self):
+		"""Update POS Invoice with EFRIS status"""
+		dataSource = getattr(self, 'data_source', '103')
+		data_source_map = {
+			"101": "EFD",
+			"102": "Windows Client APP", 
+			"103": "WebService API",
+			"104": "Mis",
+			"105": "Webportal",
+			"106": "Offline Mode Enabler"
+		}
+		data_source = data_source_map.get(str(dataSource), "")
+		
+		# Update main fields of POS Invoice
+		frappe.db.set_value("POS Invoice", self.invoice, {
+			'efris_posted': 1,
+			'efris_einvoice_status': self.status,
+			'efris_qrcode_image': self.qrcode_path,
+			'efris_irn_cancel_date': self.irn_cancel_date,
+			'efris_irn': self.irn,
+			'efris_data_source': f"{dataSource}:{data_source}"
 		})          
 	
 
 	def on_cancel(self):
-		frappe.db.set_value('Sales Invoice', self.invoice, 'efris_e_invoice', self.name, update_modified=False)
+		source_doctype = self.get_source_doctype()
+		frappe.db.set_value(source_doctype, self.invoice, 'efris_e_invoice', self.name, update_modified=False)
 
 	@frappe.whitelist()
 	def fetch_invoice_details(self):
@@ -145,14 +202,69 @@ class EInvoice(Document):
 
 		self.net_amount = round(self.net_amount, 2)
 		self.gross_amount = round((self.net_amount + self.tax_amount ),2)
+		
 		self.item_count = len(self.sales_invoice.items)
+			
 		self.mode_code = 1 
 		self.remarks = ""
 		self.qr_code = ""
 	
 
+	def get_source_document(self):
+		"""Get the source document (Sales Invoice or POS Invoice)"""
+		if not hasattr(self, '_source_doc') or not self._source_doc:
+			doctype = self.get_source_doctype()
+			self._source_doc = frappe.get_doc(doctype, self.invoice)
+		return self._source_doc
+
+	def get_source_doctype(self):
+		"""Get the source doctype from reference_doctype field"""
+		return getattr(self, 'reference_doctype', 'Sales Invoice')
+
 	def set_sales_invoice(self):
-		self.sales_invoice = frappe.get_doc('Sales Invoice', self.invoice)
+		"""Set the sales invoice reference - modified to handle both doctypes"""
+		source_doctype = self.get_source_doctype()
+		if source_doctype == 'Sales Invoice':
+			self.sales_invoice = frappe.get_doc('Sales Invoice', self.invoice)
+		elif source_doctype == 'POS Invoice':
+			self.pos_invoice = frappe.get_doc('POS Invoice', self.invoice)
+			# Map POS Invoice to sales_invoice structure for compatibility
+			self.sales_invoice = self._map_pos_to_sales_structure()
+
+	def _map_pos_to_sales_structure(self):
+		"""Map POS Invoice structure to Sales Invoice for compatibility"""
+		pos_doc = self.pos_invoice
+		
+		# Create a frappe._dict that mimics Sales Invoice structure
+		mapped_doc = frappe._dict({
+			'name': pos_doc.name,
+			'company': pos_doc.company,
+			'customer': pos_doc.customer,
+			'posting_date': pos_doc.posting_date,
+			'creation': pos_doc.creation,
+			'modified_by': pos_doc.modified_by,
+			'currency': pos_doc.currency,
+			'is_return': pos_doc.is_return if hasattr(pos_doc, 'is_return') else 0,
+			'paid_amount': pos_doc.paid_amount,
+			'outstanding_amount': pos_doc.outstanding_amount,
+			'grand_total': pos_doc.grand_total,
+			'additional_discount_percentage': pos_doc.additional_discount_percentage,
+			'discount_amount': pos_doc.discount_amount,
+			'apply_discount_on': getattr(pos_doc, 'apply_discount_on', ''),
+			'items': [item for item in pos_doc.items] if hasattr(pos_doc, 'items') else [],
+			'taxes': [tax for tax in pos_doc.taxes] if hasattr(pos_doc, 'taxes') else [],
+			'payments': [payment for payment in pos_doc.payments] if hasattr(pos_doc, 'payments') else [],
+			'company_address': pos_doc.company_address,
+			'company_tax_id': frappe.get_cached_value('Company', pos_doc.company, 'tax_id'),
+			# POS-specific EFRIS fields with fallback
+			'efris_customer_type': pos_doc.get('efris_customer_type'),
+			'efris_payment_mode': pos_doc.get('efris_payment_mode'),
+			'efris_seller_email': pos_doc.get('efris_seller_email'),
+			'efris_seller_reference_no': pos_doc.get('efris_seller_reference_no'),
+			'return_against': getattr(pos_doc, 'return_against', None)
+		})
+		
+		return mapped_doc
 
 	def set_invoice_type(self):
 		return 1 
@@ -333,7 +445,7 @@ class EInvoice(Document):
 		self.additional_discount_percentage = self.sales_invoice.additional_discount_percentage
 		self.discount_amount = self.sales_invoice.discount_amount
 
-	def fetch_items_from_invoice(self):	   
+	def fetch_items_from_invoice(self):
 		if not self.sales_invoice.taxes:
 			frappe.throw("taxes table can't be empty")
 		item_taxes = json.loads(self.sales_invoice.taxes[0].item_wise_tax_detail)
