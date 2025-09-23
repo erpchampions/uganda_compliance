@@ -1,10 +1,11 @@
 frappe.ui.form.on('POS Invoice', {
     refresh: function(frm) {
-        // Add Send To EFRIS button based on conditions
-        if (frm.doc.docstatus === 1 && !frm.doc.efris_posted) {
+        // Add Send To EFRIS button based on conditions        
+        if (frm.doc.docstatus === 1 && !frm.doc.efris_posted && frm.doc.efris_invoice) {
             // Check if auto submit is disabled for this company
             frappe.db.get_single_value('E Invoicing Settings', 'auto_send_submitted_pos_invoice')
                 .then(auto_submit => {
+                    console.log("Auto_submit",auto_submit)
                     if (!auto_submit) {
                         frm.add_custom_button(__('Send To EFRIS'), function() {
                             send_pos_to_efris(frm);
@@ -15,8 +16,8 @@ frappe.ui.form.on('POS Invoice', {
         
         // Show E Invoice link if exists
         if (frm.doc.efris_e_invoice) {
-            frm.add_custom_button(__('View E Invoice'), function() {
-                frappe.set_route('Form', 'E Invoice', frm.doc.efris_e_invoice);
+            frm.add_custom_button(__('View POS E Invoice'), function() {
+                frappe.set_route('Form', 'POS E Invoice', frm.doc.efris_e_invoice);
             }, __('EFRIS'));
         }
         
@@ -57,20 +58,54 @@ frappe.ui.form.on('POS Invoice', {
                     }
                 });
         }
+    },
+    validate:function(frm){
+        set_efris_flag_based_on_items(frm)
     }
 });
 
-function send_pos_to_efris(frm) {
+// Bind child table events
+frappe.ui.form.on('POS Invoice Item', {
+    items_add: function(frm) {
+        console.log("Listening to Items Added...");
+        if(!frm.doc.efris_invoice){
+             set_efris_flag_based_on_items(frm);
+        }
+    },
+    items_remove: function(frm) {
+        set_efris_flag_based_on_items(frm);
+    },
+    item_code: function(frm) {
+        console.log("Listening to Item Code call...");
+        if(!frm.doc.efris_invoice){
+             set_efris_flag_based_on_items(frm);
+        }
+       
+    }
+});
+const set_efris_flag_based_on_items = (frm) => {
+    console.log("Set EFRIS Invoice to true");
+    let is_efris_flag = 0;
+    frm.doc.items.forEach(item => {
+        if (item.efris_commodity_code) {
+            is_efris_flag = 1;                       
+        }
+    });
+    frm.set_value('efris_invoice', is_efris_flag);
+        console.log("Is EFRIS Flag update to", frm.doc.efris_invoice);
+};
+
+function send_pos_to_efris(frm) {    
     frappe.confirm(__('Send this POS Invoice to EFRIS?'), function() {
         frappe.call({
-            method: "uganda_compliance.efris.api_classes.e_invoice.send_pos_invoice_to_efris",
+            method: "uganda_compliance.efris.api_classes.pos_einvoice.send_to_efris",
             args: {
-                pos_invoice_name: frm.doc.name
+                doc: frm.doc
             },
             freeze: true,
             freeze_message: __('Sending to EFRIS...'),
             callback: function(r) {
-                if (r.message && r.message.status === 'success') {
+                if (r.message && r.message.status === 'success') {                    
                     frappe.show_alert({
                         message: __('EFRIS Invoice generated successfully. FDN: {0}', [r.message.fdn]),
                         indicator: 'green'

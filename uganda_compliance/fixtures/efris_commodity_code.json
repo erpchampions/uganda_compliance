@@ -322,5 +322,32 @@
   "e_tax_category": null,
   "modified": "2024-10-22 00:00:00",
   "name": "15101606"
+ },
+ {
+  "commodity_code": "53101602",
+  "commodity_name": "Mens shirts",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-12 15:34:12.731308",
+  "name": "53101602"
+ },
+ {
+  "commodity_code": "53101601",
+  "commodity_name": "Boys shirts",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-12 15:35:23.901401",
+  "name": "53101601"
+ },
+ {
+  "commodity_code": "53101901",
+  "commodity_name": "Boys suits",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-12 15:36:44.694799",
+  "name": "53101901"
  }
 ]

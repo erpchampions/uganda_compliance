@@ -35,7 +35,7 @@ frappe.ui.form.on("Item", {
         frm.refresh_field("efris_commodity_code")
     },
     validate:function(frm){
-        set_item_tax_template(frm)
+        // set_item_tax_template(frm)
         frm.refresh_field("taxes")
     },
     item_code:function(frm){
