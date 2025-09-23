@@ -2,7 +2,7 @@
 // License: GNU General Public License v3. See license.txt
 
 // render
-frappe.listview_settings['POS EInvoice'] = {
+frappe.listview_settings['POS E Invoice'] = {
 	has_indicator_for_draft: 1,
 	get_indicator: function(doc) {
 		var status_color = {

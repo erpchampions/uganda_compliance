@@ -25,9 +25,9 @@ class DateTimeEncoder(JSONEncoder):
 			return obj.isoformat()
 		return super(DateTimeEncoder, self).default(obj)
 
-class EInvoice(Document):
+class POSEInvoice(Document):
 	def validate(self):
-		efris_log_info("Validating EInvoice")
+		efris_log_info("Validating EInvoice")		
 		self.validate_invoice_uniqueness()
 		self.validate_uom()
 		self.validate_items()
@@ -43,17 +43,17 @@ class EInvoice(Document):
 			'name': ['!=', self.name] if not self.is_new() else ['!=', '']
 		}
 		
-		existing = frappe.db.exists('E Invoice', filters)
+		existing = frappe.db.exists('POS E Invoice', filters)
 		if existing:
 			frappe.throw(
-				_('E Invoice already exists for {0} {1}').format(
+				_('POS E Invoice already exists for {0} {1}').format(
 					self.reference_doctype, self.invoice
 				),
 				title=_('Duplicate Entry')
 			)
 
-	def before_submit(self):		
-		original_invoice = frappe.get_doc("Sales Invoice", {'name': self.invoice})
+	def before_submit(self):
+		original_invoice = frappe.get_doc("POS Invoice", {'name': self.invoice})
 		efris_log_info(f"{self.invoice} IRN: {original_invoice}")
 		
 		# Check for existing FDN/IRN
@@ -66,10 +66,12 @@ class EInvoice(Document):
 			msg += _("You must generate EFRIS for the {0} to submit this e-invoice.")
 			frappe.throw(msg, title=_("Missing EFRIS"))
 					
-	def on_update(self):		
+	def on_update(self):
+		
 		self.update_sales_invoice()
 
-	def on_update_after_submit(self):		
+	def on_update_after_submit(self):
+		
 		self.update_sales_invoice()
 
 	def update_sales_invoice(self):
@@ -82,20 +84,24 @@ class EInvoice(Document):
 							"106":"Offline Mode Enabler"
 							}
 		data_source = data_source_map.get(dataSource,"")
-		# Update main fields of Sales Invoice
-		frappe.db.set_value("Sales Invoice", self.invoice, {
+		# Update main fields of POS Invoice
+		efris_posted = 0
+		#Update efris_posted flag based on POS E Invoice status
+		if self.irn:
+			efris_posted = 1
+		frappe.db.set_value("POS Invoice", self.invoice, {
 			'efris_einvoice_status': self.status,
 			'efris_qrcode_image': self.qrcode_path,
 			'efris_irn_cancel_date': self.irn_cancel_date,
 			'efris_irn': self.irn,
-			'efris_data_source':f"{dataSource}:{data_source}"
+			'efris_data_source':f"{dataSource}:{data_source}",
+			'efris_posted':efris_posted
 		})
-
+         
 	
-
 	def on_cancel(self):
-		
-		frappe.db.set_value("Sales Invoice", self.invoice, 'efris_e_invoice', self.name, update_modified=False)
+
+		frappe.db.set_value("POS Invoice", self.invoice, 'efris_e_invoice', self.name, update_modified=False)
 
 	@frappe.whitelist()
 	def fetch_invoice_details(self):
@@ -149,16 +155,16 @@ class EInvoice(Document):
 
 		self.device_no = get_e_company_settings(self.company).device_no
 		
-		self.issuedDate = self.sales_invoice.creation
-		self.operator = self.sales_invoice.modified_by
-		self.currency = self.sales_invoice.currency
+		self.issuedDate = self.pos_invoice.creation
+		self.operator = self.pos_invoice.modified_by
+		self.currency = self.pos_invoice.currency
 		self.oriInvoiceId = ""
 		self.invoiceType = self.set_invoice_type()
 		self.invoiceKind = 1 
 		self.dataSource = 103 
 		self.invoiceIndustryCode = 101 
 		self.isBatch = 0 
-		self.is_return = self.sales_invoice.is_return
+		self.is_return = self.pos_invoice.is_return
 
 	def set_summary_details(self):
 		self.net_amount = 0
@@ -170,25 +176,23 @@ class EInvoice(Document):
 		self.net_amount = round(self.net_amount, 2)
 		self.gross_amount = round((self.net_amount + self.tax_amount ),2)
 		
-		self.item_count = len(self.sales_invoice.items)
+		self.item_count = len(self.pos_invoice.items)
 			
 		self.mode_code = 1 
 		self.remarks = ""
-		self.qr_code = ""	
+		self.qr_code = ""
+	
 
 	
 	def set_sales_invoice(self):
-		"""Set the sales invoice reference - modified to handle both doctypes"""
-
-		self.sales_invoice = frappe.get_doc('Sales Invoice', self.invoice)		
-	
-
-
+		"""Set the POS Invoice reference - modified to handle both doctypes"""		
+		self.pos_invoice = frappe.get_doc('POS Invoice', self.invoice)
+			
 	def set_invoice_type(self):
 		return 1 
 	
 	def set_supply_type(self):
-		efris_customer_type = self.sales_invoice.efris_customer_type
+		efris_customer_type = self.pos_invoice.efris_customer_type
 		if efris_customer_type == 'B2B': 
 			self.supply_type = 0
 		elif efris_customer_type == 'B2C': 
@@ -203,7 +207,7 @@ class EInvoice(Document):
 		self.taxes = []
 		output_vat_account = get_e_company_settings(self.company).output_vat_account
 
-		for tax_item in self.sales_invoice.taxes:
+		for tax_item in self.pos_invoice.taxes:
 			accnt_id = tax_item.account_head
 			accnt = frappe.get_doc('Account', accnt_id)
 			if tax_item.charge_type == "On Net Total" and (accnt_id == output_vat_account or accnt.account_type == "Tax"):
@@ -215,8 +219,8 @@ class EInvoice(Document):
 					discount_amount = 0
 					net_amount = 0.0
 					gross_amount = 0.0
-					if self.sales_invoice.additional_discount_percentage:
-						discount_amount = e_invoice_item.amount * (self.sales_invoice.additional_discount_percentage / 100)
+					if self.pos_invoice.additional_discount_percentage:
+						discount_amount = e_invoice_item.amount * (self.pos_invoice.additional_discount_percentage / 100)
 						# Adjust gross amount by subtracting the discount amount
 						gross_amount = round((e_invoice_item.amount - discount_amount),2)
 					else:
@@ -260,22 +264,22 @@ class EInvoice(Document):
 		credit = ""  
 		total_payment = ""   
 		payments = ""    
-		if self.sales_invoice.is_return:
-			orignal_einvoice = EInvoiceAPI.get_einvoice(self.sales_invoice.return_against)
+		if self.pos_invoice.is_return:
+			orignal_einvoice = EInvoiceAPI.get_einvoice(self.pos_invoice.return_against)
 			credit = orignal_einvoice.credit_amount
 		else:
-			total_payment = self.sales_invoice.paid_amount or 0.0
+			total_payment = self.pos_invoice.paid_amount or 0.0
 			
 			if total_payment != 0.0:
-				credit = self.sales_invoice.outstanding_amount or 0.0
+				credit = self.pos_invoice.outstanding_amount or 0.0
 
 			else:
-				credit = self.sales_invoice.grand_total or 0.0
+				credit = self.pos_invoice.grand_total or 0.0
 		
-		payments = self.sales_invoice.payments
+		payments = self.pos_invoice.payments
 		if not payments:
-			payment_mode = self.sales_invoice.efris_payment_mode 
-		for pay_amount in self.sales_invoice.payments:
+			payment_mode = self.pos_invoice.efris_payment_mode 
+		for pay_amount in self.pos_invoice.payments:
 			paid_amount = pay_amount.amount                
 			payment_mode = pay_amount.mode_of_payment
 			e_payments =frappe._dict(
@@ -289,7 +293,7 @@ class EInvoice(Document):
 		self.credit_amount = credit
 		# Add "Credit" line if credit amount exists
 		if abs(credit) > 0:
-			if not self.sales_invoice.efris_payment_mode:
+			if not self.pos_invoice.efris_payment_mode:
 				payment_mode = CONST_EFRIS_PAYMENT_MODE_CREDIT
 			credit_payment = frappe._dict({
 				"amount": credit,
@@ -301,9 +305,9 @@ class EInvoice(Document):
 				
 
 	def set_seller_details(self):
-		company_address = self.sales_invoice.company_address
+		company_address = self.pos_invoice.company_address
 	   
-		self.seller_email = self.sales_invoice.efris_seller_email
+		self.seller_email = self.pos_invoice.efris_seller_email
 		if company_address:
 			seller_address = frappe.get_all('Address', {'name': company_address}, ['*'])[0]
 			self.seller_phone = seller_address.phone           
@@ -323,16 +327,15 @@ class EInvoice(Document):
 		company = frappe.get_doc('Company', {'name': self.seller_legal_name})
 		self.seller_nin_or_brn  = company.efris_nin_or_brn
 		
-		if self.sales_invoice.company_tax_id:
-				self.seller_gstin = self.sales_invoice.company_tax_id       
-		
-		self.seller_reference_no = self.sales_invoice.efris_seller_reference_no
+		if self.pos_invoice.efris_company_tax_id:
+				self.seller_gstin = self.pos_invoice.efris_company_tax_id
+		self.seller_reference_no = self.pos_invoice.efris_seller_reference_no
 		if not self.seller_reference_no:
-			self.seller_reference_no = self.sales_invoice.name
+			self.seller_reference_no = self.pos_invoice.name
 		self.seller_trade_name = self.company
 
 	def set_buyer_details(self):
-		customer_name = self.sales_invoice.customer
+		customer_name = self.pos_invoice.customer
 		if not customer_name:
 			frappe.throw(_('Customer must be set to be able to generate e-invoice.'))
 		customer = frappe.get_doc('Customer', customer_name)
@@ -346,7 +349,7 @@ class EInvoice(Document):
 		if efris_customer_type == 'B2B' and not self.buyer_gstin:
 			frappe.log_error(_('TaxID/TIN must be set for B2B Customer (GST Category). See Tax tab on Customer profile.'))
 			frappe.throw(_('TaxID/TIN must be set for B2B Customer (GST Category). See Tax tab on Customer profile.'))
-		self.sales_invoice.efris_customer_type = efris_customer_type
+		self.pos_invoice.efris_customer_type = efris_customer_type
 		self.set_supply_type()
 
 		self.buyer_legal_name = customer.customer_name
@@ -360,17 +363,17 @@ class EInvoice(Document):
 		self.update_items_from_invoice()
 
 	def set_additional_discounts(self):
-		self.applied_discount_on = self.sales_invoice.apply_discount_on
-		self.additional_discount_percentage = self.sales_invoice.additional_discount_percentage
-		self.discount_amount = self.sales_invoice.discount_amount
+		self.applied_discount_on = self.pos_invoice.apply_discount_on
+		self.additional_discount_percentage = self.pos_invoice.additional_discount_percentage
+		self.discount_amount = self.pos_invoice.discount_amount
 
 	def fetch_items_from_invoice(self):
-		if not self.sales_invoice.taxes:
+		if not self.pos_invoice.taxes:
 			frappe.throw("taxes table can't be empty")
-		item_taxes = json.loads(self.sales_invoice.taxes[0].item_wise_tax_detail)
-		conversion_rate = self.sales_invoice.conversion_rate
+		item_taxes = json.loads(self.pos_invoice.taxes[0].item_wise_tax_detail)
+		conversion_rate = self.pos_invoice.conversion_rate
 		
-		for i, item in enumerate(self.sales_invoice.items):
+		for i, item in enumerate(self.pos_invoice.items):
 			if not item.efris_commodity_code:
 				frappe.throw(_('Row #{}: Item {} must have EFRIS Commodity code set to be able to generate e-invoice.').format(item.idx, item.item_code))
 			is_service_item = item.efris_commodity_code[:2] == "99"
@@ -713,7 +716,7 @@ class EInvoice(Document):
 
 def calculate_additional_discounts(invoice):
     """
-    Calculate additional discounts and adjust tax values on Sales Invoice items for EFRIS compliance.
+    Calculate additional discounts and adjust tax values on POS Invoice items for EFRIS compliance.
     """
     doc = _get_valid_document(invoice)
 
@@ -730,10 +733,10 @@ def calculate_additional_discounts(invoice):
 
 def _get_valid_document(invoice):
     """
-    Fetch and validate the Sales Invoice document.
+    Fetch and validate the POS Invoice document.
     """
     try:
-        doc = frappe.get_doc('Sales Invoice', invoice)
+        doc = frappe.get_doc('POS Invoice', invoice)
         if isinstance(doc, str):
             doc = json.loads(doc)
         return doc
@@ -792,10 +795,10 @@ def _update_row_with_discount_details(row, discount_amount, discount_tax, tax_ra
  
 def calculate_tax_by_category(invoice):
 	"""
-	Calculate total tax per tax category for Sales Invoice items.
+	Calculate total tax per tax category for POS Invoice items.
 	"""
 	
-	doc = frappe.get_doc('Sales Invoice', invoice)
+	doc = frappe.get_doc('POS Invoice', invoice)
 
 	doc = _get_valid_document(invoice)
 

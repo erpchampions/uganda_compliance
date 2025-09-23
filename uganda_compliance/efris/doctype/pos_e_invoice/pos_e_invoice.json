@@ -102,7 +102,7 @@
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "E Invoice",
+   "options": "POS E Invoice",
    "print_hide": 1,
    "read_only": 1
   },
@@ -226,7 +226,7 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "E Invoice Item",
+   "options": "POS E Invoice Item",
    "reqd": 1
   },
   {
@@ -250,16 +250,16 @@
    "fieldname": "reference_doctype",
    "fieldtype": "Data",
    "label": "Reference DocType",
-   "options": "Sales Invoice",
+   "options": "",
    "reqd": 1,
-   "default": "Sales Invoice"
+   "default": "POS Invoice"
   },
   {
    "fieldname": "invoice",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Invoice Number",
-   "options": "Sales Invoice",
+   "options": "POS Invoice",
    "reqd": 1
   },
   {
@@ -380,7 +380,7 @@
    "fieldname": "e_payments",
    "fieldtype": "Table",
    "label": "E Payments",
-   "options": "E Invoice Payment"
+   "options": "POS E Invoice Payment"
   },
   {
    "fieldname": "paid_amount",
@@ -419,10 +419,10 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-04-08 13:15:37.510904",
+ "modified": "2025-09-22 13:15:37.510904",
  "modified_by": "Administrator",
  "module": "EFRIS",
- "name": "E Invoice",
+ "name": "POS E Invoice",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

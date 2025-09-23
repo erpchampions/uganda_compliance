@@ -268,13 +268,18 @@ doc_events = {
     },
     "Company":{
        "before_save":"uganda_compliance.efris.api_classes.e_company.before_save_query_company"
+
     },
     "POS Invoice": {
-        "on_submit": "uganda_compliance.efris.api_classes.e_invoice.on_submit_pos_invoice",
-        "on_cancel": "uganda_compliance.efris.api_classes.e_invoice.on_cancel_pos_invoice",
-        "before_save": ["uganda_compliance.efris.api_classes.e_invoice.pos_uom_validation",
-                        "uganda_compliance.efris.api_classes.e_invoice.pos_additional_discounts"
-                        ]
+        "on_submit": "uganda_compliance.efris.api_classes.pos_einvoice.on_submit_pos_invoice",
+        "on_update": "uganda_compliance.efris.api_classes.pos_einvoice.on_update_sales_invoice",
+        "on_cancel": "uganda_compliance.efris.api_classes.pos_einvoice.on_cancel_sales_invoice",
+        # "on_cancel": "uganda_compliance.efris.api_classes.pos_einvoice.on_cancel_pos_invoice",
+        "before_save": [    
+            "uganda_compliance.efris.api_classes.pos_einvoice.sales_uom_validation" ,
+            "uganda_compliance.efris.api_classes.pos_einvoice.calculate_additional_discounts",       
+            "uganda_compliance.efris.api_classes.pos_einvoice.before_save"
+            ]
     }
       
 }
@@ -348,12 +353,7 @@ fixtures = [
             "efris_currency_code": ["!=", None]
         }
     },
-    "EFRIS Payment Mode",
-    {
-        "doctype": "Custom Field",
-        "filters": {
-            "dt": ["=", "POS Invoice"]
-        }
-    }
+    "EFRIS Payment Mode"
+   
 ]
 
