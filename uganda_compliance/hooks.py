@@ -222,7 +222,14 @@ scheduler_events = {
 # ------------
 # before_install = "uganda_compliance.before_install"
 
-app_include_js = "/assets/uganda_compliance/js/item_custom.js"
+app_include_js = ["/assets/uganda_compliance/js/item_custom.js",
+                  "/assets/uganda_compliance/js/pos_send_efris.js"                
+                  ]
+page_js = {
+    "point-of-sale": [       
+        "public/js/pos_send_efris.js"
+    ]
+}
 
 doc_events = {
     "Sales Invoice": {
