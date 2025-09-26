@@ -159,6 +159,7 @@ class EInvoice(Document):
 		self.invoiceIndustryCode = 101 
 		self.isBatch = 0 
 		self.is_return = self.sales_invoice.is_return
+		self.reference_doctype = 'Sales Invoice'
 
 	def set_summary_details(self):
 		self.net_amount = 0
