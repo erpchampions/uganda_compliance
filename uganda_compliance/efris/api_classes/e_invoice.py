@@ -376,8 +376,8 @@ def create_goods_details(items):
 		"exciseRate": "",
 		"exciseRule": "",
 		"exciseTax": "",
-		# "pack": "",
-		# "stick": "",
+		"pack": "",
+		"stick": "",
 		"exciseUnit": "",
 		"exciseCurrency": "",
 		"exciseRateName": "",
@@ -770,7 +770,7 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 	"""
 	item_list = []
 	discountFlag = "2" 
-	efris_piece_unit_code = ""
+	efris_piece_unit_code = ""	
 
 	for item in einvoice.items:
 		qty = item.quantity
@@ -823,15 +823,15 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 			"exciseRate": "",
 			"exciseRule": "",
 			"exciseTax": "",
-			# "pack": "",
-			# "stick": "",
+			"pack": "",
+			"stick": "",
 			"exciseUnit": "",
 			"exciseCurrency": "",
 			"exciseRateName": "",
 			"vatApplicableFlag": "1",
-			"totalWeight": item.total_weight,
-			"pieceQty":item.piece_qty,
-			"pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit)
+			"totalWeight": item.total_weight if item.total_weight else "",
+			"pieceQty":item.piece_qty if item.piece_qty else "",
+			"pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit) 
 		})
 
 	return item_list
