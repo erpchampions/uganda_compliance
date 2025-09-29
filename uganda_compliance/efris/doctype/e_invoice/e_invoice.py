@@ -614,9 +614,9 @@ class EInvoice(Document):
 			"goodsCategoryId": row.efris_commodity_code,
 			"goodsCategoryName": row.commodity_code_description,
 			"vatApplicableFlag": "1",
-			"totalWeight": row.total_weight,
-  			"pieceQty": row.piece_qty,
-  			"pieceMeasureUnit":piece_unit_code
+			"totalWeight": row.total_weight if row.total_weight else ""	,
+  			"pieceQty": row.piece_qty if row.piece_qty else "",
+  			"pieceMeasureUnit":piece_unit_code if piece_unit_code else ""
 		}
 
 		discount_item = None
