@@ -2,6 +2,166 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-09-03 15:31:05.130406",
+  "must_be_whole_number": 0,
+  "name": "Box/25pcs",
+  "uom_name": "Box/25pcs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:07.975165",
+  "must_be_whole_number": 0,
+  "name": "kit",
+  "uom_name": "kit"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:07.999376",
+  "must_be_whole_number": 0,
+  "name": "Bottle",
+  "uom_name": "Bottle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.006901",
+  "must_be_whole_number": 0,
+  "name": "pc/box",
+  "uom_name": "pc/box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.021744",
+  "must_be_whole_number": 0,
+  "name": "Rack",
+  "uom_name": "Rack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.029561",
+  "must_be_whole_number": 0,
+  "name": "each",
+  "uom_name": "each"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.044998",
+  "must_be_whole_number": 0,
+  "name": "metre",
+  "uom_name": "metre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.052580",
+  "must_be_whole_number": 0,
+  "name": "Test",
+  "uom_name": "Test"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.067418",
+  "must_be_whole_number": 0,
+  "name": "ml",
+  "uom_name": "ml"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.074740",
+  "must_be_whole_number": 0,
+  "name": "kilogram",
+  "uom_name": "kilogram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.082413",
+  "must_be_whole_number": 0,
+  "name": "CM",
+  "uom_name": "CM"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.089809",
+  "must_be_whole_number": 0,
+  "name": "Pkts",
+  "uom_name": "Pkts"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.097323",
+  "must_be_whole_number": 0,
+  "name": "Pr",
+  "uom_name": "Pr"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.105032",
+  "must_be_whole_number": 0,
+  "name": "Rck",
+  "uom_name": "Rck"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.112512",
+  "must_be_whole_number": 0,
+  "name": "tst",
+  "uom_name": "tst"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BG",
+  "enabled": 1,
+  "modified": "2025-05-28 11:32:12.969093",
+  "must_be_whole_number": 0,
+  "name": "bags",
+  "uom_name": "bags"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
   "efris_uom_code": "114",
   "enabled": 1,
   "modified": "2025-09-02 09:48:18.429752",
@@ -7128,5 +7288,35 @@
   "must_be_whole_number": 0,
   "name": "Per day",
   "uom_name": "Per day"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:07.983260",
+  "must_be_whole_number": 0,
+  "name": "Pack",
+  "uom_name": "Pack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.060018",
+  "must_be_whole_number": 0,
+  "name": "grams",
+  "uom_name": "grams"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.036893",
+  "must_be_whole_number": 0,
+  "name": "Cassete",
+  "uom_name": "Cassete"
  }
 ]

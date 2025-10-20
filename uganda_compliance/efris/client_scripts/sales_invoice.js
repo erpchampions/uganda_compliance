@@ -397,17 +397,18 @@ async function add_custom_buttons(frm) {
 }
 
 frappe.ui.form.on('Sales Invoice Item', {   
-    efris_total_weight: function(frm, cdt, cdn) {        
+    qty: function(frm, cdt, cdn) {        
         calculate_piece_qty(frm, cdt, cdn);
         set_export_fields_reqd(frm, cdt, cdn)
     },
-    item_code: function(frm, cdt, cdn) {        
+    item_code: function(frm, cdt, cdn) {              
         calculate_piece_qty(frm, cdt, cdn);
         set_export_fields_reqd(frm, cdt, cdn)
     }
 });
 
-// 1️⃣ Set fields required when export_type and nonResidentFlag match
+// 3️⃣ Set export fields required based on non-resident flag
+
 function set_export_fields_reqd(frm, cdt, cdn) {
     let efris_nonResidentFlag = frm.doc.efris_non_resident_flag;   
     if (!efris_nonResidentFlag) return;
@@ -428,28 +429,39 @@ function set_export_fields_reqd(frm, cdt, cdn) {
 
 // 2️⃣ Calculate pieceQty and set measure unit from Item Master → UOMs
 function calculate_piece_qty(frm, cdt, cdn) {
+    console.log("Calculating piece qty...");
     let row = locals[cdt][cdn];
-    if (!row.item_code || !row.efris_total_weight) return;
-
+    if (frm.doc.efris_non_resident_flag !== 1) return;
     frappe.db.get_doc('Item', row.item_code).then(item_doc => {
         if (!item_doc.uoms || !item_doc.uoms.length) return;
+        // Find weight(KG) unit row in Item UOMs table
+        let weight_row = item_doc.uoms.find(u => {
+            return u.uom === 'Kg' || u.uom === "KG";
+        }); 
+        console.log("Row Quantity:", row.qty);
+        if(weight_row && row.qty) {            
+            console.log(`Found weight UOM: ${weight_row.uom} with scale value ${weight_row.efris_package_scale_value} for Item ${row.item_code}`); 
+            let qty = row.qty * weight_row.efris_package_scale_value;
+            frappe.model.set_value(cdt, cdn, 'efris_total_weight', qty);
+        } else {
+            console.warn(`No UOM with Kg found for Item ${row.item_code}`);
+        }
 
         // Find piece unit row in Item UOMs table
         let piece_uom_row = item_doc.uoms.find(u => {
             return u.efris_is_piece_unit === 1 || u.efris_is_piece_unit === true;
-        });
-
-        if (piece_uom_row) {         
-
+        });      
+        if (piece_uom_row && row.qty) {         
+                console.log(`Found piece UOM: ${piece_uom_row.uom} with scale value ${piece_uom_row.efris_package_scale_value} for Item ${row.item_code}`);
             // Set the measure unit field
             frappe.model.set_value(cdt, cdn, 'efris_piece_measure_unit', piece_uom_row.uom);
-            // --- Calculate qty ---
-            // totalWeight is assumed in stock UOM           
-            let qty = row.efris_total_weight * piece_uom_row.efris_package_scale_value;
+            // --- Calculate qty ---          
+            let qty = row.qty * piece_uom_row.efris_package_scale_value;
             frappe.model.set_value(cdt, cdn, 'efris_piece_qty', qty);
         } else {
             console.warn(`No UOM with efris_is_piece_unit = 1 found for Item ${row.item_code}`);
         }
+        
     });
 }
 
