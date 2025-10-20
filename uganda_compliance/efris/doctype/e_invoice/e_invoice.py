@@ -13,7 +13,7 @@ from frappe.model.document import Document
 from datetime import datetime
 from uganda_compliance.efris.utils.utils import efris_log_info
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
-from uganda_compliance.efris.api_classes.e_invoice import EInvoiceAPI, decode_e_tax_rate, validate_company
+from uganda_compliance.efris.api_classes.e_invoice import EInvoiceAPI, decode_e_tax_rate, validate_company,get_efris_item_pack_and_stick
 
 CONST_EFRIS_PAYMENT_MODE_CREDIT = "Credit"
 CONST_EFRIS_PAYMENT_MODE_CREDIT_CODE = "101"
@@ -369,8 +369,14 @@ class EInvoice(Document):
 
 			# Case 2: No tax_category on Sales Invoice → use original logic
 			elif item_doc.taxes and len(item_doc.taxes) > 0:
-				tax_template = frappe.get_doc("Item Tax Template", item_doc.taxes[0].item_tax_template)
-
+				tax_template = None
+				for category in item_doc.taxes:
+					if category.tax_category != "Default":
+						tax_template = frappe.get_doc("Item Tax Template", category.item_tax_template)
+						break  # ✅ Stop once we find the first non-default
+				# If no non-default found, fall back to Default (first entry)
+				if not tax_template and item_doc.taxes[0].item_tax_template:
+					tax_template = frappe.get_doc("Item Tax Template", item_doc.taxes[0].item_tax_template)
 			else:
 				frappe.throw(_('Row #{}: Item {} must have Tax Template set under Tax tab')
 							.format(item.idx, item.item_code))
@@ -525,6 +531,9 @@ class EInvoice(Document):
 		}
 
 	def get_good_details(self):
+		pack = ""
+		stick = ""
+		
 		item_list = []
 		unique_items = set()    
 		
@@ -539,6 +548,8 @@ class EInvoice(Document):
 		for row in self.items:
 			taxRate = decode_e_tax_rate(str(row.gst_rate), row.e_tax_category)
 			item_code = row.item_code
+			if self.non_resident_flag == 1:
+				pack, stick = get_efris_item_pack_and_stick(item_code)
 			goodsCode = frappe.db.get_value("Item",{"item_code":item_code},"efris_product_code")
 			if goodsCode:
 				item_code = goodsCode
@@ -561,7 +572,7 @@ class EInvoice(Document):
 			if discount_percentage > 0:
 				discount_amount, discountFlag, discounted_item, discountTaxRate = self.calculate_discounts(row, discount_percentage, taxRate)
 
-			item, discount_item = self._prepare_item_details(row, item_code, taxRate, efris_uom_code, discount_percentage, orderNumber, discount_amount, discountFlag, discounted_item, discountTaxRate,piece_unit_code)
+			item, discount_item = self._prepare_item_details(row, item_code, taxRate, efris_uom_code, discount_percentage, orderNumber, discount_amount, discountFlag, discounted_item, discountTaxRate,piece_unit_code,pack,stick)
 			item_list.append(item)
 			orderNumber += 1
    
@@ -591,7 +602,7 @@ class EInvoice(Document):
 		unique_items.add(unique_identifier)
 		return False
 	
-	def _prepare_item_details(self, row, item_code, tax_rate, efris_uom_code, discount_percentage, order_number, discount_amount, discount_flag, discounted_item, discount_tax_rate,piece_unit_code):
+	def _prepare_item_details(self, row, item_code, tax_rate, efris_uom_code, discount_percentage, order_number, discount_amount, discount_flag, discounted_item, discount_tax_rate,piece_unit_code,pack,stick):
 		tax = row.efris_dsct_item_tax if tax_rate == '0.18' and discount_percentage > 0 else row.tax
 
 		item = {
@@ -603,6 +614,8 @@ class EInvoice(Document):
 			"total": str(row.amount),
 			"taxRate": str(tax_rate),
 			"tax": str(tax),
+			"pack": pack if pack else "",
+			"stick": stick if stick else "",
 			"discountTotal": str(discount_amount) if discount_percentage > 0 else "",
 			"discountTaxRate": str(discount_tax_rate),
 			"orderNumber": str(order_number),
@@ -642,9 +655,11 @@ class EInvoice(Document):
 				"goodsCategoryId": row.efris_commodity_code,
 				"goodsCategoryName": "",
 				"vatApplicableFlag": "1",
-				"totalWeight": row.total_weight,
-  				"pieceQty": row.piece_qty,
-  				"pieceMeasureUnit":piece_unit_code
+				"totalWeight": row.total_weight if row.total_weight else ""	,
+  				"pieceQty": row.piece_qty if row.piece_qty else "",
+  				"pieceMeasureUnit":piece_unit_code if piece_unit_code else "",
+				"pack": pack if pack else "",
+				"stick": stick if stick else ""
 			}
 
 		return item, discount_item

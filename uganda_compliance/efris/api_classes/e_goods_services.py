@@ -135,21 +135,47 @@ def get_item_details(doc):
 def get_item_pricing_and_uom(doc):
     item_currency = doc.get('efris_currency', '')
     currency = frappe.db.get_value('Currency', {'currency_name': item_currency}, 'efris_currency_code') if item_currency else ''
-
-    if item_currency == 'UGX':
-        unit_price = str(doc.get('standard_rate', '0.0'))
-        if unit_price == '0.0':
-            frappe.throw("Standard Rate cannot be zero")
-    else:
-        unit_price = str(doc.get('uoms', [])[0].get('efris_unit_price', 0))
-
-    uom = doc.get('stock_uom', '')
-    measure_unit = frappe.db.get_value('UOM', {'uom_name': uom}, 'efris_uom_code') or ''
-    if not measure_unit:
-        frappe.throw(f"EFRIS UOM code must not be empty on Default UOM: {uom}")
-
+    uoms = doc.get('uoms', [])
     commodity_category_id = doc.get('efris_commodity_code', '')
+    if not uoms:
+        return "0.0", "", "", ""      
+    # Filter UOMs where efris_package_unit == 1
+    selected_uoms = [u for u in uoms if u.get("efris_package_unit") == 1]
+
+    # If none found, fallback to the first UOM
+    if not selected_uoms and uoms:
+        selected_uoms = [uoms[0]]
+
+    # Now loop safely
+    for u in selected_uoms:
+        uom = u.get('uom')
+        if uom:
+            measure_unit = frappe.db.get_value('UOM', {'uom_name': uom}, 'efris_uom_code') or ''
+            if not measure_unit:
+                frappe.throw(f"EFRIS UOM code must not be empty on Default UOM: {uom}")
+        unit_price = str(u.get('efris_unit_price', '0.0'))
+
+        
     return unit_price, measure_unit, currency, commodity_category_id
+
+# def get_item_pricing_and_uom_copy(doc):
+#     item_currency = doc.get('efris_currency', '')
+#     currency = frappe.db.get_value('Currency', {'currency_name': item_currency}, 'efris_currency_code') if item_currency else ''
+
+#     if item_currency == 'UGX':
+#         unit_price = str(doc.get('standard_rate', '0.0'))
+#         if unit_price == '0.0':
+#             frappe.throw("Standard Rate cannot be zero")
+#     else:
+#         unit_price = str(doc.get('uoms', [])[0].get('efris_unit_price', 0))
+
+#     uom = doc.get('stock_uom', '')
+#     measure_unit = frappe.db.get_value('UOM', {'uom_name': uom}, 'efris_uom_code') or ''
+#     if not measure_unit:
+#         frappe.throw(f"EFRIS UOM code must not be empty on Default UOM: {uom}")
+
+#     commodity_category_id = doc.get('efris_commodity_code', '')
+#     return unit_price, measure_unit, currency, commodity_category_id
 
 def process_additional_uoms(doc):
     goods_other_units = []

@@ -317,7 +317,7 @@ class EInvoiceAPI:
 			einvoice.save()
 
 ###cancel rn#####
-def create_credit_note(einvoice, reason_code, remark):
+def create_credit_note(einvoice, reason_code, remark):		
 	credit_note = {
 		"oriInvoiceId": einvoice.invoice_id,
 		"oriInvoiceNo": einvoice.irn,
@@ -356,36 +356,36 @@ def create_credit_note(einvoice, reason_code, remark):
 	return credit_note
 
 def create_goods_details(items):
+    return [{
+        "item": item.item_name,
+        "itemCode": item.item_code,
+        "qty": str(item.quantity),
+        "unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
+        "unitPrice": item.rate,
+        "total": item.amount,
+        "taxRate": str(item.gst_rate),
+        "tax": item.tax,
+        "orderNumber": str(item.order_number),
+        "deemedFlag": "2",
+        "exciseFlag": "2",
+        "categoryId": "",
+        "categoryName": "",
+        "goodsCategoryId": item.efris_commodity_code,
+        "goodsCategoryName": "",
+        "exciseRate": "",
+        "exciseRule": "",
+        "exciseTax": "",
+        "pack": get_efris_item_pack_and_stick(item.item_code)[0],
+        "stick": get_efris_item_pack_and_stick(item.item_code)[1],
+        "exciseUnit": "",
+        "exciseCurrency": "",
+        "exciseRateName": "",
+        "vatApplicableFlag": "1",
+        "totalWeight": item.total_weight,
+        "pieceQty": item.piece_qty,
+        "pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit)
+    } for item in items if item.efris_commodity_code]
 
-	return [{
-		"item": item.item_name,
-		"itemCode": item.item_code,
-		"qty": str(item.quantity),
-		"unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
-		"unitPrice": item.rate,
-		"total": item.amount,
-		"taxRate": str(item.gst_rate),
-		"tax": item.tax,
-		"orderNumber": str(item.order_number),
-		"deemedFlag": "2",
-		"exciseFlag": "2",
-		"categoryId": "",
-		"categoryName": "",
-		"goodsCategoryId": item.efris_commodity_code,
-		"goodsCategoryName": "",
-		"exciseRate": "",
-		"exciseRule": "",
-		"exciseTax": "",
-		"pack": "",
-		"stick": "",
-		"exciseUnit": "",
-		"exciseCurrency": "",
-		"exciseRateName": "",
-		"vatApplicableFlag": "1",
-		"totalWeight": item.total_weight,
-		"pieceQty":item.piece_qty,
-		"pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit)
-	} for item in items]
 
 def create_tax_details(taxes):
 	return [{
@@ -398,6 +398,37 @@ def create_tax_details(taxes):
 		"exciseCurrency": tax.excise_currency,
 		"taxRateName": tax.tax_rate_name
 	} for tax in taxes]
+
+# def create_goods_details(items):
+#     return [{
+#         "item": item.item_name,
+#         "itemCode": item.item_code,
+#         "qty": str(item.quantity),
+#         "unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
+#         "unitPrice": item.rate,
+#         "total": item.amount,
+#         "taxRate": str(item.gst_rate),
+#         "tax": item.tax,
+#         "orderNumber": str(item.order_number),
+#         "deemedFlag": "2",
+#         "exciseFlag": "2",
+#         "categoryId": "",
+#         "categoryName": "",
+#         "goodsCategoryId": item.efris_commodity_code,
+#         "goodsCategoryName": "",
+#         "exciseRate": "",
+#         "exciseRule": "",
+#         "exciseTax": "",
+#         "pack": get_efris_item_pack_and_stick(item.item_code)[0],
+#         "stick": get_efris_item_pack_and_stick(item.item_code)[1],
+#         "exciseUnit": "",
+#         "exciseCurrency": "",
+#         "exciseRateName": "",
+#         "vatApplicableFlag": "1",
+#         "totalWeight": item.total_weight,
+#         "pieceQty": item.piece_qty,
+#         "pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit)
+#     } for item in items if item.efris_commodity_code]
 
 def create_summary(einvoice):
 	return {
@@ -771,7 +802,9 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 	item_list = []
 	discountFlag = "2" 
 	efris_piece_unit_code = ""	
-
+	pack = ""
+	stick = ""
+	
 	for item in einvoice.items:
 		qty = item.quantity
 		taxes = item.tax
@@ -781,7 +814,9 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 		orderNumber = get_order_no(original_einvoice, item.item_code, item.item_name)
 		goodsCode = frappe.db.get_value("Item", {"item_code": item_code}, "efris_product_code")
 		efris_log_info(f"The EFRIS Product code is {goodsCode}")
-
+		if einvoice.non_resident_flag == 1:
+			pack, stick = get_efris_item_pack_and_stick(item_code)
+			efris_log_info(f"The Pack and Stick values are {pack} and {stick}")
 		if goodsCode:
 			item_code = goodsCode
 
@@ -823,8 +858,8 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 			"exciseRate": "",
 			"exciseRule": "",
 			"exciseTax": "",
-			"pack": "",
-			"stick": "",
+			"pack": pack,
+			"stick": stick,
 			"exciseUnit": "",
 			"exciseCurrency": "",
 			"exciseRateName": "",
@@ -841,6 +876,19 @@ def get_efris_uom_code(uom_name):
 		uom = frappe.get_doc("UOM", uom_name)	
 		if uom:
 			return uom.efris_uom_code
+	return ""
+def get_efris_item_pack_and_stick(item_code):
+	pack = ""
+	stick = ""
+	if item_code:
+		item_uom = frappe.get_doc("Item", item_code).uoms	
+		if item_uom:
+			for uom in item_uom:
+				if uom.efris_is_piece_unit:
+					stick = uom.efris_package_scale_value
+				if uom.efris_package_unit:
+					pack = uom.efris_package_scale_value
+			return pack, stick
 	return ""
 
 

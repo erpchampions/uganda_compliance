@@ -1,5 +1,104 @@
 [
  {
+  "commodity_code": "85121811",
+  "commodity_name": "Laboratory equipment rental service",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-03 07:38:17.094648",
+  "name": "85121811"
+ },
+ {
+  "commodity_code": "85121901",
+  "commodity_name": "Pharmaceutical preparation services",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-03 07:38:54.698626",
+  "name": "85121901"
+ },
+ {
+  "commodity_code": "30131512",
+  "commodity_name": "Autoclaved lightweight aerated concrete block",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-03 07:42:19.248305",
+  "name": "30131512"
+ },
+ {
+  "commodity_code": "42281503",
+  "commodity_name": "Filter sterilizers",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-03 07:43:34.305213",
+  "name": "42281503"
+ },
+ {
+  "commodity_code": "42192207",
+  "commodity_name": "Patient stretchers",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-03 09:56:43.964739",
+  "name": "42192207"
+ },
+ {
+  "commodity_code": "42161659",
+  "commodity_name": "Hemodialysis catheters",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-04 10:32:50.391760",
+  "name": "42161659"
+ },
+ {
+  "commodity_code": "41116205",
+  "commodity_name": "Rapid test kits",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-10-11 14:26:31.414661",
+  "name": "41116205"
+ },
+ {
+  "commodity_code": "42272209",
+  "commodity_name": "Ventilator circuits",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "03:C: Exempt (-)",
+  "modified": "2025-09-04 10:40:22.382849",
+  "name": "42272209"
+ },
+ {
+  "commodity_code": "53101602",
+  "commodity_name": "Mens shirts",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-12 15:34:12.731308",
+  "name": "53101602"
+ },
+ {
+  "commodity_code": "53101601",
+  "commodity_name": "Boys shirts",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-12 15:35:23.901401",
+  "name": "53101601"
+ },
+ {
+  "commodity_code": "53101901",
+  "commodity_name": "Boys suits",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "01:A: Standard (18%)",
+  "modified": "2025-09-12 15:36:44.694799",
+  "name": "53101901"
+ },
+ {
   "commodity_code": "90111502",
   "commodity_name": "Lodges or resorts",
   "docstatus": 0,
