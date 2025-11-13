@@ -44,11 +44,13 @@ frappe.ui.form.on('Sales Invoice', {
         add_custom_buttons(frm);        
         frm.refresh_field('items');      
     },
-    validate: async function(frm) {
+    validate: async function(frm,cdt, cdn) {
         set_efris_flag_based_on_items(frm);
         set_efris_invoice_details(frm);
+        apply_item_tax_template(frm, cdt, cdn);
+
     },
-    before_save: function(frm) {
+    before_save: function(frm,cdt, cdn) {
         if (frm.doc.is_return) {
             reset_discounts(frm);
         }
@@ -64,7 +66,7 @@ frappe.ui.form.on('Sales Invoice', {
                 }
             }
         }
-
+        apply_item_tax_template(frm, cdt, cdn)
         frm.refresh_field('payments');
     },
     on_submit: function(frm) {
@@ -465,6 +467,69 @@ function calculate_piece_qty(frm, cdt, cdn) {
     });
 }
 
+// -----------------------------------------------------------
+// 🔁 Auto-set Item Tax Template based on `custom_is_default`
+// -----------------------------------------------------------
+frappe.ui.form.on('Sales Invoice Item', {
 
+    // When checkbox toggled
+    custom_is_default: function(frm, cdt, cdn) {
+        console.log("Custom is default toggled, applying item tax template...");
+        apply_item_tax_template(frm, cdt, cdn);
+    },
 
+    // When item selected or changed
+    item_code: function(frm, cdt, cdn) {
+        console.log("Item code changed, applying item tax template...");
+        apply_item_tax_template(frm, cdt, cdn);
+    },
 
+    // When a new row is added
+    items_add: function(frm, cdt, cdn) {
+        console.log("New item row added, applying item tax template...");
+        apply_item_tax_template(frm, cdt, cdn);
+    }
+});
+
+// -----------------------------------------------------------
+// 🔁 Apply Item Tax Template based on custom_is_default flag
+// -----------------------------------------------------------
+async function apply_item_tax_template(frm, cdt, cdn) {
+    console.log("Applying item tax template...");
+    if (!frm.doc.efris_invoice) return;  // Only for EFRIS invoices
+
+    let row = locals[cdt][cdn];
+    if (!row.item_code) return;
+
+    try {
+        // Fetch the Item document including taxes child table
+        const item_doc = await frappe.db.get_doc('Item', row.item_code);
+
+        if (!item_doc.taxes || !item_doc.taxes.length) {
+            console.warn(`No taxes configured for Item ${row.item_code}`);
+            return;
+        }
+
+        // Decide which tax row to pick
+        let tax_row;
+        if (row.custom_is_default) {
+            console.log("Custom is default is checked, looking for Default tax category...");   
+            tax_row = item_doc.taxes.find(r => r.tax_category === "Default");
+        } else {
+            tax_row = item_doc.taxes.find(r => !r.tax_category);
+        }
+            frappe.model.set_value(cdt, cdn, "item_tax_template", ""); // Clear previous value
+            frm.refresh_field('items');
+        if (tax_row && tax_row.item_tax_template) {
+            console.log(`Applying tax template "${tax_row.item_tax_template}" for item ${row.item_code}`);
+            
+            frappe.model.set_value(cdt, cdn, "item_tax_template", tax_row.item_tax_template);
+        } else {
+            console.warn(`No matching tax template found for item ${row.item_code} (custom_is_default=${row.custom_is_default})`);
+            frappe.model.set_value(cdt, cdn, "item_tax_template", "");
+        }
+
+    } catch (error) {
+        console.error("Error applying item tax template:", error);
+    }
+}
