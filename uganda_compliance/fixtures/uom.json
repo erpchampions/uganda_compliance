@@ -2,9 +2,59 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
+  "efris_uom_code": "PA",
+  "enabled": 1,
+  "modified": "2025-12-03 08:57:20.486945",
+  "must_be_whole_number": 0,
+  "name": "pck",
+  "uom_name": "pck"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
   "efris_uom_code": null,
   "enabled": 1,
-  "modified": "2025-09-03 15:31:05.130406",
+  "modified": "2025-10-22 17:58:36.949581",
+  "must_be_whole_number": 0,
+  "name": "m",
+  "uom_name": "m"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "110",
+  "enabled": 1,
+  "modified": "2025-12-01 14:27:29.691845",
+  "must_be_whole_number": 0,
+  "name": "pc/bx",
+  "uom_name": "pc/bx"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BO",
+  "enabled": 1,
+  "modified": "2025-12-01 14:31:27.778974",
+  "must_be_whole_number": 0,
+  "name": "bottl",
+  "uom_name": "bottl"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-10-22 20:35:30.339368",
+  "must_be_whole_number": 0,
+  "name": "r",
+  "uom_name": "r"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "110",
+  "enabled": 1,
+  "modified": "2025-12-03 08:58:00.587834",
   "must_be_whole_number": 0,
   "name": "Box/25pcs",
   "uom_name": "Box/25pcs"
@@ -12,9 +62,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "KI",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:07.975165",
+  "modified": "2025-12-01 14:32:16.076738",
   "must_be_whole_number": 0,
   "name": "kit",
   "uom_name": "kit"
@@ -22,9 +72,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "BO",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:07.999376",
+  "modified": "2025-12-01 14:30:59.357630",
   "must_be_whole_number": 0,
   "name": "Bottle",
   "uom_name": "Bottle"
@@ -32,9 +82,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "110",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:08.006901",
+  "modified": "2025-12-01 14:34:56.898466",
   "must_be_whole_number": 0,
   "name": "pc/box",
   "uom_name": "pc/box"
@@ -42,9 +92,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "RK",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:08.021744",
+  "modified": "2025-12-01 14:35:32.400899",
   "must_be_whole_number": 0,
   "name": "Rack",
   "uom_name": "Rack"
@@ -82,9 +132,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "MGM",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:08.067418",
+  "modified": "2025-12-01 14:26:37.235607",
   "must_be_whole_number": 0,
   "name": "ml",
   "uom_name": "ml"
@@ -92,9 +142,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "103",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:08.074740",
+  "modified": "2025-12-03 09:00:03.953796",
   "must_be_whole_number": 0,
   "name": "kilogram",
   "uom_name": "kilogram"
@@ -132,9 +182,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "RA",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:08.105032",
+  "modified": "2025-12-03 08:58:32.353792",
   "must_be_whole_number": 0,
   "name": "Rck",
   "uom_name": "Rck"
@@ -172,9 +222,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "102",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:06.905192",
+  "modified": "2025-12-01 14:34:01.899201",
   "must_be_whole_number": 0,
   "name": "Ltr",
   "uom_name": "Ltr"
@@ -182,9 +232,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "RO",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:08.014322",
+  "modified": "2025-12-01 14:35:43.299438",
   "must_be_whole_number": 0,
   "name": "Roll",
   "uom_name": "Roll"
@@ -7242,9 +7292,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "PA",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:07.991825",
+  "modified": "2025-12-01 14:31:42.314978",
   "must_be_whole_number": 0,
   "name": "Packets",
   "uom_name": "Packets"
@@ -7252,9 +7302,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "PCE",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:07.967091",
+  "modified": "2025-12-01 14:27:57.628070",
   "must_be_whole_number": 0,
   "name": "Piece",
   "uom_name": "Piece"
@@ -7292,9 +7342,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "PA",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:07.983260",
+  "modified": "2025-12-01 14:31:58.505084",
   "must_be_whole_number": 0,
   "name": "Pack",
   "uom_name": "Pack"
@@ -7302,9 +7352,9 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": null,
+  "efris_uom_code": "GRM",
   "enabled": 1,
-  "modified": "2025-06-10 22:09:08.060018",
+  "modified": "2025-12-01 14:37:21.932253",
   "must_be_whole_number": 0,
   "name": "grams",
   "uom_name": "grams"
@@ -7318,5 +7368,45 @@
   "must_be_whole_number": 0,
   "name": "Cassete",
   "uom_name": "Cassete"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "110",
+  "enabled": 1,
+  "modified": "2025-12-01 14:27:23.565558",
+  "must_be_whole_number": 0,
+  "name": "bx",
+  "uom_name": "bx"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PP",
+  "enabled": 1,
+  "modified": "2025-12-01 14:38:36.588754",
+  "must_be_whole_number": 0,
+  "name": "pc",
+  "uom_name": "pc"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "103",
+  "enabled": 1,
+  "modified": "2025-12-01 14:56:52.667840",
+  "must_be_whole_number": 0,
+  "name": "kgm-kilogram",
+  "uom_name": "kgm-kilogram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CMT",
+  "enabled": 1,
+  "modified": "2025-12-01 14:57:21.959817",
+  "must_be_whole_number": 0,
+  "name": "cmt-centimetre",
+  "uom_name": "cmt-centimetre"
  }
 ]
