@@ -484,9 +484,10 @@ def before_submit_on_stock_entry(doc, method):
             continue
         if purpose == 'Manufacture' or (purpose == 'Material Transfer' and not item.get('efris_purchase_receipt_no')):
             has_batch_no = frappe.db.get_value('Item', {'item_code': item_code}, 'has_batch_no')
-            if not has_batch_no and item.get("efris_transfer") and not item.get("efris_production_batch_no"):
+            if not has_batch_no and item.get("efris_transfer") and not item.get("efris_production_batch_no") and purpose == 'Manufacture':
                 frappe.throw(f"The Item {item_code} does not have Batch No enabled. Please enter the EFRIS producntion batch no.")
-
+            elif item.get("efris_transfer") and not item.get("efris_purchase_receipt_no") and purpose == 'Material Transfer':
+                frappe.throw(f"The Item {item_code} does not have Purchase Receipt No Reference. Please enter the Purchase Receipt Reference no.")
         efris_log_info(f"The Item Company is {item_company}")
         t_warehouse = item.get('t_warehouse')
         efris_log_info(f"The Target warehouse is {t_warehouse}")
@@ -534,8 +535,7 @@ def before_submit_on_stock_entry(doc, method):
                 efris_log_info(f"Item {item.item_code} not found in Purchase Receipt {purchase_doc.name}")
     elif (purpose == 'Manufacture' or purpose == 'Material Transfer') and is_efris_warehouse:     
        
-        item_master = frappe.get_doc('Item', item_code)       
-       
+        item_master = frappe.get_doc('Item', item_code)        
         efris_log_info(f"Processing Manufacture Stock Entry for Item: {item_code}")
         efris_currency = item_master.get('efris_currency') or 'UGX'
         efris_log_info(f"The efris currency is {efris_currency}")           
