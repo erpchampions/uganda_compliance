@@ -1,6 +1,6 @@
 import frappe
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
-from uganda_compliance.efris.api_classes.efris_api import make_post
+from uganda_compliance.efris.api_classes.efris_api import get_e_company_settings, make_post
 import json
 from datetime import date
 
@@ -29,14 +29,15 @@ def get_efris_unit_price(purchase_receipt_no, item_code):
 
 @frappe.whitelist()
 def stock_in_T131(doc, method):
-
-    doctype = doc.get("doctype")
-    efris_log_info(f"The Stock In Type is {doctype}")
-    # Removed direct submssion to EFRIS for stock-entry.   
-    if doctype=="Stock Reconciliation":
-        send_stock_reconciliation(doc)
-    if doctype=="Purchase Receipt":
-        send_purchase_receipt(doc)
+    auto_send_submitted_invoice = get_e_company_settings(doc.get("company")).auto_send_submitted_invoice    
+    if (auto_send_submitted_invoice == 1) or (method == 'manual_submit'):
+        doctype = doc.get("doctype")
+        efris_log_info(f"The Stock In Type is {doctype}")
+        # Removed direct submssion to EFRIS for stock-entry.   
+        if doctype=="Stock Reconciliation":
+            send_stock_reconciliation(doc)
+        if doctype=="Purchase Receipt":
+            send_purchase_receipt(doc)
 
 @frappe.whitelist()
 def send_stock_entry(doc):
@@ -485,7 +486,7 @@ def before_submit_on_stock_entry(doc, method):
         if purpose == 'Manufacture' or (purpose == 'Material Transfer' and not item.get('efris_purchase_receipt_no')):
             has_batch_no = frappe.db.get_value('Item', {'item_code': item_code}, 'has_batch_no')
             if not has_batch_no and item.get("efris_transfer") and not item.get("efris_production_batch_no") and purpose == 'Manufacture':
-                frappe.throw(f"The Item {item_code} does not have Batch No enabled. Please enter the EFRIS producntion batch no.")
+                frappe.throw(f"The Item {item_code} does not have Batch No enabled. Please enter the EFRIS production batch no.")
             elif item.get("efris_transfer") and not item.get("efris_purchase_receipt_no") and purpose == 'Material Transfer':
                 frappe.throw(f"The Item {item_code} does not have Purchase Receipt No Reference. Please enter the Purchase Receipt Reference no.")
         efris_log_info(f"The Item Company is {item_company}")
