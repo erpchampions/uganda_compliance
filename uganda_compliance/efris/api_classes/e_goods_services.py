@@ -51,6 +51,10 @@ def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
     return {'is_efris': is_efris}
 
 def before_save_item(doc, method):
+    auto_send_submitted_invoice = get_e_company_settings(doc.get("efris_e_company")).auto_send_submitted_invoice    
+    if not ((auto_send_submitted_invoice == 1) or (method == 'manual_submit')):
+        efris_log_info("Skipping EFRIS Item Upload as Auto Send Submitted Invoice is disabled.")
+        return
     is_import = frappe.flags.in_import
     is_registered_item = doc.get("efris_registered", 0)
     if is_import and is_registered_item == 1:

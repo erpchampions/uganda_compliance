@@ -399,36 +399,6 @@ def create_tax_details(taxes):
 		"taxRateName": tax.tax_rate_name
 	} for tax in taxes]
 
-# def create_goods_details(items):
-#     return [{
-#         "item": item.item_name,
-#         "itemCode": item.item_code,
-#         "qty": str(item.quantity),
-#         "unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
-#         "unitPrice": item.rate,
-#         "total": item.amount,
-#         "taxRate": str(item.gst_rate),
-#         "tax": item.tax,
-#         "orderNumber": str(item.order_number),
-#         "deemedFlag": "2",
-#         "exciseFlag": "2",
-#         "categoryId": "",
-#         "categoryName": "",
-#         "goodsCategoryId": item.efris_commodity_code,
-#         "goodsCategoryName": "",
-#         "exciseRate": "",
-#         "exciseRule": "",
-#         "exciseTax": "",
-#         "pack": get_efris_item_pack_and_stick(item.item_code)[0],
-#         "stick": get_efris_item_pack_and_stick(item.item_code)[1],
-#         "exciseUnit": "",
-#         "exciseCurrency": "",
-#         "exciseRateName": "",
-#         "vatApplicableFlag": "1",
-#         "totalWeight": item.total_weight,
-#         "pieceQty": item.piece_qty,
-#         "pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit)
-#     } for item in items if item.efris_commodity_code]
 
 def create_summary(einvoice):
 	return {
@@ -640,18 +610,6 @@ def update_sales_invoice_return_status(einvoice):
 	sales_invoice_return.efris_einvoice_status = "EFRIS Generated"
 	sales_invoice_return.submit()
 
-# def update_original_invoice_status(einvoice):
-# 	"""
-# 	Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
-# 	"""
-# 	sales_invoice = frappe.get_doc("Sales Invoice", einvoice.name)
-# 	original_einvoice = get_einvoice(sales_invoice.return_against)
-# 	original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
-# 	original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
-# 	original_sales_invoice.save()
-
-# 	original_einvoice.status = "EFRIS Cancelled"
-# 	original_einvoice.save()
 
 def update_original_invoice_status(einvoice):
     """
