@@ -357,7 +357,7 @@ function reset_discounts(frm) {
 
 async function add_custom_buttons(frm) {  
 
-    if (frm.doc.docstatus != 1 || !frm.doc.efris_company || frm.doc.efris_irn || !frm.doc.efris_invoice || frm.doc.is_return) {
+    if (frm.doc.docstatus != 1 || !frm.doc.efris_company || frm.doc.efris_irn || !frm.doc.efris_invoice || frm.doc.efris_e_invoice) {
         console.log("Skipping EFRIS submission button for non-EFRIS or return invoices");
         return;
     }

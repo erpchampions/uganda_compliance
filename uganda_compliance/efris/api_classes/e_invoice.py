@@ -893,7 +893,7 @@ def on_submit_sales_invoice(doc, method):
 	"""	
 	auto_send_submitted_invoice = doc.get("efris_invoice") and get_e_company_settings(doc.get("company")).auto_send_submitted_invoice
 	or_is__efris_credit_note = doc.is_return and doc.get("efris_invoice")
-	if (auto_send_submitted_invoice == 1) or (method == 'manual_submit') or (or_is__efris_credit_note == 1):
+	if (auto_send_submitted_invoice == 1) or (method == 'manual_submit') :
 
 		sales_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
 		validate_payment(sales_invoice)
