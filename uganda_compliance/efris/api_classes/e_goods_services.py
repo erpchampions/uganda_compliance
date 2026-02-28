@@ -50,8 +50,15 @@ def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
 
     return {'is_efris': is_efris}
 
-def before_save_item(doc, method):
 
+@frappe.whitelist() 
+def after_save_item(doc, method = None):
+    if isinstance(doc, str):
+        doc = json.loads(doc)
+    # Convert dict to Frappe Document
+    if isinstance(doc, dict):
+        doc = frappe.get_doc(doc) 
+    efris_log_info(f"The Created Item is: {doc}") 
     
     is_import = frappe.flags.in_import
     is_registered_item = doc.get("efris_registered", 0)
