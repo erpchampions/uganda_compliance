@@ -239,7 +239,7 @@ doc_events = {
         
     },
     "Item": {
-        "before_save": "uganda_compliance.efris.api_classes.e_goods_services.before_save_item",
+        "on_update": "uganda_compliance.efris.api_classes.e_goods_services.after_save_item",
         "validate": "uganda_compliance.efris.api_classes.e_goods_services.item_validations"
 
     },
@@ -351,7 +351,8 @@ fixtures = [
         "filters":{
             "file_url":["like","%/files/ura_efris_logo.png%"]
     }   
-    }    
+    }
+    
 
 ]
 

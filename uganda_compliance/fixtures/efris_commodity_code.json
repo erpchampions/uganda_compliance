@@ -1,5 +1,230 @@
 [
  {
+  "commodity_code": "41112301",
+  "commodity_name": null,
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-01-08 12:58:03.479458",
+  "name": "41112301"
+ },
+ {
+  "commodity_code": "42295805",
+  "commodity_name": "Surgical thermal ablation balloons",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "03:C: Exempt (-)",
+  "modified": "2026-02-10 09:38:45.834312",
+  "name": "42295805"
+ },
+ {
+  "commodity_code": "42143118",
+  "commodity_name": "Transcervical intrauterine kits",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.135035",
+  "name": "42143118"
+ },
+ {
+  "commodity_code": "42296812",
+  "commodity_name": "Craniotomy surgical instruments",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.208444",
+  "name": "42296812"
+ },
+ {
+  "commodity_code": "42203405",
+  "commodity_name": "Angioplasty balloon catheters",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.219333",
+  "name": "42203405"
+ },
+ {
+  "commodity_code": "42201511",
+  "commodity_name": "Medical computed tomography CT or CAT scanners or tubes",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.250293",
+  "name": "42201511"
+ },
+ {
+  "commodity_code": "42271511",
+  "commodity_name": "Ventilatory effort recorders",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.261049",
+  "name": "42271511"
+ },
+ {
+  "commodity_code": "42271705",
+  "commodity_name": "Oxygen delivery connectors or adapters",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.271487",
+  "name": "42271705"
+ },
+ {
+  "commodity_code": "42161701",
+  "commodity_name": "Hemofilters",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.281185",
+  "name": "42161701"
+ },
+ {
+  "commodity_code": "42295601",
+  "commodity_name": "Cerebral ventricular or hydrocephalus drainage catheters or adapters",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.291124",
+  "name": "42295601"
+ },
+ {
+  "commodity_code": "42222008",
+  "commodity_name": "Infusion pump kits",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.300620",
+  "name": "42222008"
+ },
+ {
+  "commodity_code": "42292904",
+  "commodity_name": "Surgical suture or wire passers or related products",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.311127",
+  "name": "42292904"
+ },
+ {
+  "commodity_code": "42142627",
+  "commodity_name": "Insulin syringe",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.321778",
+  "name": "42142627"
+ },
+ {
+  "commodity_code": "42294704",
+  "commodity_name": "Perfusion filters or related products",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.332229",
+  "name": "42294704"
+ },
+ {
+  "commodity_code": "42203429",
+  "commodity_name": "Pericardiocentesis catheters",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.343088",
+  "name": "42203429"
+ },
+ {
+  "commodity_code": "42312601",
+  "commodity_name": "Negative pressure wound therapy equipment",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.353283",
+  "name": "42312601"
+ },
+ {
+  "commodity_code": "42271913",
+  "commodity_name": "Pharyngeal airways or airways kits",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.363950",
+  "name": "42271913"
+ },
+ {
+  "commodity_code": "42295904",
+  "commodity_name": "Vaginal or uterine stents",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.375043",
+  "name": "42295904"
+ },
+ {
+  "commodity_code": "42142730",
+  "commodity_name": "Urinary drainage tube accessories",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.385584",
+  "name": "42142730"
+ },
+ {
+  "commodity_code": "42142721",
+  "commodity_name": "Urological guidewires or glidewires",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.396426",
+  "name": "42142721"
+ },
+ {
+  "commodity_code": "42295912",
+  "commodity_name": "Coronary stents",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.407289",
+  "name": "42295912"
+ },
+ {
+  "commodity_code": "41115827",
+  "commodity_name": "Urinalysis analyzers",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.417093",
+  "name": "41115827"
+ },
+ {
+  "commodity_code": "42294216",
+  "commodity_name": "Angiography surgical instrument sets",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.427254",
+  "name": "42294216"
+ },
+ {
+  "commodity_code": "41104501",
+  "commodity_name": "Laboratory mechanical convection ovens",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.437323",
+  "name": "41104501"
+ },
+ {
+  "commodity_code": "42172004",
+  "commodity_name": "Mobile medical services life support kits",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": null,
+  "modified": "2026-02-20 10:06:40.447317",
+  "name": "42172004"
+ },
+ {
   "commodity_code": "42142602",
   "commodity_name": "Medical bulb syringes",
   "docstatus": 0,
@@ -4680,15 +4905,6 @@
   "name": "41104014"
  },
  {
-  "commodity_code": "41141701",
-  "commodity_name": "Acetic acid, alcohol, and toluidine blue combination reagents",
-  "docstatus": 0,
-  "doctype": "EFRIS Commodity Code",
-  "e_tax_category": "03:C: Exempt (-)",
-  "modified": "2025-11-12 10:44:14.821525",
-  "name": "41141701"
- },
- {
   "commodity_code": "41122605",
   "commodity_name": "Microscope immersion oil",
   "docstatus": 0,
@@ -8008,5 +8224,23 @@
   "e_tax_category": "03:C: Exempt (-)",
   "modified": "2025-12-01 14:55:41.712497",
   "name": "85448304"
+ },
+ {
+  "commodity_code": "41123302",
+  "commodity_name": "Microscope slide boxes or folders",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "03:C: Exempt (-)",
+  "modified": "2026-02-10 10:12:52.562891",
+  "name": "41123302"
+ },
+ {
+  "commodity_code": "41141701",
+  "commodity_name": "Acetic acid, alcohol, and toluidine blue combination reagents",
+  "docstatus": 0,
+  "doctype": "EFRIS Commodity Code",
+  "e_tax_category": "03:C: Exempt (-)",
+  "modified": "2025-11-12 10:44:14.821525",
+  "name": "41141701"
  }
 ]

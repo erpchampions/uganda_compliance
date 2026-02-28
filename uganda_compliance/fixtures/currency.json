@@ -30,36 +30,6 @@
   "symbol_on_right": 1
  },
  {
-  "currency_name": "UGX",
-  "docstatus": 0,
-  "doctype": "Currency",
-  "efris_currency_code": "101",
-  "enabled": 1,
-  "fraction": "Cent",
-  "fraction_units": 100,
-  "modified": "2024-12-29 22:09:57.236342",
-  "name": "UGX",
-  "number_format": "#,###.##",
-  "smallest_currency_fraction_value": 0.0,
-  "symbol": "Sh",
-  "symbol_on_right": 0
- },
- {
-  "currency_name": "USD",
-  "docstatus": 0,
-  "doctype": "Currency",
-  "efris_currency_code": "102",
-  "enabled": 1,
-  "fraction": "Cent",
-  "fraction_units": 100,
-  "modified": "2024-09-23 14:38:06.113860",
-  "name": "USD",
-  "number_format": "#,###.##",
-  "smallest_currency_fraction_value": 0.01,
-  "symbol": "$",
-  "symbol_on_right": 0
- },
- {
   "currency_name": "GBP",
   "docstatus": 0,
   "doctype": "Currency",
@@ -73,21 +43,6 @@
   "smallest_currency_fraction_value": 0.0,
   "symbol": "£",
   "symbol_on_right": 1
- },
- {
-  "currency_name": "EUR",
-  "docstatus": 0,
-  "doctype": "Currency",
-  "efris_currency_code": "104",
-  "enabled": 1,
-  "fraction": "Cent",
-  "fraction_units": 100,
-  "modified": "2024-09-23 14:37:27.184269",
-  "name": "EUR",
-  "number_format": "#,###.##",
-  "smallest_currency_fraction_value": 0.01,
-  "symbol": "€",
-  "symbol_on_right": 0
  },
  {
   "currency_name": "JPY",
@@ -118,5 +73,50 @@
   "smallest_currency_fraction_value": 0.01,
   "symbol": "",
   "symbol_on_right": 1
+ },
+ {
+  "currency_name": "EUR",
+  "docstatus": 0,
+  "doctype": "Currency",
+  "efris_currency_code": "104",
+  "enabled": 1,
+  "fraction": "Cent",
+  "fraction_units": 100,
+  "modified": "2024-09-23 14:37:27.184269",
+  "name": "EUR",
+  "number_format": "#,###.##",
+  "smallest_currency_fraction_value": 0.01,
+  "symbol": "€",
+  "symbol_on_right": 0
+ },
+ {
+  "currency_name": "USD",
+  "docstatus": 0,
+  "doctype": "Currency",
+  "efris_currency_code": "102",
+  "enabled": 1,
+  "fraction": "Cent",
+  "fraction_units": 100,
+  "modified": "2024-09-23 14:38:06.113860",
+  "name": "USD",
+  "number_format": "#,###.##",
+  "smallest_currency_fraction_value": 0.01,
+  "symbol": "$",
+  "symbol_on_right": 0
+ },
+ {
+  "currency_name": "UGX",
+  "docstatus": 0,
+  "doctype": "Currency",
+  "efris_currency_code": "101",
+  "enabled": 1,
+  "fraction": "Cent",
+  "fraction_units": 100,
+  "modified": "2026-02-25 13:07:57.048989",
+  "name": "UGX",
+  "number_format": "#,###.##",
+  "smallest_currency_fraction_value": 0.0,
+  "symbol": "Sh",
+  "symbol_on_right": 0
  }
 ]

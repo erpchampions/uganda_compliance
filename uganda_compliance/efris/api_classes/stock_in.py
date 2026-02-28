@@ -321,42 +321,54 @@ def goods_stock_recon_item(items, purpose):
             continue
     return goodsStockInItem, adjustment_code, supplier,tax_Id, stockIntype, remark
 
+@frappe.whitelist()
 def send_purchase_receipt(doc):
-        e_company = doc.get("company")     
-      
-        is_efris_count = 0     
+    # ---- Normalize incoming doc ----
+    if isinstance(doc, str):
+        try:
+            doc = json.loads(doc)
+        except Exception:
+            # string = docname
+            doc = frappe.get_doc("Purchase Receipt", doc)
 
-        items = doc.get("items", [])
-        for efris_item in doc.get("items", []):
-            is_efris = efris_item.get('efris_receipt')                
-        
-            if is_efris:
-                is_efris_count +=1
-        if not is_efris_count:
-            return
-        # Initialize goodsStockInItem list outside the loop
-        goodsStockInItem = []
-        stockInType = ""
-        stockInOption = doc.get("efris_stockin_type",'')
-        efris_log_info(f"Stock In Type for  Purchase Receipt {doc} is {stockInOption}")
-        stockInType = stockInOption.split(":")[0]
-        efris_log_info(f"The Stock In type for Purchase Receipt {doc} is {stockInType}")
-        goodsStockInItem = goods_stock_in_item_data(goodsStockInItem, items)
-     
-        if not goodsStockInItem:
-            efris_log_info("No items to process for EFRIS stock-in.")
-            return
+    if isinstance(doc, dict):
+        doc = frappe.get_doc(doc.get("doctype", "Purchase Receipt"), doc.get("name"))
+
+    # Now ALWAYS a Document
+    e_company = doc.get("company")
+    is_efris_count = 0  
+
+    items = doc.get("items", [])
+    for efris_item in doc.get("items", []):
+        is_efris = efris_item.get('efris_receipt')                
     
-        supplier_Tin=doc.get("supplier_tin") if doc.get('supplier_tin') else ""
-        supplier=doc.get("supplier_name")
-        stockInDate=str(doc.get("posting_date"))
-        remarks=doc.get("remarks") if doc.get('remarks') else ""
-        branchId=doc.get("branch_id") if doc.get('branch_id') else ""
-        goods_Stock_upload_T131 = goods_Stock_T131_data("101", "", remarks,stockInDate, stockInType, "", "", branchId, "", "", "", "101", goodsStockInItem, supplier, supplier_Tin)
+        if is_efris:
+            is_efris_count +=1
+    if not is_efris_count:
+        return
+    # Initialize goodsStockInItem list outside the loop
+    goodsStockInItem = []
+    stockInType = ""
+    stockInOption = doc.get("efris_stockin_type",'')
+    efris_log_info(f"Stock In Type for  Purchase Receipt {doc} is {stockInOption}")
+    stockInType = stockInOption.split(":")[0]
+    efris_log_info(f"The Stock In type for Purchase Receipt {doc} is {stockInType}")
+    goodsStockInItem = goods_stock_in_item_data(goodsStockInItem, items)
+    
+    if not goodsStockInItem:
+        efris_log_info("No items to process for EFRIS stock-in.")
+        return
 
-        # Make the post request to EFRIS
-        success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
-        handle_response(success,"Purchase Receipt Item", response, doc.items, e_company, doc.name)
+    supplier_Tin=doc.get("supplier_tin") if doc.get('supplier_tin') else ""
+    supplier=doc.get("supplier_name")
+    stockInDate=str(doc.get("posting_date"))
+    remarks=doc.get("remarks") if doc.get('remarks') else ""
+    branchId=doc.get("branch_id") if doc.get('branch_id') else ""
+    goods_Stock_upload_T131 = goods_Stock_T131_data("101", "", remarks,stockInDate, stockInType, "", "", branchId, "", "", "", "101", goodsStockInItem, supplier, supplier_Tin)
+
+    # Make the post request to EFRIS
+    success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+    handle_response(success,"Purchase Receipt Item", response, doc.items, e_company=doc.get("company"), key=doc.name)
 
 def goods_stock_in_item_data(goodsStockInItem, items):
     for item_stock in items:
@@ -398,32 +410,40 @@ def goods_stock_in_item_data(goodsStockInItem, items):
     return goodsStockInItem
 
 
-def handle_response(success,child_table, response, items, e_company, key):
+def handle_response(success, child_table, response, items, e_company, key):
     if success:
         efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company}")
         frappe.msgprint(f"Stock is successfully uploaded to EFRIS for {e_company}")
 
+        # Mark child rows as registered (used by Stock Entry etc.)
         for item in items:
             frappe.db.set_value(child_table, item.name, 'efris_registered', 1)
 
-        # Update parent document's efris_posted if the field exists
+        # Determine parent document
         doctype = frappe.get_value(child_table, items[0].name, 'parenttype')
         docname = frappe.get_value(child_table, items[0].name, 'parent')
 
-        if doctype == 'Stock Entry' and docname:
-            stock_entry_doc = frappe.get_doc(doctype, docname)
+        if doctype and docname:
+            parent_doc = frappe.get_doc(doctype, docname)
 
-            if hasattr(stock_entry_doc, 'efris_posted'):
-                item_details = stock_entry_doc.get('items', [])
-                
-                # Filter items that are marked for EFRIS
-                efris_items = [item for item in item_details if item.get('efris_transfer') and item.get('t_warehouse')]
+            # ---- Stock Entry logic (existing) ----
+            if doctype == 'Stock Entry' and hasattr(parent_doc, 'efris_posted'):
+                item_details = parent_doc.get('items', [])
+                efris_items = [
+                    d for d in item_details
+                    if d.get('efris_transfer') and d.get('t_warehouse')
+                ]
 
-                # Check if ALL EFRIS items are registered
-                if efris_items and all(item.get('efris_registered') for item in efris_items):
+                if efris_items and all(d.get('efris_registered') for d in efris_items):
                     frappe.db.set_value(doctype, docname, 'efris_posted', 1)
                     efris_log_info(f"Stock Entry {docname} marked as posted to EFRIS.")
-                stock_entry_doc.reload()
+
+            # ---- Purchase Receipt logic (NEW) ----
+            elif doctype == 'Purchase Receipt' and hasattr(parent_doc, 'efris_submitted'):
+                frappe.db.set_value(doctype, docname, 'efris_submitted', 1)
+                efris_log_info(f"Purchase Receipt {docname} marked as submitted to EFRIS.")
+
+            parent_doc.reload()
 
     else:
         error_message = f"Failed to upload Stock to EFRIS for {e_company} under key {key}: {response}"
@@ -734,3 +754,13 @@ def process_pending_efris_stock_entries():
             frappe.log_error(title=error_title, message=frappe.get_traceback())
   
     return processed_entries
+
+@frappe.whitelist()
+def is_efris_warehouse(warehouse_name):
+    if not warehouse_name:
+        return False
+
+    try:
+        return frappe.get_value("Warehouse", warehouse_name, "efris_warehouse") or False
+    except Exception:
+        return False
