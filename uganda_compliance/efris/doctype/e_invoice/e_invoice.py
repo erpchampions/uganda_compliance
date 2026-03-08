@@ -160,6 +160,8 @@ class EInvoice(Document):
         self.invoiceIndustryCode = 101
         self.isBatch = 0
         self.is_return = self.sales_invoice.is_return
+        self.issued_time = self.sales_invoice.posting_time
+        self.invoice_date = self.sales_invoice.posting_date
 
     def set_summary_details(self):
         self.net_amount = 0
