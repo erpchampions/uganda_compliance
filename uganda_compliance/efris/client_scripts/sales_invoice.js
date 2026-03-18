@@ -54,7 +54,7 @@ frappe.ui.form.on("Sales Invoice", {
         if (payment_row.amount <= 0) {
           console.log(
             "Here is a payment with an amoyunt",
-            payment_row.base_amount,
+            payment_row.base_amount
           );
           payment_row.amount = frm.doc.grand_total;
         }
@@ -191,20 +191,20 @@ function set_efris_invoice_details(frm) {
             child.doctype,
             child.name,
             "charge_type",
-            tax.charge_type,
+            tax.charge_type
           );
           frappe.model.set_value(
             child.doctype,
             child.name,
             "account_head",
-            tax.account_head,
+            tax.account_head
           );
           frappe.model.set_value(child.doctype, child.name, "rate", tax.rate);
           frappe.model.set_value(
             child.doctype,
             child.name,
             "included_in_print_rate",
-            tax.included_in_print_rate,
+            tax.included_in_print_rate
           );
         });
 
@@ -220,7 +220,7 @@ function set_efris_invoice_details(frm) {
     }
   } else {
     console.log(
-      "Either not EFRIS or it is a return invoice. Tax template not set.",
+      "Either not EFRIS or it is a return invoice. Tax template not set."
     );
   }
 
@@ -269,7 +269,7 @@ function handle_update_stock_setting(frm) {
 
 function get_auto_send_submitted_invoice_flag(frm) {
   console.log(
-    "Checking EFRIS company settings for auto send submitted invoice flag",
+    "Checking EFRIS company settings for auto send submitted invoice flag"
   );
   return new Promise((resolve) => {
     if (!frm.doc.efris_company || frm.doc.efris_invoice !== 1) {
@@ -283,7 +283,7 @@ function get_auto_send_submitted_invoice_flag(frm) {
       callback: function (r) {
         if (r.message && r.message.auto_send_submitted_invoice == 1) {
           console.log(
-            "Auto send submitted invoice is enabled in EFRIS settings",
+            "Auto send submitted invoice is enabled in EFRIS settings"
           );
           resolve(1);
         } else {
@@ -322,7 +322,7 @@ const get_irn_cancellation_fields = () => {
 const raise_form_is_dirty_error = () => {
   frappe.throw({
     message: __(
-      "You must save the document before making e-invoicing request.",
+      "You must save the document before making e-invoicing request."
     ),
     title: __("Unsaved Document"),
   });
@@ -360,7 +360,7 @@ async function add_custom_buttons(frm) {
     !frm.doc.efris_invoice
   ) {
     console.log(
-      "Skipping EFRIS submission button for non-EFRIS or return invoices",
+      "Skipping EFRIS submission button for non-EFRIS or return invoices"
     );
     return;
   }
@@ -386,7 +386,7 @@ async function add_custom_buttons(frm) {
 
             if (response.message) {
               frappe.msgprint(
-                __("Sales Invoice submitted to EFRIS successfully."),
+                __("Sales Invoice submitted to EFRIS successfully.")
               );
               frm.reload_doc();
             } else {
@@ -400,7 +400,7 @@ async function add_custom_buttons(frm) {
         function () {
           // No callback (do nothing)
           console.log("Submission to EFRIS was cancelled by the user.");
-        },
+        }
       );
     });
   }
