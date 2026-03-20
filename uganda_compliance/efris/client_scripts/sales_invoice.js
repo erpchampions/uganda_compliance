@@ -9,7 +9,7 @@ frappe.ui.form.on("Sales Invoice", {
         const einvoice_status = frm.doc.efris_einvoice_status;
 
         if (einvoice_status === "EFRIS Credit Note Pending") {
-          add_einvoice_button(__("Check EFRIS Approval Status"), async () => {
+          frm.add_custom_button(__("Check EFRIS Approval Status"), async () => {
             if (frm.is_dirty()) return raise_form_is_dirty_error();
 
             await frm.reload_doc();
