@@ -466,6 +466,8 @@ class EInvoice(Document):
         self.fetch_items_from_invoice()
 
     def get_einvoice_json(self):
+        calculated_total_tax = calculate_additional_discounts(self.invoice)
+
         einvoice_json = {
             "extend": {},
             "importServicesSeller": {},
@@ -489,22 +491,28 @@ class EInvoice(Document):
                 "sellerDetails": {
                     "tin": self.seller_gstin if self.seller_gstin is not None else "",
                     "ninBrn": self.seller_nin_or_brn if self.seller_nin_or_brn else "",
-                    "legalName": self.seller_legal_name
-                    if self.seller_legal_name is not None
-                    else "",
-                    "businessName": self.seller_trade_name
-                    if self.seller_trade_name is not None
-                    else "",
-                    "mobilePhone": self.seller_phone
-                    if self.seller_phone is not None
-                    else "",
+                    "legalName": (
+                        self.seller_legal_name
+                        if self.seller_legal_name is not None
+                        else ""
+                    ),
+                    "businessName": (
+                        self.seller_trade_name
+                        if self.seller_trade_name is not None
+                        else ""
+                    ),
+                    "mobilePhone": (
+                        self.seller_phone if self.seller_phone is not None else ""
+                    ),
                     "linePhone": "",
-                    "emailAddress": self.seller_email
-                    if self.seller_email is not None
-                    else "",
-                    "referenceNo": self.seller_reference_no
-                    if self.seller_reference_no is not None
-                    else "",
+                    "emailAddress": (
+                        self.seller_email if self.seller_email is not None else ""
+                    ),
+                    "referenceNo": (
+                        self.seller_reference_no
+                        if self.seller_reference_no is not None
+                        else ""
+                    ),
                     "branchId": "",
                     "isCheckReferenceNo": "0",
                     "branchName": "Test",
