@@ -151,6 +151,7 @@ class EInvoiceAPI:
             efris_log_info(f"EFRIS Generated Successfully. :{einvoice}")
             frappe.msgprint(_("EFRIS Generated Successfully."), alert=1)
         else:
+            frappe.log_error(title=response, message=frappe.get_traceback())
             frappe.throw(response, title=_("EFRIS Generation Failed"))
 
         return status, response
