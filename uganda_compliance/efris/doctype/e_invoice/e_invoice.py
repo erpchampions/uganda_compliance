@@ -466,7 +466,6 @@ class EInvoice(Document):
         self.fetch_items_from_invoice()
 
     def get_einvoice_json(self):
-        calculated_total_tax = calculate_additional_discounts(self.invoice)
 
         einvoice_json = {
             "extend": {},
@@ -671,11 +670,11 @@ class EInvoice(Document):
         discounted_item,
         discount_tax_rate,
     ):
-        tax = (
-            row.efris_dsct_item_tax
-            if tax_rate == "0.18" and discount_percentage > 0
-            else row.tax
-        )
+        # tax = (
+        #     row.efris_dsct_item_tax
+        #     if tax_rate == "0.18" and discount_percentage > 0
+        #     else row.tax
+        # )
 
         item = {
             "item": row.item_name,
@@ -685,7 +684,7 @@ class EInvoice(Document):
             "unitPrice": str(row.rate),
             "total": str(row.amount),
             "taxRate": str(tax_rate),
-            "tax": str(tax),
+            "tax": str(row.tax),
             "discountTotal": str(discount_amount) if discount_percentage > 0 else "",
             "discountTaxRate": str(discount_tax_rate),
             "orderNumber": str(order_number),
