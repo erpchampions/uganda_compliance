@@ -700,7 +700,7 @@ class EInvoice(Document):
 
         discount_item = None
         if discount_percentage > 0:
-            discount_tax = row.efris_dsct_discount_tax if tax_rate == "0.18" else tax
+            discount_tax = row.tax
             discount_item = {
                 "item": discounted_item,
                 "itemCode": item_code,
