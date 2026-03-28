@@ -22,6 +22,8 @@ from uganda_compliance.efris.utils.utils import (
     get_qr_code,
     safe_load_json,
 )
+from frappe.integrations.utils import create_request_log
+from uganda_compliance.efris.utils.utils import update_integration_request_log
 
 
 class EInvoiceAPI:
@@ -139,20 +141,45 @@ class EInvoiceAPI:
         einvoice_json = einvoice.get_einvoice_json()
 
         company_name = sales_invoice.company
-        status, response = make_post(
-            interfaceCode="T109",
-            content=einvoice_json,
-            company_name=company_name,
-            reference_doc_type=sales_invoice.doctype,
+        integration_request_log = create_request_log(
+            data=einvoice_json,
+            integration_type="Remote",
+            service_name="EFRIS Generate IRN",
+            reference_doctype=sales_invoice.doctype,
             reference_document=sales_invoice.name,
         )
-        if status:
-            EInvoiceAPI.handle_successful_irn_generation(einvoice, response)
-            efris_log_info(f"EFRIS Generated Successfully. :{einvoice}")
-            frappe.msgprint(_("EFRIS Generated Successfully."), alert=1)
-        else:
-            frappe.log_error(title=response, message=frappe.get_traceback())
-            frappe.throw(response, title=_("EFRIS Generation Failed"))
+        try:
+            status, response = make_post(
+                interfaceCode="T109",
+                content=einvoice_json,
+                company_name=company_name,
+                reference_doc_type=sales_invoice.doctype,
+                reference_document=sales_invoice.name,
+            )
+            if status:
+                EInvoiceAPI.handle_successful_irn_generation(einvoice, response)
+                efris_log_info(f"EFRIS Generated Successfully. :{einvoice}")
+                frappe.msgprint(_("EFRIS Generated Successfully."), alert=1)
+                update_integration_request_log(
+                    integration_request_log,
+                    status="Completed",
+                    response=response,
+                    error=None,
+                )
+            else:
+
+                update_integration_request_log(
+                    integration_request_log,
+                    status="Failed",
+                    response=response,
+                    error=response,
+                )
+
+                frappe.log_error(title=response, message=frappe.get_traceback())
+                frappe.throw(response, title=_("EFRIS Generation Failed"))
+        except Exception as e:
+            efris_log_error(f"Error generating IRN: {str(e)}")
+            frappe.throw(str(e), title=_("EFRIS Generation Failed"))
 
         return status, response
 
