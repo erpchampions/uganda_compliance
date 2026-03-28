@@ -1,4 +1,3 @@
-
 import json
 import frappe
 from frappe import _
@@ -10,9 +9,13 @@ from frappe import _
 from PIL import Image
 import numpy as np
 import base64
+from frappe.model.document import Document
+from typing import Literal
 
 
-class HandledException(frappe.ValidationError): pass
+class HandledException(frappe.ValidationError):
+    pass
+
 
 bench_path = get_bench_path()
 
@@ -28,26 +31,30 @@ def safe_load_json(message):
 
     return json_message
 
+
 def efris_log_info(message):
-    #frappe.logger().info(message)
+    # frappe.logger().info(message)
     frappe.log_error("efris_log_info", message)
-    
-    
+
 
 def efris_log_warning(message):
-    frappe.msgprint(_("Warning: ") + message, alert=True, indicator='orange')
+    frappe.msgprint(_("Warning: ") + message, alert=True, indicator="orange")
+
 
 def efris_log_error(message):
     frappe.log_error("efris_log_error", message)
 
+
 def format_amount(amount):
-    amt_float = float(amount)    
+    amt_float = float(amount)
     amt_string = "{:.2f}"
     return amt_string.format(amt_float)
 
+
 def test_job():
     print("Test job executed!")
-    
+
+
 @frappe.whitelist()
 def get_qr_code(data: str) -> str:
     """Generate QR Code data
@@ -63,9 +70,11 @@ def get_qr_code(data: str) -> str:
 
     return add_file_info(base_64_string)
 
+
 def add_file_info(data: str) -> str:
     """Add info about the file type and encoding."""
     return f"data:image/png;base64, {data}"
+
 
 def get_qr_code_bytes(data: bytes | str) -> bytes:
     """Create a QR code and return the bytes without using BytesIO."""
@@ -77,26 +86,44 @@ def get_qr_code_bytes(data: bytes | str) -> bytes:
     )
     qr.add_data(data)
     qr.make(fit=True)
-    
+
     img = qr.make_image(fill_color="black", back_color="white")
-    
+
     img_array = np.array(img)
-    
+
     img_pil = Image.fromarray(img_array)
-    
+
     bytes_list = []
-    img_pil.save(BytesArrayEncoder(bytes_list), format='PNG')
-    
-    return b''.join(bytes_list)
+    img_pil.save(BytesArrayEncoder(bytes_list), format="PNG")
+
+    return b"".join(bytes_list)
+
 
 def bytes_to_base64_string(data: bytes) -> str:
     """Convert bytes to a base64 encoded string."""
     return base64.b64encode(data).decode("utf-8")
 
+
 class BytesArrayEncoder:
     def __init__(self, byte_list):
         self.byte_list = byte_list
-        
+
     def write(self, b):
         self.byte_list.append(b)
-        
+
+
+def update_integration_request_log(
+    integration_request_log: Document,
+    status: Literal["Completed", "Failed"],
+    response: dict | None = None,
+    error: str | None = None,
+) -> None:
+
+    if not integration_request_log:
+        return
+
+    integration_request_log.status = str(status)
+    integration_request_log.output = str(response)
+    integration_request_log.error = str(error)
+
+    integration_request_log.save(ignore_permissions=True)
