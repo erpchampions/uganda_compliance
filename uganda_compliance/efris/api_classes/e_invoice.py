@@ -4,6 +4,7 @@ from datetime import datetime
 import frappe
 import six
 from frappe import _
+from frappe.integrations.utils import create_request_log
 from frappe.utils.user import get_users_with_role
 
 from uganda_compliance.efris.api_classes.efris_api import make_post
@@ -21,9 +22,8 @@ from uganda_compliance.efris.utils.utils import (
     efris_log_info,
     get_qr_code,
     safe_load_json,
+    update_integration_request_log,
 )
-from frappe.integrations.utils import create_request_log
-from uganda_compliance.efris.utils.utils import update_integration_request_log
 
 
 class EInvoiceAPI:
@@ -167,7 +167,6 @@ class EInvoiceAPI:
                     error=None,
                 )
             else:
-
                 update_integration_request_log(
                     integration_request_log,
                     status="Failed",
@@ -1386,9 +1385,7 @@ def _process_items(doc, item_taxes, discount_percentage):
             discounted_item,
             doc.get("is_return", False),
         )
-    frappe.log_error(
-        f"Calculated discount amounts", str(discount_amounts)
-    )
+    frappe.log_error(f"Calculated discount amounts", str(discount_amounts))
 
     return total_item_tax, total_discount_tax
 
@@ -1412,7 +1409,9 @@ def _update_row_values(
     values = {
         "efris_dsct_discount_total": -discount_amount if is_return else discount_amount,
         "efris_dsct_discount_tax": -discount_tax if is_return else discount_tax,
-        "efris_dsct_discount_tax_rate": f"{tax_rate / 100:.2f}" if tax_rate > 0 else "0.0",
+        "efris_dsct_discount_tax_rate": f"{tax_rate / 100:.2f}"
+        if tax_rate > 0
+        else "0.0",
         "efris_dsct_item_tax": -item_tax if is_return else item_tax,
         "efris_dsct_taxable_amount": -row.amount if is_return else row.amount,
         "efris_dsct_item_discount": discounted_item,
