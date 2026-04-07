@@ -141,13 +141,15 @@ class EInvoiceAPI:
         einvoice_json = einvoice.get_einvoice_json()
 
         company_name = sales_invoice.company
+
         integration_request_log = create_request_log(
             data=einvoice_json,
-            integration_type="Remote",
+            is_remote_request=1,
             service_name="EFRIS Generate IRN",
             reference_doctype=sales_invoice.doctype,
             reference_document=sales_invoice.name,
         )
+
         try:
             status, response = make_post(
                 interfaceCode="T109",
@@ -156,6 +158,7 @@ class EInvoiceAPI:
                 reference_doc_type=sales_invoice.doctype,
                 reference_document=sales_invoice.name,
             )
+
             if status:
                 EInvoiceAPI.handle_successful_irn_generation(einvoice, response)
                 efris_log_info(f"EFRIS Generated Successfully. :{einvoice}")
@@ -1309,6 +1312,7 @@ def calculate_additional_discounts(doc, method):
     """
     Calculate additional discounts and adjust tax values on Sales Invoice items for EFRIS compliance.
     """
+
     doc = _parse_doc(doc)
 
     efris_log_info(f"Calculate Additional Discounts called: {doc}")
@@ -1385,7 +1389,6 @@ def _process_items(doc, item_taxes, discount_percentage):
             discounted_item,
             doc.get("is_return", False),
         )
-    frappe.log_error(f"Calculated discount amounts", str(discount_amounts))
 
     return total_item_tax, total_discount_tax
 
@@ -1406,12 +1409,13 @@ def _update_row_values(
     """
     Update row values with calculated discounts and taxes.
     """
+
     values = {
         "efris_dsct_discount_total": -discount_amount if is_return else discount_amount,
         "efris_dsct_discount_tax": -discount_tax if is_return else discount_tax,
-        "efris_dsct_discount_tax_rate": f"{tax_rate / 100:.2f}"
-        if tax_rate > 0
-        else "0.0",
+        "efris_dsct_discount_tax_rate": (
+            f"{tax_rate / 100:.2f}" if tax_rate > 0 else "0.0"
+        ),
         "efris_dsct_item_tax": -item_tax if is_return else item_tax,
         "efris_dsct_taxable_amount": -row.amount if is_return else row.amount,
         "efris_dsct_item_discount": discounted_item,
@@ -1419,6 +1423,8 @@ def _update_row_values(
 
     for key, value in values.items():
         row.db_set(key, value)
+
+    frappe.db.commit()
 
 
 def decode_e_tax_rate(tax_rate, e_tax_category):
