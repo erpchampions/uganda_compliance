@@ -34,10 +34,10 @@ frappe.ui.form.on("Item", {
         frm.refresh_field("taxes");
         frm.refresh_field("efris_commodity_code")
     },
-    validate:function(frm){
-        set_item_tax_template(frm)
-        frm.refresh_field("taxes")
-    },
+    // validate:function(frm){
+    //     set_item_tax_template(frm)
+    //     frm.refresh_field("taxes")
+    // },
     item_code:function(frm){
         let item_code = frm.doc.item_code;
       if (item_code && item_code !== ''){
@@ -158,6 +158,11 @@ frappe.ui.form.on('Item', {
         let efris_product_code = frm.doc.item_code; 
         frm.set_value('efris_product_code',frm.doc.item_code);         
         frm.refresh_field("efris_product_code");
+    },
+    refresh: async function (frm) {
+        console.log("Item refresh");       
+       
+        add_custom_buttons(frm);     
     }
          
 });
@@ -282,5 +287,60 @@ function validate_uoms_table(frm) {
                 frappe.throw(`Please set the Package Scale Value for UOM: ${row.uom}`);
             }
         }
+    });
+}
+
+async function add_custom_buttons(frm) {
+    console.log("add_custom_buttons() called...");
+    const auto_send_submitted_invoice = await get_auto_send_submitted_invoice_flag(frm);
+    console.log(`Auto Send Submitted Invoice Flag: ${auto_send_submitted_invoice}`);
+
+    if (auto_send_submitted_invoice == 1 || !frm.doc.efris_item) return;
+    frm.add_custom_button(
+        __("Send To EFRIS"),
+        async function () {
+            frappe.confirm(
+                __("Are you sure you want to submit?"),
+                async function () {
+                    try {
+                        const response = await frappe.call({
+                            method: "uganda_compliance.efris.api_classes.e_goods_services.after_save_item",
+                            args: { doc: frm.doc,method: 'manual_submit' },
+                            freeze: true,
+                            freeze_message: __("Submitting to EFRIS...")
+                        });
+
+                        if (response.message) {
+                            frappe.msgprint(__("Item successfully uploaded to EFRIS."));
+                            frm.reload_doc();
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        frappe.msgprint(__("Error submitting to EFRIS."));
+                    }
+                }
+            );
+        },
+        __("Actions") // ✅ CRITICAL
+    );
+}
+function get_auto_send_submitted_invoice_flag(frm) {    
+    return new Promise((resolve) => {
+        if (!frm.doc.efris_item ) {
+            return resolve(0);
+        }
+
+        frappe.call({
+            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
+            args: { company_name: frm.doc.efris_e_company },
+            callback: function(r) {
+                if (r.message && r.message.auto_send_submitted_invoice == 1) {
+                    console.log("Auto send submitted invoice is enabled in EFRIS settings");
+                    resolve(1);
+                } else {
+                    resolve(0);
+                }
+            }
+        });
     });
 }

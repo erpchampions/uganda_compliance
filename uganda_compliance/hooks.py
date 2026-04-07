@@ -138,9 +138,10 @@ scheduler_events = {
         "uganda_compliance.efris.api_classes.e_invoice.check_credit_note_approval_status",
         "uganda_compliance.efris.api_classes.efris_invoice_sync.efris_invoice_sync"
 	],
-	# "hourly": [
-	# 	"uganda_compliance.tasks.hourly"
-	# ],
+	"hourly": [
+        "uganda_compliance.efris.page.efris_synchronizatio.efris_synchronization_center.process_pending_efris_entries",
+        "uganda_compliance.efris.api_classes.stock_in.process_pending_efris_stock_entries"
+    ]
 	# "weekly": [
 	# 	"uganda_compliance.tasks.weekly"
 	# ],
@@ -233,11 +234,12 @@ doc_events = {
                         "uganda_compliance.efris.api_classes.e_invoice.calculate_additional_discounts",
                                                 "uganda_compliance.efris.api_classes.e_invoice.before_save"                      
                       
-                        ]                
+                        ] ,
+        "validate": "uganda_compliance.efris.api_classes.e_invoice.copy_efris_fields"               
         
     },
     "Item": {
-        "before_save": "uganda_compliance.efris.api_classes.e_goods_services.before_save_item",
+        "on_update": "uganda_compliance.efris.api_classes.e_goods_services.after_save_item",
         "validate": "uganda_compliance.efris.api_classes.e_goods_services.item_validations"
 
     },
@@ -248,9 +250,8 @@ doc_events = {
                        ],
         
     },
-    "Stock Entry":{
-        "on_submit":"uganda_compliance.efris.api_classes.stock_in.stock_in_T131",
-        "before_save":"uganda_compliance.efris.api_classes.stock_in.before_save_on_stock_entry"
+    "Stock Entry":{        
+        "on_submit":"uganda_compliance.efris.api_classes.stock_in.before_submit_on_stock_entry"
     },
     "E Invoicing Settings":{
         "before_save":["uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save",
@@ -319,7 +320,12 @@ doctype_list_js = {
 fixtures = [
     "E Tax Category", 
     "EFRIS Commodity Code",
-    "UOM",
+    {
+        "doctype": "UOM",
+        "filters": {
+            "enabled": 1
+        }
+    },
     {
         "doctype": "Print Format",
         "filters": {
@@ -338,6 +344,15 @@ fixtures = [
             "efris_currency_code": ["!=", None]
         }
     },
-    "EFRIS Payment Mode"
+    "EFRIS Payment Mode",
+    "Tax Category" ,
+    {
+        "doctype":"File",
+        "filters":{
+            "file_url":["like","%/files/ura_efris_logo.png%"]
+    }   
+    }
+    
+
 ]
 

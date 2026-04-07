@@ -11,7 +11,7 @@ from uganda_compliance.efris.utils.utils import get_qr_code
 from frappe.utils.user import get_users_with_role
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
-from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
 
 class EInvoiceAPI:
 	@staticmethod
@@ -317,7 +317,7 @@ class EInvoiceAPI:
 			einvoice.save()
 
 ###cancel rn#####
-def create_credit_note(einvoice, reason_code, remark):
+def create_credit_note(einvoice, reason_code, remark):		
 	credit_note = {
 		"oriInvoiceId": einvoice.invoice_id,
 		"oriInvoiceNo": einvoice.irn,
@@ -356,32 +356,36 @@ def create_credit_note(einvoice, reason_code, remark):
 	return credit_note
 
 def create_goods_details(items):
-	return [{
-		"item": item.item_name,
-		"itemCode": item.item_code,
-		"qty": str(item.quantity),
-		"unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
-		"unitPrice": item.rate,
-		"total": item.amount,
-		"taxRate": str(item.gst_rate),
-		"tax": item.tax,
-		"orderNumber": str(item.order_number),
-		"deemedFlag": "2",
-		"exciseFlag": "2",
-		"categoryId": "",
-		"categoryName": "",
-		"goodsCategoryId": item.efris_commodity_code,
-		"goodsCategoryName": "",
-		"exciseRate": "",
-		"exciseRule": "",
-		"exciseTax": "",
-		"pack": "",
-		"stick": "",
-		"exciseUnit": "",
-		"exciseCurrency": "",
-		"exciseRateName": "",
-		"vatApplicableFlag": "1"
-	} for item in items]
+    return [{
+        "item": item.item_name,
+        "itemCode": item.item_code,
+        "qty": str(item.quantity),
+        "unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
+        "unitPrice": item.rate,
+        "total": item.amount,
+        "taxRate": str(item.gst_rate),
+        "tax": item.tax,
+        "orderNumber": str(item.order_number),
+        "deemedFlag": "2",
+        "exciseFlag": "2",
+        "categoryId": "",
+        "categoryName": "",
+        "goodsCategoryId": item.efris_commodity_code,
+        "goodsCategoryName": "",
+        "exciseRate": "",
+        "exciseRule": "",
+        "exciseTax": "",
+        "pack": get_efris_item_pack_and_stick(item.item_code)[0],
+        "stick": get_efris_item_pack_and_stick(item.item_code)[1],
+        "exciseUnit": "",
+        "exciseCurrency": "",
+        "exciseRateName": "",
+        "vatApplicableFlag": "1",
+        "totalWeight": item.total_weight,
+        "pieceQty": item.piece_qty,
+        "pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit)
+    } for item in items if item.efris_commodity_code]
+
 
 def create_tax_details(taxes):
 	return [{
@@ -394,6 +398,7 @@ def create_tax_details(taxes):
 		"exciseCurrency": tax.excise_currency,
 		"taxRateName": tax.tax_rate_name
 	} for tax in taxes]
+
 
 def create_summary(einvoice):
 	return {
@@ -605,17 +610,30 @@ def update_sales_invoice_return_status(einvoice):
 	sales_invoice_return.efris_einvoice_status = "EFRIS Generated"
 	sales_invoice_return.submit()
 
-def update_original_invoice_status(einvoice):
-	"""
-	Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
-	"""
-	original_einvoice = get_einvoice(einvoice.return_against)
-	original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
-	original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
-	original_sales_invoice.save()
 
-	original_einvoice.status = "EFRIS Cancelled"
-	original_einvoice.save()
+def update_original_invoice_status(einvoice):
+    """
+    Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
+    """
+
+    # Get the linked Sales Invoice (names match)
+    sales_invoice = frappe.get_doc("Sales Invoice", einvoice.name)
+
+    # Get the original invoice name from the return_against field
+    if not sales_invoice.return_against:
+        frappe.throw(f"No return_against found for Sales Invoice {sales_invoice.name}")
+
+    # Fetch the original e-invoice using the original sales invoice name
+    original_einvoice = get_einvoice(sales_invoice.return_against)
+    original_sales_invoice = frappe.get_doc("Sales Invoice", sales_invoice.return_against)
+
+    # Update statuses
+    original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
+    original_sales_invoice.save()
+
+    original_einvoice.status = "EFRIS Cancelled"
+    original_einvoice.save()
+
 #####End of credit note status update
 
 def get_credit_note_reason(sale_invoice):
@@ -741,7 +759,10 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 	"""
 	item_list = []
 	discountFlag = "2" 
-
+	efris_piece_unit_code = ""	
+	pack = ""
+	stick = ""
+	
 	for item in einvoice.items:
 		qty = item.quantity
 		taxes = item.tax
@@ -751,7 +772,9 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 		orderNumber = get_order_no(original_einvoice, item.item_code, item.item_name)
 		goodsCode = frappe.db.get_value("Item", {"item_code": item_code}, "efris_product_code")
 		efris_log_info(f"The EFRIS Product code is {goodsCode}")
-
+		if einvoice.non_resident_flag == 1:
+			pack, stick = get_efris_item_pack_and_stick(item_code)
+			efris_log_info(f"The Pack and Stick values are {pack} and {stick}")
 		if goodsCode:
 			item_code = goodsCode
 
@@ -769,7 +792,9 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 				efris_log_info(f"Item Taxes: {taxes}")
 
 			if not taxRate or taxRate in ["-", "Exempt"]:
-				discountTaxRate = "0.0"
+				discountTaxRate = "0.0"	
+			
+				
 
 		item_list.append({
 			"item": item.item_name,
@@ -791,15 +816,39 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 			"exciseRate": "",
 			"exciseRule": "",
 			"exciseTax": "",
-			"pack": "",
-			"stick": "",
+			"pack": pack,
+			"stick": stick,
 			"exciseUnit": "",
 			"exciseCurrency": "",
 			"exciseRateName": "",
-			"vatApplicableFlag": "1"
+			"vatApplicableFlag": "1",
+			"totalWeight": item.total_weight if item.total_weight else "",
+			"pieceQty":item.piece_qty if item.piece_qty else "",
+			"pieceMeasureUnit": get_efris_uom_code(item.piece_measure_unit) 
 		})
 
 	return item_list
+
+def get_efris_uom_code(uom_name):
+	if uom_name:
+		uom = frappe.get_doc("UOM", uom_name)	
+		if uom:
+			return uom.efris_uom_code
+	return ""
+def get_efris_item_pack_and_stick(item_code):
+	pack = ""
+	stick = ""
+	if item_code:
+		item_uom = frappe.get_doc("Item", item_code).uoms	
+		if item_uom:
+			for uom in item_uom:
+				if uom.efris_is_piece_unit:
+					stick = uom.efris_package_scale_value
+				if uom.efris_package_unit:
+					pack = uom.efris_package_scale_value
+			return pack, stick
+	return ""
+
 
 def get_einvoice(sales_invoice):
 		if frappe.db.exists('E Invoice', {'invoice': sales_invoice}):
@@ -824,20 +873,38 @@ def after_save_sales_invoice(doc, method):
 	if is_return:
 		return
 	
-def on_submit_sales_invoice(doc, method):
-	
-	
+
+@frappe.whitelist()	
+def send_to_efris(doc):	 
+	if isinstance(doc, str):
+		doc = json.loads(doc)
+	# Convert dict to Frappe Document
+	if isinstance(doc, dict):
+		doc = frappe.get_doc(doc) 
+	on_submit_sales_invoice(doc,'manual_submit')
+	return {
+		"message": "Sales Invoice sent to EFRIS successfully.",
+		"status": "success"
+	}
+
+def on_submit_sales_invoice(doc, method):	
 	"""
 	Handle EFRIS-related logic when a Sales Invoice is submitted.
-	"""
-	sales_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
-	validate_payment(sales_invoice)
-	if not sales_invoice.efris_invoice or sales_invoice.is_consolidated:
-		return
+	"""	
+	auto_send_submitted_invoice = doc.get("efris_invoice") and get_e_company_settings(doc.get("company")).auto_send_submitted_invoice
+	or_is__efris_credit_note = doc.is_return and doc.get("efris_invoice")
+	if (auto_send_submitted_invoice == 1) or (method == 'manual_submit') :
 
-	if not validate_company(sales_invoice):
-		return
-	_handle_efris_logic(sales_invoice, doc)
+		sales_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
+		validate_payment(sales_invoice)
+		if not sales_invoice.efris_invoice or sales_invoice.is_consolidated:
+			return
+
+		if not validate_company(sales_invoice):
+			return
+		_handle_efris_logic(sales_invoice, doc)
+	
+
 	
 def _handle_efris_logic(sales_invoice, doc):
 	"""
@@ -1255,3 +1322,14 @@ def get_efris_product_code(item_code):
 	if not product_code:
 		frappe.throw(f"No EFRIS Product Code found for item: {item_code}")
 	return product_code
+
+#functioin to copy efris fields from original invoice to return invoice
+def copy_efris_fields(doc, method):
+    if doc.is_return and doc.return_against:
+        original = frappe.get_doc("Sales Invoice", doc.return_against)
+        for orig_item, new_item in zip(original.items, doc.items):
+            new_item.efris_piece_qty = -(orig_item.efris_piece_qty or 0)
+            new_item.efris_total_weight = -(orig_item.efris_total_weight or 0)
+            new_item.efris_piece_measure_unit = orig_item.efris_piece_measure_unit
+
+

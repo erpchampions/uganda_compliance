@@ -6,6 +6,41 @@ from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings i
 from functools import lru_cache
 
 @frappe.whitelist()
+def has_efris_item_in_stock_ledger_entry(warehouse, company):
+    """
+    Check if there exists a Stock Ledger Entry for the given warehouse that includes
+    at least one item with the 'efris_item' flag set to True.
+    """
+    try:
+        efris_log_info(f"Checking EFRIS items in warehouse {warehouse} for company {company}")
+        
+        # Optimized single query using SQL JOIN
+        result = frappe.db.sql("""
+            SELECT sle.name 
+            FROM `tabStock Ledger Entry` sle
+            INNER JOIN `tabItem` item ON sle.item_code = item.name
+            WHERE sle.warehouse = %(warehouse)s 
+                AND sle.company = %(company)s
+                AND sle.docstatus = 1 
+                AND sle.is_cancelled = 0
+                AND item.efris_item = 1
+            LIMIT 1
+        """, {
+            'warehouse': warehouse,
+            'company': company
+        })
+        
+        has_efris_items = bool(result)
+        efris_log_info(f"Warehouse {warehouse} has EFRIS items: {has_efris_items}")
+        
+        return has_efris_items
+
+    except Exception as e:
+        efris_log_error(f"Error checking EFRIS items for warehouse {warehouse}: {str(e)}")
+        frappe.log_error(frappe.get_traceback(), "EFRIS Warehouse Validation Error")
+        return False
+    
+@frappe.whitelist()
 def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
     is_efris_warehouse = frappe.db.get_value('Warehouse', accept_warehouse, 'efris_warehouse')
 
@@ -15,7 +50,16 @@ def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
 
     return {'is_efris': is_efris}
 
-def before_save_item(doc, method):
+
+@frappe.whitelist() 
+def after_save_item(doc, method = None):
+    if isinstance(doc, str):
+        doc = json.loads(doc)
+    # Convert dict to Frappe Document
+    if isinstance(doc, dict):
+        doc = frappe.get_doc(doc) 
+    efris_log_info(f"The Created Item is: {doc}") 
+    
     is_import = frappe.flags.in_import
     is_registered_item = doc.get("efris_registered", 0)
     if is_import and is_registered_item == 1:
@@ -25,7 +69,10 @@ def before_save_item(doc, method):
     if not is_efris_item:
         return
 
-    is_registered_item = doc.get("efris_registered", 0)
+    auto_send_submitted_invoice = get_e_company_settings(doc.get("efris_e_company")).auto_send_submitted_invoice    
+    if not ((auto_send_submitted_invoice == 1) or (method == 'manual_submit')):
+        efris_log_info("Skipping EFRIS Item Upload as Auto Send Submitted Invoice is disabled.")
+        return
 
     has_opening_stock = doc.get("opening_stock",0)
     efris_log_info(f"The Opening Stock Quantity is {has_opening_stock}")
@@ -100,21 +147,47 @@ def get_item_details(doc):
 def get_item_pricing_and_uom(doc):
     item_currency = doc.get('efris_currency', '')
     currency = frappe.db.get_value('Currency', {'currency_name': item_currency}, 'efris_currency_code') if item_currency else ''
-
-    if item_currency == 'UGX':
-        unit_price = str(doc.get('standard_rate', '0.0'))
-        if unit_price == '0.0':
-            frappe.throw("Standard Rate cannot be zero")
-    else:
-        unit_price = str(doc.get('uoms', [])[0].get('efris_unit_price', 0))
-
-    uom = doc.get('stock_uom', '')
-    measure_unit = frappe.db.get_value('UOM', {'uom_name': uom}, 'efris_uom_code') or ''
-    if not measure_unit:
-        frappe.throw(f"EFRIS UOM code must not be empty on Default UOM: {uom}")
-
+    uoms = doc.get('uoms', [])
     commodity_category_id = doc.get('efris_commodity_code', '')
+    if not uoms:
+        return "0.0", "", "", ""      
+    # Filter UOMs where efris_package_unit == 1
+    selected_uoms = [u for u in uoms if u.get("efris_package_unit") == 1]
+
+    # If none found, fallback to the first UOM
+    if not selected_uoms and uoms:
+        selected_uoms = [uoms[0]]
+
+    # Now loop safely
+    for u in selected_uoms:
+        uom = u.get('uom')
+        if uom:
+            measure_unit = frappe.db.get_value('UOM', {'uom_name': uom}, 'efris_uom_code') or ''
+            if not measure_unit:
+                frappe.throw(f"EFRIS UOM code must not be empty on Default UOM: {uom}")
+        unit_price = str(u.get('efris_unit_price', '0.0'))
+
+        
     return unit_price, measure_unit, currency, commodity_category_id
+
+# def get_item_pricing_and_uom_copy(doc):
+#     item_currency = doc.get('efris_currency', '')
+#     currency = frappe.db.get_value('Currency', {'currency_name': item_currency}, 'efris_currency_code') if item_currency else ''
+
+#     if item_currency == 'UGX':
+#         unit_price = str(doc.get('standard_rate', '0.0'))
+#         if unit_price == '0.0':
+#             frappe.throw("Standard Rate cannot be zero")
+#     else:
+#         unit_price = str(doc.get('uoms', [])[0].get('efris_unit_price', 0))
+
+#     uom = doc.get('stock_uom', '')
+#     measure_unit = frappe.db.get_value('UOM', {'uom_name': uom}, 'efris_uom_code') or ''
+#     if not measure_unit:
+#         frappe.throw(f"EFRIS UOM code must not be empty on Default UOM: {uom}")
+
+#     commodity_category_id = doc.get('efris_commodity_code', '')
+#     return unit_price, measure_unit, currency, commodity_category_id
 
 def process_additional_uoms(doc):
     goods_other_units = []
