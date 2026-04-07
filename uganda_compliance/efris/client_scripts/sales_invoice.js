@@ -88,12 +88,15 @@ frappe.ui.form.on('Sales Invoice Item', {
         set_efris_flag_based_on_items(frm);
     },
     item_code: function(frm) {
-        set_efris_flag_based_on_items(frm);
+        // set_efris_flag_based_on_items(frm);
     }
 });
 
 frappe.ui.form.on('Sales Invoice', {
     onload: function(frm,cdt,cdn) {
+         if(!frm.doc.efris_company || frm.doc.efris_company === 0 || !frm.is_new()){
+        return;
+     }
         if (!frm.doc.efris_non_resident_flag) {
             frm.set_value('efris_invoice_industry_code', '101:General Industry');                     
         }
@@ -249,12 +252,18 @@ function set_efris_invoice_details(frm) {
 }
 
 const set_efris_flag_based_on_items = (frm) => {
-    let is_efris_flag = 0;
-    frm.doc.items.forEach(item => {
-        if (item.efris_commodity_code) {
-            is_efris_flag = 1;                       
-        }
-    });
+    let is_efris_flag = 1;  // assume ALL items are EFRIS
+
+    if (!frm.doc.items || frm.doc.items.length === 0) {
+        is_efris_flag = 0;  // no items → not EFRIS
+    } else {
+        frm.doc.items.forEach(item => {
+            if (!item.efris_commodity_code) {
+                is_efris_flag = 0;  // found non-EFRIS item
+            }
+        });
+    }
+
     frm.set_value('efris_invoice', is_efris_flag);
 };
 
