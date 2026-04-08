@@ -25,19 +25,20 @@ class EInvoiceAPI:
 
 
 	@staticmethod
-	def create_einvoice(sales_invoice_name):
+	def create_einvoice(sales_invoice_name, source_doctype='Sales Invoice'):
 		if frappe.db.exists('E Invoice', {'invoice': sales_invoice_name}):
 			efris_log_info("found existing e_invoice")
 			einvoice = frappe.get_doc('E Invoice', {'invoice': sales_invoice_name})
 		else:
 			efris_log_info("creating new e_invoice")
 			einvoice = frappe.new_doc('E Invoice')
+			einvoice.source_doctype = source_doctype
 			einvoice.invoice = sales_invoice_name
 			einvoice.sync_with_sales_invoice()
 			einvoice.flags.ignore_permissions = True
 			einvoice.save()
-			frappe.db.set_value('Sales Invoice', sales_invoice_name, 'efris_e_invoice', einvoice.name)  # Link E-Invoice to Sales Invoice
-		   
+			frappe.db.set_value(source_doctype, sales_invoice_name, 'efris_e_invoice', einvoice.name)
+
 		return einvoice
 	
 	
@@ -107,12 +108,13 @@ class EInvoiceAPI:
 	@staticmethod
 	def generate_irn(sales_invoice):
 		efris_log_info(f"generate_irn called ...")
-		
+
 		sales_invoice = EInvoiceAPI.parse_sales_invoice(sales_invoice)
 		efris_log_info(f" after parse done...")
-		
-		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
-		einvoice.fetch_invoice_details() 
+
+		source_doctype = sales_invoice.get('doctype') or 'Sales Invoice'
+		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name, source_doctype=source_doctype)
+		einvoice.fetch_invoice_details()
 		
 		einvoice_json = einvoice.get_einvoice_json()
 		
@@ -874,18 +876,41 @@ def after_save_sales_invoice(doc, method):
 		return
 	
 
-@frappe.whitelist()	
-def send_to_efris(doc):	 
+@frappe.whitelist()
+def send_to_efris(doc):
 	if isinstance(doc, str):
 		doc = json.loads(doc)
 	# Convert dict to Frappe Document
 	if isinstance(doc, dict):
-		doc = frappe.get_doc(doc) 
+		doc = frappe.get_doc(doc)
 	on_submit_sales_invoice(doc,'manual_submit')
 	return {
 		"message": "Sales Invoice sent to EFRIS successfully.",
 		"status": "success"
 	}
+
+@frappe.whitelist()
+def send_pos_invoice_to_efris(doc):
+	if isinstance(doc, str):
+		doc = json.loads(doc)
+	if isinstance(doc, dict):
+		doc = frappe.get_doc(doc)
+	on_submit_pos_invoice(doc, 'manual_submit')
+	return {
+		"message": "POS Invoice sent to EFRIS successfully.",
+		"status": "success"
+	}
+
+def on_submit_pos_invoice(doc, method):
+	auto_send = doc.get("efris_invoice") and get_e_company_settings(doc.get("company")).auto_send_submitted_invoice
+	if (auto_send == 1) or (method == 'manual_submit'):
+		pos_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
+		validate_payment(pos_invoice)
+		if not pos_invoice.efris_invoice or pos_invoice.is_consolidated:
+			return
+		if not validate_company(pos_invoice):
+			return
+		_handle_efris_logic(pos_invoice, doc)
 
 def on_submit_sales_invoice(doc, method):	
 	"""
