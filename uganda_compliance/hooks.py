@@ -317,7 +317,11 @@ doctype_list_js = {
         ],
     "Warehouse": [
     "efris/client_scripts/warehouse.js"
-        
+
+        ],
+    "POS Invoice": [
+    "efris/client_scripts/pos_invoice.js"
+
         ]
 
 }
