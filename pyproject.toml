@@ -4,7 +4,7 @@ authors = [
     { name = "ERP Champions Ltd", email = "moki@erpchampions.com"}
 ]
 description = "ERPNext Tax Compliance with Uganda"
-requires-python = ">=3.10"
+requires-python = ">=3.14"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
