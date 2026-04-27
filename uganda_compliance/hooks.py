@@ -130,24 +130,24 @@ app_license = "MIT"
 
 
 scheduler_events = {
-	# "all": [
-	# 	"uganda_compliance.tasks.all"
-	# ],
-	"daily": [
-    #   "uganda_compliance.tasks.daily",
+    # "all": [
+    # 	"uganda_compliance.tasks.all"
+    # ],
+    "daily": [
+        #   "uganda_compliance.tasks.daily",
         "uganda_compliance.efris.api_classes.e_invoice.check_credit_note_approval_status",
         "uganda_compliance.efris.api_classes.efris_invoice_sync.efris_invoice_sync"
-	],
-	"hourly": [
+    ],
+    "hourly": [
         "uganda_compliance.efris.page.efris_synchronizatio.efris_synchronization_center.process_pending_efris_entries",
         "uganda_compliance.efris.api_classes.stock_in.process_pending_efris_stock_entries"
     ]
-	# "weekly": [
-	# 	"uganda_compliance.tasks.weekly"
-	# ],
-	# "monthly": [
-	# 	"uganda_compliance.tasks.monthly"
-	# ],
+    # "weekly": [
+    # 	"uganda_compliance.tasks.weekly"
+    # ],
+    # "monthly": [
+    # 	"uganda_compliance.tasks.monthly"
+    # ],
 }
 
 # Testing
@@ -230,45 +230,45 @@ doc_events = {
         "on_update": "uganda_compliance.efris.api_classes.e_invoice.on_update_sales_invoice",
         "on_cancel": "uganda_compliance.efris.api_classes.e_invoice.on_cancel_sales_invoice",
         "before_save": ["uganda_compliance.efris.api_classes.e_invoice.Sales_invoice_is_efris_validation",
-                        "uganda_compliance.efris.api_classes.e_invoice.sales_uom_validation" ,
+                        "uganda_compliance.efris.api_classes.e_invoice.sales_uom_validation",
                         "uganda_compliance.efris.api_classes.e_invoice.calculate_additional_discounts",
-                                                "uganda_compliance.efris.api_classes.e_invoice.before_save"                      
-                      
-                        ] ,
-        "validate": "uganda_compliance.efris.api_classes.e_invoice.copy_efris_fields"               
-        
+                        "uganda_compliance.efris.api_classes.e_invoice.before_save"
+
+                        ],
+        "validate": "uganda_compliance.efris.api_classes.e_invoice.copy_efris_fields"
+
     },
     "Item": {
         "on_update": "uganda_compliance.efris.api_classes.e_goods_services.after_save_item",
         "validate": "uganda_compliance.efris.api_classes.e_goods_services.item_validations"
 
     },
-    "Purchase Receipt":{
-        "on_submit":"uganda_compliance.efris.api_classes.stock_in.stock_in_T131",
-        "before_save":["uganda_compliance.efris.api_classes.stock_in.before_save_on_purchase_receipt",
-                       "uganda_compliance.efris.api_classes.stock_in.purchase_uom_validation"
-                       ],
-        
+    "Purchase Receipt": {
+        "on_submit": "uganda_compliance.efris.api_classes.stock_in.stock_in_T131",
+        "before_save": ["uganda_compliance.efris.api_classes.stock_in.before_save_on_purchase_receipt",
+                        "uganda_compliance.efris.api_classes.stock_in.purchase_uom_validation"
+                        ],
+
     },
-    "Stock Entry":{        
-        "on_submit":"uganda_compliance.efris.api_classes.stock_in.before_submit_on_stock_entry"
+    "Stock Entry": {
+        "on_submit": "uganda_compliance.efris.api_classes.stock_in.before_submit_on_stock_entry"
     },
-    "E Invoicing Settings":{
-        "before_save":["uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save",
-                       "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.update_efris_company"                      
-                       ],
-        "on_update":"uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.on_update"
-       
+    "E Invoicing Settings": {
+        "before_save": ["uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save",
+                        "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.update_efris_company"
+                        ],
+        "on_update": "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.on_update"
+
     },
-    "Stock Reconciliation":{
-        "on_submit":"uganda_compliance.efris.api_classes.stock_in.stock_in_T131"
+    "Stock Reconciliation": {
+        "on_submit": "uganda_compliance.efris.api_classes.stock_in.stock_in_T131"
     },
-    "Customer":{
-        "before_save":"uganda_compliance.efris.api_classes.e_customer.before_save_query_customer"
-        
+    "Customer": {
+        "before_save": "uganda_compliance.efris.api_classes.e_customer.before_save_query_customer"
+
     },
-    "Company":{
-       "before_save":"uganda_compliance.efris.api_classes.e_company.before_save_query_company"
+    "Company": {
+        "before_save": "uganda_compliance.efris.api_classes.e_company.before_save_query_company"
     },
     "POS Invoice": {
         "on_submit": "uganda_compliance.efris.api_classes.e_invoice.on_submit_pos_invoice",
@@ -281,56 +281,50 @@ doc_events = {
 
 }
 
-
-
-
 doctype_list_js = {
     "Sales Invoice": [
         "efris/client_scripts/sales_invoice.js"
-        
-        ],
+
+    ],
     "Purchase Receipt": [
-    "efris/client_scripts/purchase_receipt.js"
-    
-        ],
-    
+        "efris/client_scripts/purchase_receipt.js"
+
+    ],
+
     "Stock Entry": [
-    "efris/client_scripts/stock_entry.js"
-        
-        ],
-    
+        "efris/client_scripts/stock_entry.js"
+
+    ],
+
     "E Invoicing Settings": [
-    "efris/doctype/e_invoicing_settings/e_invoicing_settings.js"
-        
-        ],
+        "efris/doctype/e_invoicing_settings/e_invoicing_settings.js"
+
+    ],
     "Stock Reconciliation": [
-    "efris/client_scripts/stock_reconciliation.js"
-        
-        ],
+        "efris/client_scripts/stock_reconciliation.js"
+
+    ],
     "Item": [
-    "efris/client_scripts/item.js"
-        
-        ],
-     "Company": [
-    "efris/client_scripts/company.js"
-        
-        ],
+        "efris/client_scripts/item.js"
+
+    ],
+    "Company": [
+        "efris/client_scripts/company.js"
+
+    ],
     "Warehouse": [
-    "efris/client_scripts/warehouse.js"
+        "efris/client_scripts/warehouse.js"
 
-        ],
+    ],
     "POS Invoice": [
-    "efris/client_scripts/pos_invoice.js"
+        "efris/client_scripts/pos_invoice.js"
 
-        ]
+    ]
 
 }
-   
-
-
 
 fixtures = [
-    "E Tax Category", 
+    "E Tax Category",
     "EFRIS Commodity Code",
     {
         "doctype": "UOM",
@@ -341,7 +335,7 @@ fixtures = [
     {
         "doctype": "Print Format",
         "filters": {
-            "name": ["in", ["EFRIS E Invoice", "EFRIS Sales Invoice","POS EFRIS Invoice"]]
+            "name": ["in", ["EFRIS E Invoice", "EFRIS Sales Invoice", "POS EFRIS Invoice"]]
         }
     },
     {
@@ -357,14 +351,12 @@ fixtures = [
         }
     },
     "EFRIS Payment Mode",
-    "Tax Category" ,
+    "Tax Category",
     {
-        "doctype":"File",
-        "filters":{
-            "file_url":["like","%/files/ura_efris_logo.png%"]
-    }   
+        "doctype": "File",
+        "filters": {
+            "file_url": ["like", "%/files/ura_efris_logo.png%"]
+        }
     }
-    
 
 ]
-
