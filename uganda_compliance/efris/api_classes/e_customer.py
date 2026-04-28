@@ -1,6 +1,6 @@
 import frappe
 from uganda_compliance.efris.utils.utils import efris_log_info
-from uganda_compliance.efris.api_classes.efris_api import make_post
+from uganda_compliance.efris.client.dispatch import dispatch_legacy
 
 @frappe.whitelist()
 def before_save_query_customer(doc, method):
@@ -34,12 +34,12 @@ def query_customer_details(doc, e_company_name, tax_id, ninBrn):
         "ninBrn": ninBrn
     }
 
-    success, response = make_post(
-        interfaceCode="T119",
-        content=query_customer_details_T119,
-        company_name=e_company_name,
-        reference_doc_type=doc.doctype,
-        reference_document=doc.name
+    success, response = dispatch_legacy(
+        company=e_company_name,
+        interface_code="T119",
+        payload=query_customer_details_T119,
+        doc=doc,
+        force_sync=True,
     )
 
     if success:
