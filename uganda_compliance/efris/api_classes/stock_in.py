@@ -1,6 +1,6 @@
 import frappe
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
-from uganda_compliance.efris.api_classes.efris_api import make_post
+from uganda_compliance.efris.client.dispatch import dispatch_legacy
 import json
 from datetime import date
 
@@ -98,7 +98,12 @@ def send_stock_entry(doc):
             supplier=supplier if supplier else ""
             goods_Stock_upload_T131 = goods_Stock_T131_data("101", "", remarks,stockInDate, stockInType, "", "", "", "", "", "", "101", goodsStockInItem, supplier, supplierTin)
 
-            success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+            success, response = dispatch_legacy(
+                company=e_company,
+                interface_code="T131",
+                payload=goods_Stock_upload_T131,
+                doc=doc,
+            )
             handle_response(success,"Stock Entry Detail", response, items, e_company, reference_purchase)
 
     if (purpose == "Manufacture" or purpose == "Material Transfer") and stock_in_type == "manufacture":
@@ -151,7 +156,12 @@ def send_stock_entry(doc):
             branchId=doc.get("branch_id") if doc.get('branch_id') else ""
             goods_Stock_upload_T131 = goods_Stock_T131_data("101", "", remarks,stockInDate, "103", productionBatchNo, productionDate, branchId, "", "", "", "101", goodsStockInItem)
 
-            success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+            success, response = dispatch_legacy(
+                company=e_company,
+                interface_code="T131",
+                payload=goods_Stock_upload_T131,
+                doc=doc,
+            )
             handle_response(success,"Stock Entry Detail", response, items, e_company, doc.name)
         
 
@@ -258,7 +268,12 @@ def send_stock_reconciliation(doc):
             goods_Stock_Reconciliation_T131 = goods_Stock_T131_data("102", adjustment_code, remark,doc.get("posting_date"), "", "", "", "", "", "", "", "101", goodsStockInItem)
 
         # Make the post request to EFRIS for the current group
-        success, response = make_post(interfaceCode="T131", content=goods_Stock_Reconciliation_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+        success, response = dispatch_legacy(
+            company=e_company,
+            interface_code="T131",
+            payload=goods_Stock_Reconciliation_T131,
+            doc=doc,
+        )
         child_table="Stock Reconciliation Item"
         handle_response(success,child_table, response, items, e_company, key)
         
@@ -354,7 +369,12 @@ def send_purchase_receipt(doc):
         goods_Stock_upload_T131 = goods_Stock_T131_data("101", "", remarks,stockInDate, stockInType, "", "", branchId, "", "", "", "101", goodsStockInItem, supplier, supplier_Tin)
 
         # Make the post request to EFRIS
-        success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+        success, response = dispatch_legacy(
+            company=e_company,
+            interface_code="T131",
+            payload=goods_Stock_upload_T131,
+            doc=doc,
+        )
         handle_response(success,"Purchase Receipt Item", response, doc.items, e_company, doc.name)
 
 def goods_stock_in_item_data(goodsStockInItem, items):
@@ -589,7 +609,13 @@ def query_currency_exchange_rate(doc):
     reference_doc_type = doc.get('doctype')
     reference_document = doc.get('name')
     efris_log_info(f"Querying EFRIS with: {exchange_rate_T121}")
-    success, response = make_post(interfaceCode="T121", content=exchange_rate_T121, company_name=e_company, reference_doc_type=reference_doc_type, reference_document=reference_document)
+    success, response = dispatch_legacy(
+        company=e_company,
+        interface_code="T121",
+        payload=exchange_rate_T121,
+        doc=doc,
+        force_sync=True,
+    )
     
     if success and response:
        efris_log_info(f"Query successful, response: {response}")

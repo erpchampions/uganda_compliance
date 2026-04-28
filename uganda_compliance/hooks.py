@@ -69,7 +69,8 @@ add_to_apps_screen = [
 # ------------
 
 # before_install = "uganda_compliance.install.before_install"
-# after_install = "uganda_compliance.install.after_install"
+after_install = "uganda_compliance.efris.setup.sync_status_fields.install"
+after_migrate = "uganda_compliance.efris.setup.sync_status_fields.install"
 
 
 # Uninstallation
@@ -149,6 +150,11 @@ scheduler_events = {
         "uganda_compliance.efris.page.efris_synchronizatio.efris_synchronization_center.process_pending_efris_entries",
         "uganda_compliance.efris.api_classes.stock_in.process_pending_efris_stock_entries",
     ],
+    "cron": {
+        "*/5 * * * *": [
+            "uganda_compliance.efris.client.dispatch.process_due_jobs",
+        ],
+    },
     # "weekly": [
     # 	"uganda_compliance.tasks.weekly"
     # ],

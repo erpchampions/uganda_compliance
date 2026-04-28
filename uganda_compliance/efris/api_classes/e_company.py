@@ -1,6 +1,6 @@
 import frappe
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
-from uganda_compliance.efris.api_classes.efris_api import make_post
+from uganda_compliance.efris.client.dispatch import dispatch_legacy
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 
 
@@ -39,12 +39,12 @@ def validate_company_name(company_name):
 
 def query_customer_details(doc, company, tax_id, nin_brn):
     query_data = {"tin": tax_id, "ninBrn": nin_brn}
-    success, response = make_post(
-        interfaceCode="T119",
-        content=query_data,
-        company_name=company,
-        reference_doc_type=doc.doctype,
-        reference_document=doc.name,
+    success, response = dispatch_legacy(
+        company=company,
+        interface_code="T119",
+        payload=query_data,
+        doc=doc,
+        force_sync=True,
     )
 
     if success:
@@ -110,6 +110,11 @@ def check_efris_company(tax_id, company_name):
             "ninBrn": ""
         }
 
-        connection_status, response = make_post(interfaceCode="T119", content=query_tax_details_T119, company_name=company_name)
+        connection_status, response = dispatch_legacy(
+            company=company_name,
+            interface_code="T119",
+            payload=query_tax_details_T119,
+            force_sync=True,
+        )
                         
         return connection_status

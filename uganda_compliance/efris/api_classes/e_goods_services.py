@@ -1,7 +1,7 @@
 import frappe
 import json
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
-from uganda_compliance.efris.api_classes.efris_api import make_post
+from uganda_compliance.efris.client.dispatch import dispatch_legacy
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from functools import lru_cache
 
@@ -92,7 +92,13 @@ def query_item_before_post(doc):
         "tin": get_e_company_settings(e_company).tin
     }
     efris_log_info(f"Querying EFRIS with: {dn_batch_query_goods_T144}")
-    success, response = make_post(interfaceCode="T144", content=dn_batch_query_goods_T144, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
+    success, response = dispatch_legacy(
+        company=e_company,
+        interface_code="T144",
+        payload=dn_batch_query_goods_T144,
+        doc=doc,
+        force_sync=True,
+    )
     
     if success and response:
         efris_log_info(f"Query successful, response: {response}")
@@ -211,12 +217,14 @@ def prepare_goods_upload(operation_type, goods_name, item_code, measure_unit, un
 def upload_item_to_efris(doc, e_company, goods_upload):
     efris_log_info(f"The JSON item for Company {e_company} is: {goods_upload}")
 
-    success, response = make_post(
-        interfaceCode="T130",
-        content=goods_upload,
-        company_name=e_company,
-        reference_doc_type=doc.doctype,
-        reference_document=doc.name
+    # T130 (goods upload) is the prime async candidate — when the company has
+    # async_mode enabled, this returns immediately with a queued job and the
+    # user's Item save no longer blocks on URA latency.
+    success, response = dispatch_legacy(
+        company=e_company,
+        interface_code="T130",
+        payload=goods_upload,
+        doc=doc,
     )
 
     if success:

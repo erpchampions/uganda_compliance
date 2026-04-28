@@ -1,6 +1,6 @@
 import frappe
 from frappe import _
-from uganda_compliance.efris.api_classes.efris_api import make_post
+from uganda_compliance.efris.client.dispatch import dispatch_legacy
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 
 from datetime import datetime, timedelta
@@ -44,7 +44,12 @@ def process_company_invoices(company):
     
     query_invoice_credit_note_eligibilty_T07 = prepare_query_invoice_credit_note_eligibilty_T07(device_no, start_date, end_date)
 
-    status, response = make_post(interfaceCode="T107", content=query_invoice_credit_note_eligibilty_T07, company_name=company_name, reference_doc_type="E Invoicing Settings", reference_document=company.name)
+    status, response = dispatch_legacy(
+        company=company_name,
+        interface_code="T107",
+        payload=query_invoice_credit_note_eligibilty_T07,
+        force_sync=True,
+    )
   
     if not status:
         frappe.throw(f"Failed to fetch invoices from EFRIS: {response}")
@@ -117,7 +122,12 @@ def prepare_query_invoice_credit_note_eligibilty_T07(device_no, start_date, end_
 
 def fetch_invoice_details(fdn, company_name, reference_document):
     query_credit_notes_invoice_details_T108 = {"invoiceNo": fdn}
-    status, response = make_post(interfaceCode="T108", content=query_credit_notes_invoice_details_T108, company_name=company_name, reference_doc_type=None, reference_document=reference_document)
+    status, response = dispatch_legacy(
+        company=company_name,
+        interface_code="T108",
+        payload=query_credit_notes_invoice_details_T108,
+        force_sync=True,
+    )
     
     if not status:
         frappe.log_error(f"Failed to fetch invoice details for FDN {fdn}: {response}")
