@@ -12,6 +12,7 @@
   "is_service_item",
   "column_break_4",
   "efris_commodity_code",
+  "commodity_code_description",
   "section_break_6",
   "quantity",
   "unit",
@@ -19,13 +20,39 @@
   "amount",
   "column_break_11",
   "discount",
+  "order_number",
   "tax_details_section",
   "e_tax_category",
   "gst_rate",
+  "tax",
   "column_break_19",
   "other_charges",
   "section_break_24",
-  "total_item_value"
+  "total_item_value",
+  "discount_flag",
+  "deemed_flag",
+  "excise_flag",
+  "category_id",
+  "category_name",
+  "excise_rate",
+  "excise_rule",
+  "excise_tax",
+  "pack",
+  "stick",
+  "excise_unit",
+  "excise_currency",
+  "excise_rate_name",
+  "vat_applicable_flag",
+  "deemed_exempt_code",
+  "vat_project_id",
+  "vat_project_name",
+  "efris_additional_discounts_section",
+  "efris_dsct_item_discount",
+  "efris_dsct_taxable_amount",
+  "efris_dsct_item_tax",
+  "efris_dsct_discount_total",
+  "efris_dsct_discount_tax",
+  "efris_dsct_discount_tax_rate"
  ],
  "fields": [
   {
@@ -152,6 +179,165 @@
    "fieldname": "e_tax_category",
    "fieldtype": "Data",
    "label": "E Tax Category"
+  },
+  {
+   "fieldname": "commodity_code_description",
+   "fieldtype": "Data",
+   "label": "EFRIS Commodity Description",
+   "translatable": 1
+  },
+  {
+   "fieldname": "efris_additional_discounts_section",
+   "fieldtype": "Section Break",
+   "label": "EFRIS Additional Discounts",
+   "read_only": 1
+  },
+  {
+   "fieldname": "efris_dsct_item_discount",
+   "fieldtype": "Data",
+   "label": "EFRIS Discount Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "efris_dsct_taxable_amount",
+   "fieldtype": "Currency",
+   "label": "EFRIS Discount Taxable Amount",
+   "precision": 4,
+   "read_only": 1
+  },
+  {
+   "fieldname": "efris_dsct_item_tax",
+   "fieldtype": "Currency",
+   "label": "EFRIS Item Tax Amount",
+   "precision": 4,
+   "read_only": 1
+  },
+  {
+   "fieldname": "efris_dsct_discount_total",
+   "fieldtype": "Currency",
+   "label": "EFRIS Discount Total",
+   "precision": 4,
+   "read_only": 1
+  },
+  {
+   "fieldname": "efris_dsct_discount_tax",
+   "fieldtype": "Currency",
+   "label": "EFRIS Discount Tax",
+   "precision": 4,
+   "read_only": 1
+  },
+  {
+   "fieldname": "efris_dsct_discount_tax_rate",
+   "fieldtype": "Float",
+   "label": "EFRIS Discount Tax Rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "order_number",
+   "fieldtype": "Int",
+   "label": "Order Number",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "tax",
+   "fieldtype": "Currency",
+   "label": "Tax",
+   "options": "currency",
+   "precision": "2"
+  },
+  {
+   "default": "2",
+   "fieldname": "discount_flag",
+   "fieldtype": "Data",
+   "label": "Discount Flag"
+  },
+  {
+   "default": "2",
+   "fieldname": "deemed_flag",
+   "fieldtype": "Data",
+   "label": "Deemed Flag"
+  },
+  {
+   "default": "2",
+   "fieldname": "excise_flag",
+   "fieldtype": "Data",
+   "label": "Excise Flag"
+  },
+  {
+   "fieldname": "category_id",
+   "fieldtype": "Data",
+   "label": "Excise Duty Code"
+  },
+  {
+   "fieldname": "category_name",
+   "fieldtype": "Data",
+   "label": "Excise Duty Category Name"
+  },
+  {
+   "fieldname": "excise_rate",
+   "fieldtype": "Data",
+   "label": "Excise Rate"
+  },
+  {
+   "fieldname": "excise_rule",
+   "fieldtype": "Data",
+   "label": "Excise Calculation Rule"
+  },
+  {
+   "fieldname": "excise_tax",
+   "fieldtype": "Data",
+   "label": "Excise Tax"
+  },
+  {
+   "fieldname": "pack",
+   "fieldtype": "Data",
+   "label": "Pack",
+   "translatable": 1
+  },
+  {
+   "fieldname": "stick",
+   "fieldtype": "Data",
+   "label": "Stick",
+   "translatable": 1
+  },
+  {
+   "fieldname": "excise_unit",
+   "fieldtype": "Data",
+   "label": "Excise Unit",
+   "translatable": 1
+  },
+  {
+   "fieldname": "excise_currency",
+   "fieldtype": "Data",
+   "label": "Excise Currency",
+   "translatable": 1
+  },
+  {
+   "fieldname": "excise_rate_name",
+   "fieldtype": "Data",
+   "label": "Excise Rate Name",
+   "translatable": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "vat_applicable_flag",
+   "fieldtype": "Check",
+   "label": "VAT Applicable Flag"
+  },
+  {
+   "fieldname": "deemed_exempt_code",
+   "fieldtype": "Data",
+   "label": "Deemed Exempt Code"
+  },
+  {
+   "fieldname": "vat_project_id",
+   "fieldtype": "Data",
+   "label": "VAT Project ID"
+  },
+  {
+   "fieldname": "vat_project_name",
+   "fieldtype": "Data",
+   "label": "VAT Project Name"
   }
  ],
  "index_web_pages_for_search": 1,

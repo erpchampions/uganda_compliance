@@ -15,14 +15,24 @@
   "basic_information_section",
   "qrcode_path",
   "qrcode",
+  "invoice_kind",
   "qr_code_data",
   "efris_qr_code",
   "column_break_6",
   "invoice_type",
+  "credit_note_application_ref_no",
+  "credit_note_approval_status",
+  "credit_note_application_date",
+  "invoice_industry_code",
+  "is_batch",
+  "device_no",
   "invoice",
   "irn",
+  "original_fdn",
+  "invoice_id",
   "invoice_date",
   "issued_time",
+  "currency",
   "column_break_12",
   "seller_details_section",
   "seller_gstin",
@@ -31,21 +41,39 @@
   "column_break_20",
   "seller_address",
   "seller_nin_or_brn",
+  "seller_reference_no",
   "seller_phone",
   "seller_email",
   "buyer_details_section",
   "buyer_gstin",
+  "buyer_nin_or_brn",
   "supply_type",
   "buyer_legal_name",
   "buyer_trade_name",
+  "non_resident_flag",
   "buyer_address",
   "column_break_33",
   "buyer_phone",
   "buyer_email",
+  "buyer_extend",
+  "property_type",
+  "district",
+  "county_or_municipality",
+  "division_or_sub_county",
+  "town",
+  "cell_or_village",
+  "effective_registration_date",
+  "meter_status",
   "column_break_43",
   "item_details_section",
   "items",
+  "tax_details",
+  "taxes",
   "value_details_section",
+  "net_amount",
+  "tax_amount",
+  "gross_amount",
+  "item_count",
   "currency_code",
   "country_code",
   "additional_discounts_section",
@@ -63,7 +91,16 @@
   "company",
   "column_break_106",
   "tax_scheme",
-  "amended_from"
+  "amended_from",
+  "efris_col_break_1",
+  "break",
+  "is_return",
+  "antifake_code",
+  "data_source",
+  "efris_creditnote_reasoncode",
+  "operator",
+  "buyer_citizenship",
+  "efris_col_break_summary1"
  ],
  "fields": [
   {
@@ -110,7 +147,7 @@
    "fieldname": "invoice_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Invoice Date",
+   "label": "Invoice Issued Date",
    "reqd": 1
   },
   {
@@ -137,20 +174,19 @@
   {
    "fieldname": "seller_gstin",
    "fieldtype": "Data",
-   "label": "GSTIN",
+   "label": "Seller TIN",
    "reqd": 1
   },
   {
    "fieldname": "seller_legal_name",
    "fieldtype": "Data",
-   "label": "Legal Name",
-   "reqd": 1
+   "label": "Legal Name"
   },
   {
    "depends_on": "seller_trade_name",
    "fieldname": "seller_trade_name",
    "fieldtype": "Data",
-   "label": "Trade Name"
+   "label": "Business Name"
   },
   {
    "depends_on": "seller_phone",
@@ -314,7 +350,7 @@
   {
    "fieldname": "buyer_gstin",
    "fieldtype": "Data",
-   "label": "GSTIN"
+   "label": "Buyer TIN"
   },
   {
    "depends_on": "buyer_address_line_2",
@@ -405,6 +441,241 @@
    "hidden": 1,
    "label": "Efris QR Code",
    "read_only": 1
+  },
+  {
+   "fieldname": "efris_col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_return",
+   "fieldtype": "Check",
+   "label": "Is Return"
+  },
+  {
+   "fieldname": "antifake_code",
+   "fieldtype": "Data",
+   "label": "Antifake Code"
+  },
+  {
+   "default": "1",
+   "fieldname": "invoice_kind",
+   "fieldtype": "Data",
+   "label": "Invoice Kind"
+  },
+  {
+   "default": "1",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "default": "101",
+   "fieldname": "data_source",
+   "fieldtype": "Data",
+   "label": "Data Source"
+  },
+  {
+   "default": "101",
+   "fieldname": "invoice_industry_code",
+   "fieldtype": "Data",
+   "label": "Invoice Industry Code"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_batch",
+   "fieldtype": "Check",
+   "label": "Is Batch"
+  },
+  {
+   "fieldname": "device_no",
+   "fieldtype": "Data",
+   "label": "Device No"
+  },
+  {
+   "fieldname": "invoice_id",
+   "fieldtype": "Data",
+   "label": "Invoice Id",
+   "translatable": 1
+  },
+  {
+   "fieldname": "operator",
+   "fieldtype": "Data",
+   "label": "Operator",
+   "translatable": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.credit_note_application_ref_no",
+   "fieldname": "credit_note_application_ref_no",
+   "fieldtype": "Data",
+   "label": "Credit Note Application Ref No",
+   "translatable": 1
+  },
+  {
+   "depends_on": "eval:doc.is_return",
+   "fieldname": "original_fdn",
+   "fieldtype": "Data",
+   "label": "Oiginal FDN",
+   "translatable": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.credit_note_application_ref_no",
+   "fieldname": "credit_note_approval_status",
+   "fieldtype": "Select",
+   "label": "Credit Note Approval Status",
+   "options": "101:Approved\n102:Submitted\n103:Rejected\n104:Voided",
+   "translatable": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.credit_note_application_ref_no",
+   "fieldname": "credit_note_application_date",
+   "fieldtype": "Datetime",
+   "label": "Credit Note Application Date"
+  },
+  {
+   "fieldname": "seller_reference_no",
+   "fieldtype": "Data",
+   "label": "Seller Reference No",
+   "reqd": 1,
+   "translatable": 1
+  },
+  {
+   "fieldname": "buyer_nin_or_brn",
+   "fieldtype": "Data",
+   "label": "Buyer NIN or BRN",
+   "translatable": 1
+  },
+  {
+   "fieldname": "efris_creditnote_reasoncode",
+   "fieldtype": "Data",
+   "label": "EFRIS Credit Note Reason",
+   "no_copy": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "non_resident_flag",
+   "fieldtype": "Check",
+   "label": "Non Resident Flag"
+  },
+  {
+   "fieldname": "buyer_citizenship",
+   "fieldtype": "Data",
+   "label": "Buyer Citizenship"
+  },
+  {
+   "bold": 1,
+   "collapsible": 1,
+   "fieldname": "buyer_extend",
+   "fieldtype": "Section Break",
+   "label": "Buyer Extend"
+  },
+  {
+   "bold": 1,
+   "collapsible": 1,
+   "fieldname": "property_type",
+   "fieldtype": "Data",
+   "label": "Property Type"
+  },
+  {
+   "bold": 1,
+   "collapsible": 1,
+   "fieldname": "district",
+   "fieldtype": "Data",
+   "label": "District"
+  },
+  {
+   "bold": 1,
+   "collapsible": 1,
+   "fieldname": "county_or_municipality",
+   "fieldtype": "Data",
+   "label": "County or Municipality"
+  },
+  {
+   "bold": 1,
+   "collapsible": 1,
+   "fieldname": "division_or_sub_county",
+   "fieldtype": "Data",
+   "label": "Division or Sub County"
+  },
+  {
+   "bold": 1,
+   "collapsible": 1,
+   "fieldname": "town",
+   "fieldtype": "Data",
+   "label": "Town"
+  },
+  {
+   "bold": 1,
+   "collapsible": 1,
+   "fieldname": "cell_or_village",
+   "fieldtype": "Data",
+   "label": "Cell or Village"
+  },
+  {
+   "bold": 1,
+   "collapsible": 1,
+   "fieldname": "effective_registration_date",
+   "fieldtype": "Date",
+   "label": "Effective Registration Date"
+  },
+  {
+   "fieldname": "efris_col_break_summary1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "collapsible": 1,
+   "fieldname": "meter_status",
+   "fieldtype": "Data",
+   "label": "Status of the Meter "
+  },
+  {
+   "fieldname": "tax_details",
+   "fieldtype": "Section Break",
+   "label": "Tax Details"
+  },
+  {
+   "fieldname": "taxes",
+   "fieldtype": "Table",
+   "label": "taxes",
+   "options": "E Invoice Tax Items"
+  },
+  {
+   "description": "Tax Receipt total net amount. Taken from Net Total on Sales Invoice.",
+   "fieldname": "net_amount",
+   "fieldtype": "Currency",
+   "label": "Net Amount",
+   "options": "currency",
+   "precision": "2"
+  },
+  {
+   "fieldname": "gross_amount",
+   "fieldtype": "Currency",
+   "label": "Gross Amount",
+   "options": "currency",
+   "precision": "2"
+  },
+  {
+   "description": "Tax Receipt total tax amount. Taken from Amount field in Sales Invoice Taxes table . ",
+   "fieldname": "tax_amount",
+   "fieldtype": "Currency",
+   "label": "Tax Amount",
+   "options": "currency",
+   "precision": "2"
+  },
+  {
+   "fieldname": "item_count",
+   "fieldtype": "Int",
+   "label": "Item Count",
+   "non_negative": 1
   }
  ],
  "grid_page_length": 50,
