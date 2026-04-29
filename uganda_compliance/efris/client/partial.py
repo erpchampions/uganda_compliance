@@ -47,8 +47,8 @@ def extract(interface_code: str, decoded_content: dict | list | None) -> list[di
         if _row_failed(row):
             failures.append(
                 {
-                    "id": row.get(id_field),
-                    "message": row.get(msg_field) or row.get("returnMessage"),
+                    "id": row.get(id_field) or row.get("goodsName") or row.get("invoiceNo"),
+                    "message": row.get("returnMessage") or row.get(msg_field),
                     "row": row,
                 }
             )
@@ -56,6 +56,16 @@ def extract(interface_code: str, decoded_content: dict | list | None) -> list[di
 
 
 def _find_rows(content, key):
+    if isinstance(content, list):
+        if content and isinstance(content[0], dict) and any(
+            k in content[0] for k in ("returnCode", "returnMessage", "remarks", "errorMsg")
+        ):
+            return content
+        for item in content:
+            found = _find_rows(item, key)
+            if found:
+                return found
+        return None
     if isinstance(content, dict):
         if key in content:
             return content[key]
