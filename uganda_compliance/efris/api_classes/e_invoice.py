@@ -9,6 +9,7 @@ from datetime import datetime
 from uganda_compliance.efris.utils.utils import get_qr_code
  
 from frappe.utils.user import get_users_with_role
+from frappe.utils import flt
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
@@ -1187,6 +1188,43 @@ def _validate_item_uom(item):
 	if not any(row.uom == sales_uom for row in uoms_detail):
 		frappe.throw(f"The Sales UOM ({sales_uom}) must be in the Item's UOMs list for item {item_code}.")
 		
+def sync_additional_discount_percentage(doc, method=None):
+	"""
+	Validate hook for Sales Invoice / POS Invoice.
+
+	When the document was discounted by absolute amount (`discount_amount` set,
+	`additional_discount_percentage` blank/0), derive the equivalent percentage
+	so downstream EFRIS logic and the EFRIS server agree on per-item tax math.
+	Without this, EFRIS rejects the payload with:
+	"goodsDetails-->tax: Tax calculation error!Collection index:0".
+	"""
+	if not doc:
+		return
+
+	current_percentage = flt(doc.get('additional_discount_percentage') or 0)
+	discount_amount = abs(flt(doc.get('discount_amount') or 0))
+
+	if current_percentage or not discount_amount:
+		return
+
+	apply_on = doc.get('apply_discount_on') or 'Grand Total'
+	if apply_on == 'Net Total':
+		base_total = flt(doc.get('net_total') or doc.get('total') or 0)
+	else:
+		base_total = flt(doc.get('total') or doc.get('net_total') or 0)
+
+	if not base_total:
+		return
+
+	derived = round((discount_amount / base_total) * 100, 6)
+	doc.additional_discount_percentage = derived
+	efris_log_info(
+		f"sync_additional_discount_percentage: set additional_discount_percentage="
+		f"{derived}% from discount_amount={discount_amount} on {apply_on}={base_total} "
+		f"for {doc.doctype} {doc.get('name')}"
+	)
+
+
 def calculate_additional_discounts(doc, method):
 	"""
 	Calculate additional discounts and adjust tax values on Sales Invoice items for EFRIS compliance.

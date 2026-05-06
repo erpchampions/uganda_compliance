@@ -235,7 +235,10 @@ doc_events = {
                         "uganda_compliance.efris.api_classes.e_invoice.before_save"
 
                         ],
-        "validate": "uganda_compliance.efris.api_classes.e_invoice.copy_efris_fields"
+        "validate": [
+            "uganda_compliance.efris.api_classes.e_invoice.copy_efris_fields",
+            "uganda_compliance.efris.api_classes.e_invoice.sync_additional_discount_percentage"
+        ]
 
     },
     "Item": {
@@ -277,6 +280,7 @@ doc_events = {
             "uganda_compliance.efris.api_classes.e_invoice.sales_uom_validation",
             "uganda_compliance.efris.api_classes.e_invoice.calculate_additional_discounts",
         ],
+        "validate": "uganda_compliance.efris.api_classes.e_invoice.sync_additional_discount_percentage",
     }
 
 }
