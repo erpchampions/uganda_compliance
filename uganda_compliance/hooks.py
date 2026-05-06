@@ -274,7 +274,10 @@ doc_events = {
         "before_save": "uganda_compliance.efris.api_classes.e_company.before_save_query_company"
     },
     "POS Invoice": {
-        "on_submit": "uganda_compliance.efris.api_classes.e_invoice.on_submit_pos_invoice",
+        "on_submit": [
+            "uganda_compliance.efris.api_classes.e_invoice.sync_additional_discount_percentage",
+            "uganda_compliance.efris.api_classes.e_invoice.on_submit_pos_invoice",
+        ],
         "before_save": [
             "uganda_compliance.efris.api_classes.e_invoice.Sales_invoice_is_efris_validation",
             "uganda_compliance.efris.api_classes.e_invoice.sales_uom_validation",
