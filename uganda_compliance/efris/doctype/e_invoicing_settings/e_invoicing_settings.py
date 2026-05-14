@@ -128,6 +128,13 @@ class EInvoicingSettings(Document):
         Validate E Invoicing Settings before saving.
         """
         self.create_tax_templates()
+        self.validate_consolidation_settings()
+
+    def validate_consolidation_settings(self):
+        if self.consolidate_efris_invoice and not self.efris_summary_item:
+            frappe.throw(
+                _("EFRIS Summary Item is required when 'Consolidate EFRIS Invoice as Single Item' is enabled.")
+            )
 
     def create_tax_templates(self):
         """

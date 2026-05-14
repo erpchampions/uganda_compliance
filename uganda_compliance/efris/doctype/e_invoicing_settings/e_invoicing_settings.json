@@ -36,6 +36,8 @@
   "auto_send_submitted_invoice",
   "async_mode",
   "async_max_attempts",
+  "consolidate_efris_invoice",
+  "efris_summary_item",
   "e_invoice_price_list_section",
   "efris_price_list",
   "efris_synchronization_section",
@@ -295,6 +297,22 @@
    "fieldname": "auto_send_submitted_invoice",
    "fieldtype": "Check",
    "label": "Automatic Submit To EFRIS"
+  },
+  {
+   "default": "0",
+   "description": "When on, the E-Invoice sent to EFRIS contains only the configured EFRIS Summary Item; line totals from the Sales / POS Invoice are aggregated onto it. The original invoice in ERPNext is unchanged.",
+   "fieldname": "consolidate_efris_invoice",
+   "fieldtype": "Check",
+   "label": "Consolidate EFRIS Invoice as Single Item"
+  },
+  {
+   "depends_on": "eval:doc.consolidate_efris_invoice == 1",
+   "description": "Item used as the single line on EFRIS submissions when consolidation is enabled. Must have an EFRIS Commodity Code, an Item Tax Template with an E Tax Category, and an EFRIS UOM Code on its stock UOM.",
+   "fieldname": "efris_summary_item",
+   "fieldtype": "Link",
+   "label": "EFRIS Summary Item",
+   "mandatory_depends_on": "eval:doc.consolidate_efris_invoice == 1",
+   "options": "Item"
   },
   {
    "default": "https://efrisws.ura.go.ug/ws/taapp/getInformation",
