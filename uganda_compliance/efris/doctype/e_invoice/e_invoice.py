@@ -390,6 +390,12 @@ class EInvoice(Document):
     def fetch_items_from_invoice(self):
         if not self.sales_invoice.taxes:
             frappe.throw("taxes table can't be empty")
+
+        settings = get_e_company_settings(self.company)
+        if settings.get("consolidate_efris_invoice") and settings.get("efris_summary_item"):
+            self.fetch_consolidated_item_from_invoice(settings.efris_summary_item)
+            return
+
         item_taxes: list[dict] = self.sales_invoice.item_wise_tax_details
         conversion_rate = self.sales_invoice.conversion_rate
 
@@ -459,6 +465,121 @@ class EInvoice(Document):
                 }
             )
             self.append("items", einvoice_item)
+
+    def fetch_consolidated_item_from_invoice(self, summary_item_code):
+        item_taxes: list[dict] = self.sales_invoice.item_wise_tax_details
+        conversion_rate = self.sales_invoice.conversion_rate or 1
+
+        tax_categories = set()
+        category_rates = {}
+        for i, item in enumerate(self.sales_invoice.items):
+            item_doc = frappe.get_doc("Item", item.item_code)
+            if not item_doc.taxes:
+                frappe.throw(
+                    _("Row #{}: Item {} must have Tax Template set under Tax tab").format(
+                        item.idx, item.item_code
+                    )
+                )
+            tax_template = frappe.get_doc(
+                "Item Tax Template", item_doc.taxes[0].item_tax_template
+            )
+            efris_tax_category = tax_template.taxes[0].efris_e_tax_category
+            if not efris_tax_category:
+                frappe.throw(
+                    _(
+                        "Missing EFRIS Tax Category on Row #{}: Item {}. Ensure all Items have E Tax Category set under Item Tax Template Detail"
+                    ).format(item.idx, item.item_code)
+                )
+            tax_categories.add(efris_tax_category)
+            category_rates[efris_tax_category] = item_taxes[i].rate
+
+        if len(tax_categories) > 1:
+            frappe.throw(
+                _(
+                    "Cannot consolidate EFRIS invoice: Sales Invoice items resolve to multiple EFRIS Tax Categories ({}). All items must share the same EFRIS Tax Category."
+                ).format(", ".join(sorted(tax_categories)))
+            )
+
+        efris_tax_category = next(iter(tax_categories))
+        si_tax_rate = category_rates[efris_tax_category]
+
+        summary_item_doc = frappe.get_doc("Item", summary_item_code)
+        if not summary_item_doc.efris_commodity_code:
+            frappe.throw(
+                _("EFRIS Summary Item {} must have an EFRIS Commodity Code set.").format(
+                    summary_item_code
+                )
+            )
+        if not summary_item_doc.taxes:
+            frappe.throw(
+                _("EFRIS Summary Item {} must have a Tax Template set under Tax tab.").format(
+                    summary_item_code
+                )
+            )
+        summary_uom_doc = frappe.get_doc("UOM", summary_item_doc.stock_uom)
+        if not summary_uom_doc.efris_uom_code:
+            frappe.throw(
+                _("EFRIS Summary Item {}: stock UOM {} must have an EFRIS UOM Code set.").format(
+                    summary_item_code, summary_item_doc.stock_uom
+                )
+            )
+
+        total_amount = 0.0
+        total_tax = 0.0
+        dsct_total = 0.0
+        dsct_tax = 0.0
+        dsct_item_tax = 0.0
+        dsct_taxable_amount = 0.0
+        dsct_item_discount = 0.0
+        dsct_tax_rate = ""
+        for i, item in enumerate(self.sales_invoice.items):
+            total_amount += item.amount
+            item_tax_amount = item_taxes[i].amount
+            if conversion_rate != 1:
+                item_tax_amount = item_tax_amount / conversion_rate
+            total_tax += item_tax_amount
+            dsct_total += item.efris_dsct_discount_total or 0.0
+            dsct_tax += item.efris_dsct_discount_tax or 0.0
+            dsct_item_tax += item.efris_dsct_item_tax or 0.0
+            dsct_taxable_amount += item.efris_dsct_taxable_amount or 0.0
+            dsct_item_discount += item.efris_dsct_item_discount or 0.0
+            if item.efris_dsct_discount_tax_rate:
+                dsct_tax_rate = item.efris_dsct_discount_tax_rate
+
+        total_amount = round(total_amount, 2)
+        total_tax = round(total_tax, 2)
+
+        is_service_item = summary_item_doc.efris_commodity_code[:2] == "99"
+
+        einvoice_item = frappe._dict(
+            {
+                "si_item_ref": summary_item_doc.item_code,
+                "item_code": summary_item_doc.item_code,
+                "item_name": summary_item_doc.item_name,
+                "is_service_item": is_service_item,
+                "efris_commodity_code": summary_item_doc.efris_commodity_code,
+                "quantity": 1,
+                "unit": summary_item_doc.stock_uom,
+                "rate": total_amount,
+                "tax": total_tax,
+                "gst_rate": decode_e_tax_rate(
+                    round(si_tax_rate / 100, 2), efris_tax_category
+                ),
+                "amount": total_amount,
+                "order_number": 0,
+                "e_tax_category": efris_tax_category,
+                "efris_dsct_discount_total": round(dsct_total, 4),
+                "efris_dsct_discount_tax": round(dsct_tax, 4),
+                "efris_dsct_discount_tax_rate": dsct_tax_rate,
+                "efris_dsct_item_tax": dsct_item_tax,
+                "efris_dsct_taxable_amount": round(dsct_taxable_amount, 4),
+                "efris_dsct_item_discount": dsct_item_discount,
+                "commodity_code_description": frappe.get_doc(
+                    "EFRIS Commodity Code", summary_item_doc.efris_commodity_code
+                ).commodity_name,
+            }
+        )
+        self.append("items", einvoice_item)
 
     def update_items_from_invoice(self):
         if self.items:
