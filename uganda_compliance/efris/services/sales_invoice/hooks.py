@@ -7,6 +7,7 @@ delegated to `EInvoiceAPI`, the build/credit-note helpers, and `discounts`.
 import json
 
 import frappe
+from frappe import _
 
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import (
     get_e_company_settings,
@@ -203,6 +204,45 @@ def send_to_efris(doc):
         doc = frappe.get_doc(doc)
     on_submit_sales_invoice(doc, "manual_submit")
     return {"message": "Sales Invoice sent to EFRIS successfully.", "status": "success"}
+
+
+@frappe.whitelist()
+def create_e_invoice(doc):
+    """Build the E Invoice draft for a Sales Invoice without generating the IRN.
+
+    Lets a user review the E Invoice before sending it to URA. The actual
+    submission is done later via `send_to_efris` (Sales Invoice) or
+    `send_einvoice_to_efris` (E Invoice form).
+    """
+    if isinstance(doc, str):
+        doc = json.loads(doc)
+    if isinstance(doc, dict):
+        doc = frappe.get_doc(doc)
+
+    sales_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
+    validate_payment(sales_invoice)
+
+    if not sales_invoice.efris_invoice or sales_invoice.is_consolidated:
+        frappe.throw(_("This Sales Invoice is not an EFRIS invoice."))
+    if not validate_company(sales_invoice):
+        frappe.throw(_("The company does not have E Invoicing settings configured."))
+
+    einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
+    efris_log_info(f"E Invoice draft created: {einvoice.name}")
+    return {
+        "message": "E Invoice created successfully.",
+        "status": "success",
+        "e_invoice": einvoice.name,
+    }
+
+
+@frappe.whitelist()
+def send_einvoice_to_efris(e_invoice):
+    """Generate the IRN for an existing E Invoice draft (called from the E Invoice form)."""
+    einvoice = frappe.get_doc("E Invoice", e_invoice)
+    sales_invoice = frappe.get_doc("Sales Invoice", einvoice.invoice)
+    on_submit_sales_invoice(sales_invoice, "manual_submit")
+    return {"message": "E Invoice sent to EFRIS successfully.", "status": "success"}
 
 
 @frappe.whitelist()

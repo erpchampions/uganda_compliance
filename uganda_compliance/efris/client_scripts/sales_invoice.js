@@ -369,39 +369,95 @@ async function add_custom_buttons(frm) {
     await get_auto_send_submitted_invoice_flag(frm);
   console.log("Auto send submitted invoice flag:", auto_send_submitted_invoice);
 
-  if (auto_send_submitted_invoice != 1) {
-    frm.add_custom_button(__("Submit To EFRIS"), async function () {
-      frappe.confirm(
-        __("Are you sure you want to submit?"),
-        async function () {
-          // Yes callback
-          try {
-            const response = await frappe.call({
-              method:
-                "uganda_compliance.efris.api_classes.e_invoice.send_to_efris",
-              args: { doc: frm.doc },
-              freeze: true,
-              freeze_message: __("Submitting to EFRIS..."),
-            });
+  if (auto_send_submitted_invoice == 1) {
+    return;
+  }
 
-            if (response.message) {
-              frappe.msgprint(
-                __("Sales Invoice submitted to EFRIS successfully.")
-              );
-              frm.reload_doc();
-            } else {
-              console.log(__("Failed to submit Sales Invoice to EFRIS."));
-            }
-          } catch (error) {
-            console.error("Error submitting to EFRIS:", error);
-            frappe.msgprint(__("An error occurred while submitting to EFRIS."));
-          }
-        },
-        function () {
-          // No callback (do nothing)
-          console.log("Submission to EFRIS was cancelled by the user.");
-        }
-      );
+  frm.add_custom_button(__("Send to EFRIS"), function () {
+    show_efris_send_dialog(frm);
+  });
+
+  // When an E-Invoice draft already exists, expose a direct send option.
+  if (frm.doc.efris_e_invoice) {
+    frm.add_custom_button(__("Send E-Invoice to EFRIS"), function () {
+      send_sales_invoice_to_efris(frm);
     });
+  }
+}
+
+// Lets the user choose between sending straight to EFRIS or first creating
+// an E-Invoice draft that can be reviewed before submission.
+function show_efris_send_dialog(frm) {
+  const dialog = new frappe.ui.Dialog({
+    title: __("Send to EFRIS"),
+    fields: [
+      {
+        fieldname: "info",
+        fieldtype: "HTML",
+        options: __(
+          "Choose how to process this invoice with EFRIS."
+        ),
+      },
+    ],
+    primary_action_label: __("Send Directly to EFRIS"),
+    primary_action() {
+      dialog.hide();
+      send_sales_invoice_to_efris(frm);
+    },
+    secondary_action_label: __("Create E-Invoice First"),
+    secondary_action() {
+      dialog.hide();
+      create_e_invoice_draft(frm);
+    },
+  });
+  dialog.show();
+}
+
+// Direct send: creates/syncs the E-Invoice and generates the IRN in one step.
+async function send_sales_invoice_to_efris(frm) {
+  try {
+    const response = await frappe.call({
+      method: "uganda_compliance.efris.api_classes.e_invoice.send_to_efris",
+      args: { doc: frm.doc },
+      freeze: true,
+      freeze_message: __("Submitting to EFRIS..."),
+    });
+
+    if (response.message) {
+      frappe.msgprint(__("Sales Invoice submitted to EFRIS successfully."));
+      frm.reload_doc();
+    } else {
+      console.log(__("Failed to submit Sales Invoice to EFRIS."));
+    }
+  } catch (error) {
+    console.error("Error submitting to EFRIS:", error);
+    frappe.msgprint(__("An error occurred while submitting to EFRIS."));
+  }
+}
+
+// Two-step: only builds the E-Invoice draft so it can be reviewed before
+// being sent to EFRIS via the E-Invoice form (or the direct button above).
+async function create_e_invoice_draft(frm) {
+  try {
+    const response = await frappe.call({
+      method: "uganda_compliance.efris.api_classes.e_invoice.create_e_invoice",
+      args: { doc: frm.doc },
+      freeze: true,
+      freeze_message: __("Creating E-Invoice..."),
+    });
+
+    if (response.message && response.message.e_invoice) {
+      frappe.msgprint(
+        __("E-Invoice {0} created. Review it, then send to EFRIS.", [
+          response.message.e_invoice,
+        ])
+      );
+      frm.reload_doc();
+    } else {
+      console.log(__("Failed to create E-Invoice."));
+    }
+  } catch (error) {
+    console.error("Error creating E-Invoice:", error);
+    frappe.msgprint(__("An error occurred while creating the E-Invoice."));
   }
 }
