@@ -5,6 +5,8 @@ from .encryption_utils import encrypt_aes_ecb, decrypt_aes_ecb, get_AES_key, get
 from .request_utils import fetch_data, post_req
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
+from ..utils.utils import efris_log_error
+
 
 def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
     try:
@@ -25,6 +27,14 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
         private_key = get_private_key(private_key_path, e_settings)
 
         aes_key = get_AES_key(tin, device_no, private_key, mode_post_url, brn)
+        if not aes_key:
+            msg = (
+                f"Failed to obtain the EFRIS AES key for company '{company_name}' "
+                f"(TIN {tin}, device {device_no}). See the 'efris_log_error' Error Log "
+                f"for the underlying cause (EFRIS rejection, empty T104 response, or key mismatch)."
+            )
+            frappe.log_error(msg, "EFRIS get_AES_key failed")
+            return False, msg
 
         encrypted_data = encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, brn, private_key, data)
         if not encrypted_data:
@@ -36,7 +46,7 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
         return response
 
     except Exception as e:
-        frappe.log_error(f"An error occurred while making post request: {e}")
+        efris_log_error(f"An error occurred while making post request: {e}")
         return False, str(e)
 
 def encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, brn, private_key, data):

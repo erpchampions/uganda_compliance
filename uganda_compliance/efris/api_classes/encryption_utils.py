@@ -2,6 +2,7 @@ import frappe
 import base64
 from Crypto.Cipher import AES, PKCS1_v1_5
 from Crypto.PublicKey import RSA
+from Crypto.Random import get_random_bytes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.backends import default_backend
@@ -44,16 +45,37 @@ def get_AES_key(tin, device_no, private_key, mode_post_url, brn):
         data["globalInfo"]["tin"] = tin
         data["globalInfo"]["brn"] = brn
 
-        data_json = json.dumps(data, separators=(',', ':'))  
-        
+        data_json = json.dumps(data, separators=(',', ':'))
+
         resp = post_req(data_json, mode_post_url)
 
         jsonresp = json.loads(resp)
 
-        b64content = jsonresp["data"]["content"]
+        # Surface EFRIS-side errors instead of failing silently below.
+        return_info = jsonresp.get("returnStateInfo", {})
+        return_msg = return_info.get("returnMessage")
+        if return_msg and return_msg != "SUCCESS":
+            efris_log_error(
+                f"get_AES_key(): EFRIS T104 returned an error: "
+                f"{return_info.get('returnCode')} - {return_msg}"
+            )
+            return None
+
+        b64content = (jsonresp.get("data") or {}).get("content")
+        if not b64content:
+            efris_log_error(
+                f"get_AES_key(): EFRIS T104 response had no data content. Response: {resp}"
+            )
+            return None
+
         content = json.loads(base64.b64decode(b64content).decode("utf-8"))
 
-        b64passwordDes = content["passowrdDes"]
+        b64passwordDes = content.get("passowrdDes")
+        if not b64passwordDes:
+            efris_log_error(
+                f"get_AES_key(): 'passowrdDes' missing from T104 content. Content: {content}"
+            )
+            return None
         passwordDes = base64.b64decode(b64passwordDes)
 
         # Convert the private key to a PEM format byte string for RSA import
@@ -63,7 +85,16 @@ def get_AES_key(tin, device_no, private_key, mode_post_url, brn):
             encryption_algorithm=serialization.NoEncryption()
         )
         cipher = PKCS1_v1_5.new(RSA.import_key(pkey_str))
-        aesKey = cipher.decrypt(passwordDes, None)
+        # Use a random sentinel so a failed RSA decrypt is detectable rather
+        # than silently producing None (which would crash b64decode below).
+        sentinel = get_random_bytes(16)
+        aesKey = cipher.decrypt(passwordDes, sentinel)
+        if aesKey == sentinel:
+            efris_log_error(
+                "get_AES_key(): RSA decryption of the AES key failed - "
+                "the private key likely does not match the key registered with EFRIS."
+            )
+            return None
 
         return base64.b64decode(aesKey)
 

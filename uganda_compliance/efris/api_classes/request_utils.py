@@ -9,6 +9,8 @@ from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
 
+EFRIS_REQUEST_TIMEOUT = 120  # seconds
+
 def fetch_data():
     now = get_ug_time_str()
     return {
@@ -54,13 +56,33 @@ def guidv4():
     my_uuid_str_32 = my_uuid_str.replace("-", "")
     return my_uuid_str_32
 
-def post_req(data, mode_post_url): 
-    frappe.log(f"Mode post URl is {mode_post_url}")   
-    if mode_post_url:
-        url = mode_post_url    
+def post_req(data, mode_post_url):
+    if not mode_post_url:
+        # Previously this fell back to a leftover module-global `url`, which
+        # either raised NameError or silently posted to a stale URL from an
+        # earlier call. Fail loudly and clearly instead.
+        raise ValueError("post_req(): no EFRIS post URL configured (mode_post_url is empty).")
 
+    efris_log_info(f"EFRIS POST -> {mode_post_url}")
     headers = {"Content-Type": "application/json"}
-    response = requests.post(url, data=data, headers=headers)
+
+    try:
+        response = requests.post(
+            mode_post_url, data=data, headers=headers, timeout=EFRIS_REQUEST_TIMEOUT
+        )
+    except requests.exceptions.Timeout:
+        efris_log_error(f"EFRIS request timed out after {EFRIS_REQUEST_TIMEOUT}s: {mode_post_url}")
+        raise
+    except requests.exceptions.ConnectionError as e:
+        efris_log_error(f"EFRIS connection failed for {mode_post_url}: {e}")
+        raise
+
+    if not response.ok:
+        efris_log_error(
+            f"EFRIS returned HTTP {response.status_code} for {mode_post_url}: {response.text}"
+        )
+        response.raise_for_status()
+
     return response.text
 
 def get_ug_time_str():
