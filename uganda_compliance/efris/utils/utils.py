@@ -38,7 +38,7 @@ def efris_log_warning(message):
     frappe.msgprint(_("Warning: ") + message, alert=True, indicator='orange')
 
 def efris_log_error(message):
-    frappe.log_error("efris_log_error", message)
+    frappe.log_error(title="efris_log_error", message=message)
 
 def format_amount(amount):
     amt_float = float(amount)    
