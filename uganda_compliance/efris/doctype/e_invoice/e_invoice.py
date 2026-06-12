@@ -444,11 +444,11 @@ class EInvoice(Document):
                     "order_number": i,
                     "e_tax_category": efris_tax_category,
                     "efris_dsct_discount_total": round(
-                        item.efris_dsct_discount_total, 4
+                        item.efris_dsct_discount_total, 2
                     ),
-                    "efris_dsct_discount_tax": round(item.efris_dsct_discount_tax, 4),
+                    "efris_dsct_discount_tax": round(item.efris_dsct_discount_tax, 2),
                     "efris_dsct_discount_tax_rate": item.efris_dsct_discount_tax_rate,
-                    "efris_dsct_item_tax": item.efris_dsct_item_tax,
+                    "efris_dsct_item_tax": round(item.efris_dsct_item_tax, 2),
                     "efris_dsct_taxable_amount": round(
                         item.efris_dsct_taxable_amount, 4
                     ),
@@ -573,7 +573,11 @@ class EInvoice(Document):
 
     def get_good_details(self):
         item_list = []
-        unique_items = set()
+        # Per tax category sums of the goods line taxes and totals exactly as
+        # sent to EFRIS, so taxDetails/summary can be built from the same
+        # figures (EFRIS validates Section E against Section D).
+        self._goods_tax_by_category = defaultdict(float)
+        self._goods_gross_by_category = defaultdict(float)
 
         orderNumber = 0
         discount_percentage = (
@@ -594,9 +598,6 @@ class EInvoice(Document):
             )
             if goodsCode:
                 item_code = goodsCode
-            # Create a unique identifier for the item
-            if self._is_duplicate_item(row, unique_items):
-                continue
 
             inv_uom = frappe.get_doc("UOM", row.unit)
             efris_uom_code = inv_uom.efris_uom_code
@@ -630,9 +631,17 @@ class EInvoice(Document):
             item_list.append(item)
             orderNumber += 1
 
+            tax_category = row.e_tax_category.split(":")[0]
+            self._goods_tax_by_category[tax_category] += float(item["tax"])
+            self._goods_gross_by_category[tax_category] += float(item["total"])
+
             if discount_item:
                 item_list.append(discount_item)
                 orderNumber += 1
+                self._goods_tax_by_category[tax_category] += float(discount_item["tax"])
+                self._goods_gross_by_category[tax_category] += float(
+                    discount_item["total"]
+                )
 
         return {"goodsDetails": item_list}
 
@@ -648,13 +657,6 @@ class EInvoice(Document):
         if not taxRate or taxRate in ["-", "Exempt"]:
             discountTaxRate = "0.0"
         return discount_amount, discountFlag, discounted_item, discountTaxRate
-
-    def _is_duplicate_item(self, row, unique_items):
-        unique_identifier = f"{row.item_code}_{row.unit}_{row.rate}"
-        if unique_identifier in unique_items:
-            return True
-        unique_items.add(unique_identifier)
-        return False
 
     def _prepare_item_details(
         self,
@@ -674,6 +676,9 @@ class EInvoice(Document):
             if tax_rate == "0.18" and discount_percentage > 0
             else row.tax
         )
+        # EFRIS validates Section E against the face value of these line
+        # taxes, so never send more than 2 decimal places.
+        tax = round(tax or 0.0, 2)
 
         item = {
             "item": row.item_name,
@@ -699,7 +704,9 @@ class EInvoice(Document):
 
         discount_item = None
         if discount_percentage > 0:
-            discount_tax = row.efris_dsct_discount_tax if tax_rate == "0.18" else tax
+            discount_tax = round(
+                (row.efris_dsct_discount_tax if tax_rate == "0.18" else tax) or 0.0, 2
+            )
             discount_item = {
                 "item": discounted_item,
                 "itemCode": item_code,
@@ -728,36 +735,23 @@ class EInvoice(Document):
         efris_log_info("Getting tax details JSON")
         tax_details_list = []
 
-        tax_per_category = calculate_tax_by_category(self.invoice)
-        trimmed_response = {}
-        for key, value in tax_per_category.items():
-            # Extract the part inside the parentheses
-            tax_category = key.split("(")[1].split(")")[0]
-            tax_category = tax_category.replace("%", "")
-            trimmed_response[tax_category] = value
+        goods_tax_by_category = self.get_goods_tax_by_category()
+        goods_gross_by_category = self._goods_gross_by_category
 
         for row in self.taxes:
-            tax_rate_key = "0"
-            if row.tax_rate == "0.18":
-                tax_rate = float(row.tax_rate)
-                tax_rate_key = str(int(tax_rate * 100))
-            else:
-                tax_rate_key = row.tax_rate
             tax_category = row.tax_category_code.split(":")[0]
-
-            if tax_rate_key in trimmed_response:
-                calculated_tax = round(trimmed_response[tax_rate_key], 2)
-                # Take care of when we have mismatch of decimal points summary and taxDetails values
-            if calculated_tax > 0 and calculated_tax != calculate_additional_discounts(
-                self.invoice
-            ):
-                calculated_tax = calculate_additional_discounts(self.invoice)
+            # Section E must equal the sums of the goods lines per category:
+            # tax (return code 2785) and gross/net (return code 1317) are both
+            # validated by EFRIS against Section D.
+            calculated_tax = round(goods_tax_by_category.get(tax_category, 0.0), 2)
+            gross_amount = round(goods_gross_by_category.get(tax_category, 0.0), 2)
+            net_amount = round(gross_amount - calculated_tax, 2)
             tax_details = {
                 "taxCategoryCode": tax_category,
-                "netAmount": str(row.net_amount),
+                "netAmount": str(net_amount),
                 "taxRate": str(row.tax_rate),
-                "taxAmount": str(round(calculated_tax, 2)),
-                "grossAmount": round(calculated_tax + row.net_amount, 2),
+                "taxAmount": str(calculated_tax),
+                "grossAmount": gross_amount,
                 "exciseUnit": "",
                 "exciseCurrency": "",
                 "taxRateName": "",
@@ -765,6 +759,11 @@ class EInvoice(Document):
             tax_details_list.append(tax_details)
 
         return {"taxDetails": tax_details_list}
+
+    def get_goods_tax_by_category(self):
+        if getattr(self, "_goods_tax_by_category", None) is None:
+            self.get_good_details()
+        return self._goods_tax_by_category
 
     def get_payment_details(self):
         efris_log_info("Getting Payment details JSON")
@@ -797,13 +796,19 @@ class EInvoice(Document):
 
     def get_summary(self):
         efris_log_info("Getting summary JSON")
+        # Sum the per-category figures exactly as they appear in taxDetails
+        # (each category rounded to 2dp first) so the summary always matches.
+        tax_by_category = self.get_goods_tax_by_category()
+        total_tax = round(sum(round(v, 2) for v in tax_by_category.values()), 2)
+        total_gross = round(
+            sum(round(v, 2) for v in self._goods_gross_by_category.values()), 2
+        )
+        total_net = round(total_gross - total_tax, 2)
         return {
             "summary": {
-                "netAmount": str(self.net_amount),
-                "taxAmount": calculate_additional_discounts(self.invoice),
-                "grossAmount": round(
-                    calculate_additional_discounts(self.invoice) + self.net_amount, 2
-                ),
+                "netAmount": str(total_net),
+                "taxAmount": total_tax,
+                "grossAmount": total_gross,
                 "itemCount": str(self.item_count),
                 "modeCode": str(self.mode_code),
                 "remarks": self.remarks,
