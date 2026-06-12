@@ -150,44 +150,34 @@ class EInvoiceAPI:
             reference_document=sales_invoice.name,
         )
 
-        try:
-            status, response = make_post(
-                interfaceCode="T109",
-                content=einvoice_json,
-                company_name=company_name,
-                reference_doc_type=sales_invoice.doctype,
-                reference_document=sales_invoice.name,
+        status, response = make_post(
+            interfaceCode="T109",
+            content=einvoice_json,
+            company_name=company_name,
+            reference_doc_type=sales_invoice.doctype,
+            reference_document=sales_invoice.name,
+        )
+
+        if status:
+            EInvoiceAPI.handle_successful_irn_generation(einvoice, response)
+            efris_log_info(f"EFRIS Generated Successfully. :{einvoice}")
+            frappe.msgprint(_("EFRIS Generated Successfully."), alert=1)
+            update_integration_request_log(
+                integration_request_log,
+                status="Completed",
+                response=response,
+                error=None,
             )
-
-            if status:
-                EInvoiceAPI.handle_successful_irn_generation(einvoice, response)
-                efris_log_info(f"EFRIS Generated Successfully. :{einvoice}")
-                frappe.msgprint(_("EFRIS Generated Successfully."), alert=1)
-                update_integration_request_log(
-                    integration_request_log,
-                    status="Completed",
-                    response=response,
-                    error=None,
-                )
-            else:
-                update_integration_request_log(
-                    integration_request_log,
-                    status="Failed",
-                    response=response,
-                    error=response,
-                )
-
-                frappe.log_error(title=response, message=frappe.get_traceback())
-                frappe.throw(response, title=_("EFRIS Generation Failed"))
-        except Exception as e:
+        else:
             update_integration_request_log(
                 integration_request_log,
                 status="Failed",
                 response=response,
-                error=str(e),
+                error=response,
             )
-            efris_log_error(f"Error generating IRN: {str(e)}")
-            frappe.throw(str(e), title=_("EFRIS Generation Failed"))
+
+            frappe.log_error(title=response, message=frappe.get_traceback())
+            frappe.throw(response, title=_("EFRIS Generation Failed"))
 
         return status, response
 
@@ -1397,9 +1387,12 @@ def _calculate_tax_adjustments(discount_amount, tax_rate, item_amount):
     """
     Calculate tax adjustments for taxable items.
     """
+    # EFRIS sums the goods line taxes at face value and compares them against
+    # the 2dp tax details (Section E), so line taxes must not carry more than
+    # 2 decimal places (return code 2785).
     tax_on_discount = round(discount_amount / (1 + (tax_rate / 100)), 4)
-    discount_tax = round(discount_amount - tax_on_discount, 4)
-    item_tax = round(item_amount * (tax_rate / (100 + tax_rate)), 4)
+    discount_tax = round(discount_amount - tax_on_discount, 2)
+    item_tax = round(item_amount * (tax_rate / (100 + tax_rate)), 2)
     return tax_on_discount, discount_tax, item_tax
 
 
