@@ -888,11 +888,12 @@ def get_basic_information(einvoice):
 
 
 def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
-    """
-    Process items in the einvoice and return a list of goods details for the credit note.
-    """
-    item_list = []
     discountFlag = "2"
+
+    original_goods = get_original_goods_details(original_einvoice)
+
+    next_match = {}
+    indexed_items = []
 
     for item in einvoice.items:
         qty = item.quantity
@@ -900,7 +901,6 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
         taxRate = decode_e_tax_rate(str(item.gst_rate), item.e_tax_category)
         item_code = item.item_code
         taxable_amount = item.amount
-        orderNumber = get_order_no(original_einvoice, item.item_code, item.item_name)
         goodsCode = frappe.db.get_value(
             "Item", {"item_code": item_code}, "efris_product_code"
         )
@@ -908,6 +908,10 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
 
         if goodsCode:
             item_code = goodsCode
+
+        position, orderNumber = match_original_line(
+            original_goods, next_match, item_code, item.item_name
+        )
 
         if discount_percentage > 0:
             discount_amount = item.efris_dsct_discount_total
@@ -925,37 +929,82 @@ def get_goods_details(einvoice, original_einvoice, discount_percentage=0):
             if not taxRate or taxRate in ["-", "Exempt"]:
                 discountTaxRate = "0.0"
 
-        item_list.append(
-            {
-                "item": item.item_name,
-                "itemCode": item_code,
-                "qty": str(qty),
-                "unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
-                "unitPrice": str(item.rate),
-                "total": str(taxable_amount),
-                "taxRate": str(taxRate),
-                "tax": str(taxes),
-                "orderNumber": str(orderNumber),
-                "discountFlag": discountFlag,
-                "deemedFlag": "2",
-                "exciseFlag": "2",
-                "categoryId": "",
-                "categoryName": "",
-                "goodsCategoryId": item.efris_commodity_code,
-                "goodsCategoryName": "",
-                "exciseRate": "",
-                "exciseRule": "",
-                "exciseTax": "",
-                "pack": "",
-                "stick": "",
-                "exciseUnit": "",
-                "exciseCurrency": "",
-                "exciseRateName": "",
-                "vatApplicableFlag": "1",
-            }
+        indexed_items.append(
+            (
+                position,
+                {
+                    "item": item.item_name,
+                    "itemCode": item_code,
+                    "qty": str(qty),
+                    "unitOfMeasure": frappe.get_doc("UOM", item.unit).efris_uom_code,
+                    "unitPrice": str(item.rate),
+                    "total": str(taxable_amount),
+                    "taxRate": str(taxRate),
+                    "tax": str(taxes),
+                    "orderNumber": str(orderNumber),
+                    "discountFlag": discountFlag,
+                    "deemedFlag": "2",
+                    "exciseFlag": "2",
+                    "categoryId": "",
+                    "categoryName": "",
+                    "goodsCategoryId": item.efris_commodity_code,
+                    "goodsCategoryName": "",
+                    "exciseRate": "",
+                    "exciseRule": "",
+                    "exciseTax": "",
+                    "pack": "",
+                    "stick": "",
+                    "exciseUnit": "",
+                    "exciseCurrency": "",
+                    "exciseRateName": "",
+                    "vatApplicableFlag": "1",
+                },
+            )
         )
 
-    return item_list
+    # Emit lines in the original invoice's order so each index lines up with the
+    # original invoice's goodsDetails.
+    indexed_items.sort(key=lambda entry: entry[0])
+    return [entry[1] for entry in indexed_items]
+
+
+def get_original_goods_details(original_einvoice):
+    """Return the goodsDetails list from the original invoice's request log."""
+    doc_list = frappe.get_all(
+        "E Invoice Request Log",
+        filters={
+            "reference_doc_type": "Sales Invoice",
+            "reference_document": original_einvoice.name,
+        },
+        fields=["name"],
+        order_by="creation DESC",
+        limit_page_length=1,
+    )
+
+    if not doc_list:
+        frappe.throw(
+            f"No E Invoice Request Log found for invoice: {original_einvoice.name}"
+        )
+    request_log = frappe.get_doc("E Invoice Request Log", doc_list[0]["name"])
+    request_data = json.loads(request_log.request_data)
+    return request_data.get("goodsDetails", [])
+
+
+def match_original_line(original_goods, next_match, item_code, item_name):
+    """
+    Find the next unmatched original goodsDetails line for the given item,
+    returning its (position, orderNumber). Tracks per-item progress in
+    ``next_match`` so repeated items consume successive original lines.
+    """
+    key = (item_code, item_name)
+    start = next_match.get(key, 0)
+    for idx in range(start, len(original_goods)):
+        original = original_goods[idx]
+        if original.get("itemCode") == item_code and original.get("item") == item_name:
+            next_match[key] = idx + 1
+            return idx, original.get("orderNumber")
+
+    frappe.throw(f"No matching order number found for {item_code} - {item_name}")
 
 
 def get_einvoice(sales_invoice):
@@ -1479,33 +1528,6 @@ def before_save(doc, method):
         for item in doc.items:
             item.rate = item.rate - (discount * item.rate) / 100
             item.amount = item.rate * item.qty
-
-
-def get_order_no(invoice, item_code, item_name):
-    doc_list = frappe.get_all(
-        "E Invoice Request Log",
-        filters={
-            "reference_doc_type": "Sales Invoice",
-            "reference_document": invoice.name,
-        },
-        fields=["name"],
-        order_by="creation DESC",
-        limit_page_length=1,
-    )
-
-    if not doc_list:
-        frappe.throw(f"No E Invoice Request Log found for invoice: {invoice}")
-    doc_name = doc_list[0]["name"]
-    request_log = frappe.get_doc("E Invoice Request Log", doc_name)
-    request_data = json.loads(request_log.request_data)
-    item_code = get_efris_product_code(item_code)
-    for item in request_data.get("goodsDetails", []):
-        if item.get("itemCode") == item_code and item.get("item") == item_name:
-            order_number = item.get("orderNumber")
-            return order_number
-
-    frappe.throw(f"No matching order number found for {item_code} - {item_name}")
-    return 0
 
 
 def get_efris_product_code(item_code):
