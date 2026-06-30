@@ -280,16 +280,19 @@ class POSEInvoice(Document):
 		if not payments:
 			payment_mode = self.pos_invoice.efris_payment_mode 
 		for pay_amount in self.pos_invoice.payments:
-			paid_amount = pay_amount.amount                
-			payment_mode = pay_amount.mode_of_payment
-			e_payments =frappe._dict(
-				{
-					 "amount":paid_amount,
-					"mode_of_payment":payment_mode
-			}
-			) 
-			self.append('e_payments', e_payments)
-			self.paid_amount = total_payment
+			if pay_amount.amount <= 0:
+				continue
+			if pay_amount.mode_of_payment and pay_amount.amount != 0 and pay_amount.mode_of_payment != CONST_EFRIS_PAYMENT_MODE_CREDIT:
+				paid_amount = pay_amount.amount                
+				payment_mode = pay_amount.mode_of_payment
+				e_payments =frappe._dict(
+					{
+						"amount":paid_amount,
+						"mode_of_payment":payment_mode
+				}
+				) 
+				self.append('e_payments', e_payments)
+				self.paid_amount = total_payment
 		self.credit_amount = credit
 		# Add "Credit" line if credit amount exists
 		if abs(credit) > 0:
@@ -635,6 +638,7 @@ class POSEInvoice(Document):
 	def get_tax_details(self):
 		efris_log_info("Getting tax details JSON")
 		tax_details_list = []
+		calculated_tax = 0
 		
 		tax_per_category = calculate_tax_by_category(self.invoice)
 		trimmed_response = {}
@@ -680,7 +684,7 @@ class POSEInvoice(Document):
 		for row in self.e_payments:
 			 # Map mode_of_payment to the corresponding EFRIS code
 			mode_of_payment = row.mode_of_payment
-			if mode_of_payment and mode_of_payment != CONST_EFRIS_PAYMENT_MODE_CREDIT:
+			if mode_of_payment and  row.amount != 0 and mode_of_payment != CONST_EFRIS_PAYMENT_MODE_CREDIT:
 				efris_payment_mode  = frappe.db.get_value('Mode of Payment',{'name':mode_of_payment},'efris_payment_mode') 
 				if not efris_payment_mode:
 					frappe.throw(f"EFRIS Mode of Payment must be configured on Payment Mode: {mode_of_payment}")

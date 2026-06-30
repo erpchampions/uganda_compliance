@@ -1056,7 +1056,7 @@
    "docstatus": 0,
    "dt": "POS Invoice",
    "fetch_from": "company.tax_id",
-   "fetch_if_empty": 0,
+   "fetch_if_empty": 1,
    "fieldname": "efris_company_tax_id",
    "fieldtype": "Data",
    "hidden": 0,
