@@ -1,0 +1,28 @@
+{
+ "actions": [],
+ "creation": "2026-05-21 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "payment_mode",
+  "payment_amount",
+  "order_number"
+ ],
+ "fields": [
+  {"fieldname": "payment_mode", "fieldtype": "Select", "label": "Payment Mode", "in_list_view": 1, "columns": 4, "options": "101 - Credit\n102 - Cash\n103 - Cheque\n104 - Demand Draft\n105 - Mobile Money\n106 - Visa/Master Card\n107 - EFT\n108 - POS\n109 - RTGS\n110 - Swift Transfer"},
+  {"fieldname": "payment_amount", "fieldtype": "Currency", "label": "Amount", "in_list_view": 1, "columns": 4},
+  {"fieldname": "order_number", "fieldtype": "Data", "label": "Order", "in_list_view": 1, "columns": 2, "default": "a"}
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-21 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Efris",
+ "name": "E-Invoice Pay Way",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

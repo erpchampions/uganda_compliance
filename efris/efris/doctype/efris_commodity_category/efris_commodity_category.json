@@ -1,0 +1,199 @@
+{
+ "actions": [],
+ "autoname": "field:commodity_category_code",
+ "creation": "2026-05-20 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "is_tree": 1,
+ "nsm_parent_field": "parent_efris_commodity_category",
+ "field_order": [
+  "commodity_category_code",
+  "commodity_category_name",
+  "parent_efris_commodity_category",
+  "is_group",
+  "commodity_category_level",
+  "column_break_1",
+  "rate",
+  "exclusion",
+  "service_mark",
+  "excisable",
+  "vat_out_scope_code",
+  "enable_status_code",
+  "section_zero_rate",
+  "is_zero_rate",
+  "zero_rate_start_date",
+  "zero_rate_end_date",
+  "section_exempt",
+  "is_exempt",
+  "exempt_rate_start_date",
+  "exempt_rate_end_date",
+  "section_sync",
+  "last_synced_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "commodity_category_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "commodity_category_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "length": 200
+  },
+  {
+   "fieldname": "parent_efris_commodity_category",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "in_list_view": 1,
+   "label": "Parent",
+   "options": "EFRIS Commodity Category",
+   "search_index": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Group"
+  },
+  {
+   "fieldname": "commodity_category_level",
+   "fieldtype": "Data",
+   "label": "Level"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Float",
+   "label": "Rate",
+   "precision": 4
+  },
+  {
+   "fieldname": "exclusion",
+   "fieldtype": "Select",
+   "label": "Exclusion",
+   "options": "\n0 - Zero\n1 - Exempt\n2 - No Exclusion\n3 - Both 0% & '-'"
+  },
+  {
+   "default": "0",
+   "fieldname": "service_mark",
+   "fieldtype": "Check",
+   "label": "Is Service"
+  },
+  {
+   "default": "0",
+   "fieldname": "excisable",
+   "fieldtype": "Check",
+   "label": "Excisable"
+  },
+  {
+   "default": "0",
+   "fieldname": "vat_out_scope_code",
+   "fieldtype": "Check",
+   "label": "VAT Out of Scope"
+  },
+  {
+   "fieldname": "enable_status_code",
+   "fieldtype": "Data",
+   "label": "Enable Status",
+   "description": "1 = enabled, 0 = disabled"
+  },
+  {
+   "fieldname": "section_zero_rate",
+   "fieldtype": "Section Break",
+   "label": "Zero Rate"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_zero_rate",
+   "fieldtype": "Check",
+   "label": "Is Zero Rate"
+  },
+  {
+   "fieldname": "zero_rate_start_date",
+   "fieldtype": "Date",
+   "label": "Zero Rate Start"
+  },
+  {
+   "fieldname": "zero_rate_end_date",
+   "fieldtype": "Date",
+   "label": "Zero Rate End"
+  },
+  {
+   "fieldname": "section_exempt",
+   "fieldtype": "Section Break",
+   "label": "Exempt"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_exempt",
+   "fieldtype": "Check",
+   "label": "Is Exempt"
+  },
+  {
+   "fieldname": "exempt_rate_start_date",
+   "fieldtype": "Date",
+   "label": "Exempt Start"
+  },
+  {
+   "fieldname": "exempt_rate_end_date",
+   "fieldtype": "Date",
+   "label": "Exempt End"
+  },
+  {
+   "fieldname": "section_sync",
+   "fieldtype": "Section Break",
+   "label": "Sync"
+  },
+  {
+   "fieldname": "last_synced_on",
+   "fieldtype": "Datetime",
+   "label": "Last Synced On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-05-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Efris",
+ "name": "EFRIS Commodity Category",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Accounts Manager"
+  },
+  {
+   "read": 1,
+   "role": "Accounts User"
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "commodity_category_code",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "commodity_category_name",
+ "track_changes": 0
+}

@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "creation": "2026-05-19 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "tax_type_name",
+  "tax_type_code",
+  "account",
+  "registration_date",
+  "cancellation_date"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "tax_type_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tax Type Name",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "tax_type_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tax Type Code",
+   "read_only": 1
+  },
+  {
+   "columns": 4,
+   "description": "Ledger account this tax posts to. Filtered to accounts in the parent settings' company.",
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Account",
+   "options": "Account"
+  },
+  {
+   "columns": 2,
+   "fieldname": "registration_date",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Registration Date",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "cancellation_date",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Cancellation Date",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Efris",
+ "name": "EFRIS Tax Type",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

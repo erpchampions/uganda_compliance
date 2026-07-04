@@ -1,0 +1,86 @@
+{
+ "actions": [],
+ "autoname": "format:{category}-{code}",
+ "creation": "2026-05-20 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "category",
+  "code",
+  "entry_name",
+  "efris_value",
+  "extra_json",
+  "last_synced_on"
+ ],
+ "fields": [
+  {
+   "description": "Top-level key from the T115 response (currencyType, payWay, sector, ...).",
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Category",
+   "reqd": 1
+  },
+  {
+   "description": "Entry's value/code from the T115 response. Empty when the entry is a single config knob with no inner code.",
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Code"
+  },
+  {
+   "fieldname": "entry_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "description": "Human-readable name from EFRIS (the entry's 'name' field)."
+  },
+  {
+   "description": "Raw value as returned by EFRIS (preserved for single-value config entries like creditNoteMaximumInvoicingDays).",
+   "fieldname": "efris_value",
+   "fieldtype": "Data",
+   "label": "EFRIS Value"
+  },
+  {
+   "description": "JSON dump of any extra fields on the entry (parentClass, requiredFill, validPeriodFrom, ...).",
+   "fieldname": "extra_json",
+   "fieldtype": "Code",
+   "label": "Extra (JSON)",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "last_synced_on",
+   "fieldtype": "Datetime",
+   "label": "Last Synced On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-05-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Efris",
+ "name": "EFRIS Dictionary",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "role": "System Manager"
+  },
+  {
+   "read": 1,
+   "role": "Accounts Manager"
+  },
+  {
+   "read": 1,
+   "role": "Accounts User"
+  }
+ ],
+ "sort_field": "category",
+ "sort_order": "ASC",
+ "show_title_field_in_link": 1,
+ "states": [],
+ "title_field": "entry_name",
+ "track_changes": 0
+}

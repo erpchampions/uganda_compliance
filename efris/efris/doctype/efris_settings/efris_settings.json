@@ -1,0 +1,319 @@
+{
+ "actions": [],
+ "autoname": "field:company",
+ "creation": "2026-05-18 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "enabled",
+  "environment",
+  "efris_server_url",
+  "connection_section",
+  "tin",
+  "brn",
+  "branch_name",
+  "branch_id",
+  "branch_code",
+  "column_break_conn",
+  "device_no",
+  "device_mac",
+  "request_timeout",
+  "crypto_section",
+  "private_key",
+  "private_key_password",
+  "geo_section",
+  "longitude",
+  "column_break_geo",
+  "latitude",
+  "seller_section",
+  "company_legal_name",
+  "company_address",
+  "place_of_business",
+  "column_break_seller",
+  "mobile_phone",
+  "line_phone",
+  "email_address",
+  "taxpayer_details_section",
+  "tax_types",
+  "branches",
+  "invoice_section",
+  "auto_upload_invoices",
+  "efris_default_upload_trigger",
+  "efris_default_payment_auto_upload",
+  "auto_issue_payment_receipts",
+  "combined_invoice_item",
+  "taxpayer_details_json"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "description": "Master switch. When unchecked, no documents are submitted to EFRIS.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "default": "Sandbox",
+   "fieldname": "environment",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "Sandbox\nProduction"
+  },
+  {
+   "description": "Sandbox: https://efristest.ura.go.ug/efrisws/ws/taapp \u2014 Production: https://efris.ura.go.ug/efrisws/ws/taapp",
+   "fieldname": "efris_server_url",
+   "fieldtype": "Data",
+   "label": "EFRIS Server URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Taxpayer & Device"
+  },
+  {
+   "fieldname": "tin",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "TIN",
+   "reqd": 1
+  },
+  {
+   "fieldname": "brn",
+   "fieldtype": "Data",
+   "label": "Business Registration No (BRN)"
+  },
+  {
+   "fieldname": "column_break_conn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "device_no",
+   "fieldtype": "Data",
+   "label": "Device No",
+   "reqd": 1
+  },
+  {
+   "default": "FFFFFFFFFFFF",
+   "fieldname": "device_mac",
+   "fieldtype": "Data",
+   "label": "Device MAC"
+  },
+  {
+   "fieldname": "branch_id",
+   "fieldtype": "Data",
+   "label": "Branch ID"
+  },
+  {
+   "fieldname": "branch_code",
+   "fieldtype": "Data",
+   "label": "Branch Code"
+  },
+  {
+   "fieldname": "branch_name",
+   "fieldtype": "Data",
+   "label": "Branch Name"
+  },
+  {
+   "default": "30",
+   "description": "HTTP request timeout in seconds.",
+   "fieldname": "request_timeout",
+   "fieldtype": "Int",
+   "label": "Request Timeout (s)"
+  },
+  {
+   "fieldname": "crypto_section",
+   "fieldtype": "Section Break",
+   "label": "Encryption"
+  },
+  {
+   "description": "Taxpayer private key file issued by URA (.p12 / .pfx keystore). Used to RSA-decrypt the per-call AES key from T104 and to RSA-SHA1 sign request content.",
+   "fieldname": "private_key",
+   "fieldtype": "Attach",
+   "label": "RSA Private Key File"
+  },
+  {
+   "description": "Password for the .p12 keystore, issued by URA.",
+   "fieldname": "private_key_password",
+   "fieldtype": "Password",
+   "label": "Private Key Password"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "geo_section",
+   "fieldtype": "Section Break",
+   "label": "Geolocation"
+  },
+  {
+   "default": "32.58",
+   "fieldname": "longitude",
+   "fieldtype": "Data",
+   "label": "Longitude"
+  },
+  {
+   "fieldname": "column_break_geo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0.31",
+   "fieldname": "latitude",
+   "fieldtype": "Data",
+   "label": "Latitude"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "seller_section",
+   "fieldtype": "Section Break",
+   "label": "Seller Details"
+  },
+  {
+   "fieldname": "company_legal_name",
+   "fieldtype": "Data",
+   "label": "Legal Name"
+  },
+  {
+   "fieldname": "company_address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "place_of_business",
+   "fieldtype": "Data",
+   "label": "Place of Business"
+  },
+  {
+   "fieldname": "column_break_seller",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "mobile_phone",
+   "fieldtype": "Data",
+   "label": "Mobile Phone"
+  },
+  {
+   "fieldname": "line_phone",
+   "fieldtype": "Data",
+   "label": "Line Phone"
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "label": "Email Address",
+   "options": "Email"
+  },
+  {
+   "collapsible": 1,
+   "description": "Taxpayer, device and branch details from the latest T103 login. Populated automatically.",
+   "fieldname": "taxpayer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Taxpayer Details (T103)"
+  },
+  {
+   "description": "Tax types the taxpayer is registered for, from the latest T103 login. Name/code/dates come from EFRIS \u2014 set the Account each tax posts to.",
+   "fieldname": "tax_types",
+   "fieldtype": "Table",
+   "label": "Tax Types",
+   "options": "EFRIS Tax Type"
+  },
+  {
+   "description": "Branches registered for this taxpayer on EFRIS \u2014 fetched via T138. Link each row to an ERPNext Branch to map them locally.",
+   "fieldname": "branches",
+   "fieldtype": "Table",
+   "label": "EFRIS Branches",
+   "options": "EFRIS Branch List"
+  },
+  {
+   "fieldname": "invoice_section",
+   "fieldtype": "Section Break",
+   "label": "Invoice Upload (T109)",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "auto_upload_invoices",
+   "fieldtype": "Check",
+   "label": "Auto-upload Sales / POS Invoices (legacy)",
+   "default": "0",
+   "description": "Legacy switch. When the new 'Default Upload Trigger' is blank, '1' maps to 'On Submit' and '0' maps to 'Manual'. Prefer the new field for finer control."
+  },
+  {
+   "fieldname": "efris_default_upload_trigger",
+   "fieldtype": "Select",
+   "label": "Default Upload Trigger",
+   "options": "\nManual\nOn Submit\nOn Payment",
+   "description": "Company-wide default for when a Sales Invoice is sent to EFRIS. Customer-level override on Customer.efris_upload_trigger wins when set. Leave blank to fall back to the legacy 'Auto-upload' flag above."
+  },
+  {
+   "fieldname": "efris_default_payment_auto_upload",
+   "fieldtype": "Check",
+   "label": "Default: Auto-upload on Payment Entry submit",
+   "default": "0",
+   "description": "Default value for Payment Entry.efris_auto_upload_invoices. When set, submitting a Payment Entry will push any 'On Payment' Sales Invoices it references to EFRIS."
+  },
+  {
+   "fieldname": "auto_issue_payment_receipts",
+   "fieldtype": "Check",
+   "label": "Auto-issue additional EFRIS document on Payment",
+   "default": "0",
+   "description": "When set, submitting a Payment Entry (with auto-upload enabled) against an already-uploaded invoice issues an additional EFRIS document for that payment — one per Payment Entry. Non-VAT taxpayers issue a Receipt (invoiceKind 2); VAT-registered taxpayers issue a tax invoice (invoiceKind 1). When unset, the auto path leaves it to the manual 'Upload Additional Invoice' button. Does not affect that button."
+  },
+  {
+   "fieldname": "combined_invoice_item",
+   "fieldtype": "Link",
+   "options": "Item",
+   "label": "Combined Invoice Item",
+   "description": "Optional. When set, all sales invoice lines are collapsed into one T109 goods line using this Item's EFRIS goods code and commodity category. The Item must already be uploaded to EFRIS."
+  },
+  {
+   "description": "Full raw T103 login response \u2014 device, taxpayer, branch and configuration flags.",
+   "fieldname": "taxpayer_details_json",
+   "fieldtype": "Code",
+   "label": "Taxpayer Details (Raw Response)",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-20 15:06:08.682557",
+ "modified_by": "Administrator",
+ "module": "Efris",
+ "name": "EFRIS Settings",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

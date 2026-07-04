@@ -1,0 +1,255 @@
+{#-
+  EFRIS e-Invoice / Tax Invoice — rendered entirely from the linked E-Invoice.
+  The Sales Invoice is referenced only to locate the E-Invoice and to show
+  the Seller's Reference Number.
+-#}
+{%- set einv_name = doc.get("efris_e_invoice") -%}
+{%- set einv = frappe.get_doc("E-Invoice", einv_name) if einv_name and frappe.db.exists("E-Invoice", einv_name) else None -%}
+
+{% if not einv %}
+<div style="padding: 16px; border: 1px solid #c00; color: #c00; font-family: Arial, sans-serif;">
+	<b>No E-Invoice linked to this Sales Invoice.</b>
+	Upload {{ doc.name }} to EFRIS first (Sales Invoice → EFRIS → Upload to EFRIS (T109))
+	to generate the E-Invoice this print format renders from.
+</div>
+{% else %}
+
+{%- set settings = frappe.get_doc("EFRIS Settings", einv.company) if frappe.db.exists("EFRIS Settings", einv.company) else None -%}
+{%- set customer = frappe.get_doc("Customer", einv.customer) if einv.customer else None -%}
+{%- set served_by = frappe.db.get_value("User", einv.owner, "full_name") or einv.owner -%}
+
+{%- set seller_brn = (settings.get("brn") if settings else "") or "" -%}
+{%- set seller_tin = (settings.get("tin") if settings else "") or "" -%}
+{%- set seller_legal = (settings.get("company_legal_name") if settings else "") or einv.company -%}
+{%- set seller_address = (settings.get("company_address") if settings else "") or (settings.get("place_of_business") if settings else "") -%}
+{%- set device_no = (settings.get("device_no") if settings else "") or "" -%}
+
+{%- set qr = einv.get("efris_qr_code") or "" -%}
+{%- set fdn = einv.get("efris_invoice_id") or "" -%}
+{%- set verify = einv.get("efris_antifake_code") or "" -%}
+
+{%- set buyer_tin = einv.get("buyer_tin") or (customer.get("tax_id") if customer else "") or "" -%}
+{%- set buyer_name = einv.get("buyer_legal_name") or einv.get("buyer_business_name") or (customer.get("customer_name") if customer else "") -%}
+
+{%- set goods_rows = einv.items or [] -%}
+{%- set tax_rows = einv.tax_details or [] -%}
+{%- set non_discount_count = goods_rows | rejectattr("discount_flag", "equalto", "0") | list | length -%}
+{%- set item_count = einv.item_count or non_discount_count or (goods_rows | length) -%}
+
+{%- set summary_net = einv.net_amount or 0 -%}
+{%- set summary_tax = einv.tax_amount or 0 -%}
+{%- set summary_gross = einv.gross_amount or 0 -%}
+
+{%- set issued_dt = einv.posting_datetime -%}
+{%- set issued_str = issued_dt | string -%}
+{%- set issued_date = issued_str.split(" ")[0] if " " in issued_str else issued_str -%}
+{%- set issued_time = issued_str.split(" ")[1] if " " in issued_str else "" -%}
+
+{% macro tax_label(code) -%}
+	{%- if code == "01" -%}A: Standard (18%)
+	{%- elif code == "02" -%}B: Zero (0%)
+	{%- elif code == "03" -%}C: Exempt (-)
+	{%- elif code == "04" -%}D: Deemed (18%)
+	{%- elif code == "05" -%}E: Excise Duty
+	{%- elif code == "06" -%}Over the Top Service (OTT)
+	{%- elif code == "07" -%}Stamp Duty
+	{%- elif code == "08" -%}Local Hotel Service Tax
+	{%- elif code == "09" -%}UCC Levy
+	{%- elif code == "10" -%}Others
+	{%- elif code == "11" -%}F: VAT Not Applicable
+	{%- else -%}{{ code or "" }}
+	{%- endif -%}
+{%- endmacro %}
+
+{% macro short_tax_letter(code) -%}
+	{%- if code == "01" -%}A
+	{%- elif code == "02" -%}B
+	{%- elif code == "03" -%}C
+	{%- elif code == "04" -%}D
+	{%- elif code == "05" -%}E
+	{%- elif code == "11" -%}F
+	{%- else -%}{{ code or "" }}
+	{%- endif -%}
+{%- endmacro %}
+
+{% macro money(value) -%}
+{{ frappe.format(value or 0, {"fieldtype": "Currency", "options": "currency"}, doc=einv) }}
+{%- endmacro %}
+
+{% macro section_title(text) %}
+<table style="width:100%; border-collapse:collapse; border:1px solid #000; border-top:0;">
+	<tr><td style="border:1px solid #000; padding:6px; text-align:center; background:#f2f2f2; font-weight:bold;">{{ text }}</td></tr>
+</table>
+{% endmacro %}
+
+{% macro kv(label, value) %}
+<tr>
+	<td style="border:1px solid #000; padding:4px; vertical-align:top;">{{ label }}</td>
+	<td style="border:1px solid #000; padding:4px; vertical-align:top;">{{ value if value not in [None, ''] else '' }}</td>
+</tr>
+{% endmacro %}
+
+<div style="font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
+
+	<!-- Header -->
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; text-align:center; vertical-align:middle;">
+				<img src="/assets/efris/images/URA-logo.png" alt="URA" style="width:80px;height:100px;"/>
+			</td>
+			<td style="border:1px solid #000; padding:8px; text-align:center; vertical-align:middle; font-size:13pt; font-weight:bold;">
+				e-INVOICE/TAX INVOICE
+			</td>
+		</tr>
+	</table>
+
+	<!-- Section A: Seller -->
+	{{ section_title("Section A: Seller's Details") }}
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+		{{ kv("BRN:", seller_brn) }}
+		{{ kv("TIN:", seller_tin) }}
+		{{ kv("Legal Name:", seller_legal) }}
+		{{ kv("Trade Name:", seller_legal) }}
+		{{ kv("Address:", seller_address) }}
+		{{ kv("Seller's Reference Number:", einv.reference_no or doc.name) }}
+		{{ kv("Served by:", served_by) }}
+	</table>
+
+	<!-- Section B: URA -->
+	{{ section_title("Section B: URA Information") }}
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+		{{ kv("Document Type:", "Copy" if einv.amended_from else "Original") }}
+		{{ kv("Issued Date:", issued_date) }}
+		{{ kv("Time:", issued_time) }}
+		{{ kv("Device Number:", device_no) }}
+		{{ kv("Fiscal Document Number:", fdn) }}
+		{{ kv("Verification Code:", verify) }}
+	</table>
+
+	<!-- Section C: Buyer -->
+	{{ section_title("Section C: Buyer's Details") }}
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+		{{ kv("TIN:", buyer_tin) }}
+		{{ kv("Name:", buyer_name) }}
+	</table>
+
+	<!-- Section D: Goods -->
+	{{ section_title("Section D: Goods & Services Details") }}
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<colgroup>
+			<col style="width:6%">
+			<col style="width:30%">
+			<col style="width:9%">
+			<col style="width:13%">
+			<col style="width:14%">
+			<col style="width:18%">
+			<col style="width:10%">
+		</colgroup>
+		<tr style="background:#f2f2f2;">
+			<th style="border:1px solid #000; padding:4px;">No.</th>
+			<th style="border:1px solid #000; padding:4px; text-align:left;">Item</th>
+			<th style="border:1px solid #000; padding:4px; text-align:right;">Quantity</th>
+			<th style="border:1px solid #000; padding:4px; text-align:left;">Unit Measure</th>
+			<th style="border:1px solid #000; padding:4px; text-align:right;">Unit Price</th>
+			<th style="border:1px solid #000; padding:4px; text-align:right;">Total</th>
+			<th style="border:1px solid #000; padding:4px; text-align:center;">Tax Category</th>
+		</tr>
+		{% for row in goods_rows %}
+		{%- set is_discount = (row.discount_flag or "") == "0" -%}
+		<tr>
+			<td style="border:1px solid #000; padding:4px;">{{ loop.index }}.</td>
+			<td style="border:1px solid #000; padding:4px;">{{ row.item_name or row.item_code }}</td>
+			<td style="border:1px solid #000; padding:4px; text-align:right;">{{ "" if is_discount else (row.qty if row.qty else "") }}</td>
+			<td style="border:1px solid #000; padding:4px;">{{ "" if is_discount else (row.unit_of_measure_code or row.uom or "") }}</td>
+			<td style="border:1px solid #000; padding:4px; text-align:right;">{{ "" if is_discount else money(row.unit_price) }}</td>
+			<td style="border:1px solid #000; padding:4px; text-align:right;">{{ money(row.total) }}</td>
+			<td style="border:1px solid #000; padding:4px; text-align:center;">{{ short_tax_letter(row.tax_category_code) }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+
+	<!-- Section E: Tax -->
+	{{ section_title("Section E: Tax Details") }}
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<colgroup>
+			<col style="width:34%">
+			<col style="width:22%">
+			<col style="width:22%">
+			<col style="width:22%">
+		</colgroup>
+		<tr style="background:#f2f2f2;">
+			<th style="border:1px solid #000; padding:4px; text-align:left;">Tax Category</th>
+			<th style="border:1px solid #000; padding:4px; text-align:right;">Net Amount</th>
+			<th style="border:1px solid #000; padding:4px; text-align:right;">Tax Amount</th>
+			<th style="border:1px solid #000; padding:4px; text-align:right;">Gross Amount</th>
+		</tr>
+		{% for tax in tax_rows %}
+		<tr>
+			<td style="border:1px solid #000; padding:4px;">{{ tax_label(tax.tax_category_code) }}</td>
+			<td style="border:1px solid #000; padding:4px; text-align:right;">{{ money(tax.net_amount) }}</td>
+			<td style="border:1px solid #000; padding:4px; text-align:right;">{{ money(tax.tax_amount) }}</td>
+			<td style="border:1px solid #000; padding:4px; text-align:right;">{{ money(tax.gross_amount) }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+
+	<!-- Section F: Summary -->
+	{{ section_title("Section F: Summary") }}
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+		{{ kv("Net Amount:", money(summary_net)) }}
+		{{ kv("Tax Amount:", money(summary_tax)) }}
+		{{ kv("Gross Amount:", money(summary_gross)) }}
+	</table>
+
+	<!-- Payment Mode -->
+	{{ section_title("Payment Mode") }}
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<colgroup><col style="width:70%"><col style="width:30%"></colgroup>
+		{% for p in (einv.pay_way or []) %}
+		<tr>
+			<td style="border:1px solid #000; padding:4px;">{{ (p.payment_mode.split(" - ", 1)[1] if (p.payment_mode and " - " in p.payment_mode) else (p.payment_mode or "")) }}</td>
+			<td style="border:1px solid #000; padding:4px; text-align:right;">{{ money(p.payment_amount) }}</td>
+		</tr>
+		{% endfor %}
+		<tr>
+			<td style="border:1px solid #000; padding:4px; font-weight:bold;">Total Amount to be Paid</td>
+			<td style="border:1px solid #000; padding:4px; text-align:right; font-weight:bold;">{{ money(summary_gross) }}</td>
+		</tr>
+	</table>
+
+	<!-- Trailer KVs -->
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+		{{ kv("Currency:", einv.currency) }}
+		{{ kv("Number of Items:", item_count) }}
+		{{ kv("Mode:", "Online") }}
+		{{ kv("Remarks:", einv.remarks or "") }}
+	</table>
+
+	{% if qr %}
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<tr>
+            <td></td>
+			<td style="padding:6px; text-align:center; width:100px; height:100px;">
+				<img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&amp;data={{ qr | urlencode }}" alt="QR" style="display:block;margin:0 auto;"/>
+			</td>
+            <td></td>
+		</tr>
+	</table>
+	{% endif %}
+
+	<table style="width:100%; border-collapse:collapse; border:1px solid #000;">
+		<tr>
+			<td style="border:1px solid #000; padding:8px; text-align:center; font-weight:bold;">
+				*** END OF e-INVOICE/TAX INVOICE ***
+			</td>
+		</tr>
+	</table>
+</div>
+
+{% endif %}

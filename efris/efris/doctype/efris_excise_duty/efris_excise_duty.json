@@ -1,0 +1,124 @@
+{
+ "actions": [],
+ "autoname": "field:excise_duty_code",
+ "creation": "2026-05-20 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "excise_duty_code",
+  "good_service",
+  "parent_code",
+  "rate_text",
+  "column_break_1",
+  "efris_id",
+  "is_leaf_node",
+  "effective_date",
+  "last_synced_on",
+  "section_break_details",
+  "details"
+ ],
+ "fields": [
+  {
+   "fieldname": "excise_duty_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Excise Duty Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "good_service",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Good / Service",
+   "length": 500
+  },
+  {
+   "fieldname": "parent_code",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Parent Code"
+  },
+  {
+   "fieldname": "rate_text",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Rate Text",
+   "length": 100
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "efris_id",
+   "fieldtype": "Data",
+   "label": "EFRIS ID",
+   "description": "URA-side internal id."
+  },
+  {
+   "default": "0",
+   "fieldname": "is_leaf_node",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Leaf Node"
+  },
+  {
+   "fieldname": "effective_date",
+   "fieldtype": "Date",
+   "label": "Effective Date"
+  },
+  {
+   "fieldname": "last_synced_on",
+   "fieldtype": "Datetime",
+   "label": "Last Synced On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_details",
+   "fieldtype": "Section Break",
+   "label": "Rate Details"
+  },
+  {
+   "fieldname": "details",
+   "fieldtype": "Table",
+   "label": "Details",
+   "options": "EFRIS Excise Duty Detail"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-05-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Efris",
+ "name": "EFRIS Excise Duty",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Accounts Manager"
+  },
+  {
+   "read": 1,
+   "role": "Accounts User"
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "excise_duty_code",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "good_service",
+ "track_changes": 0
+}
