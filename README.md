@@ -88,3 +88,17 @@ Include the following details in your support request:
 - **TIN**  
 - **Device Number**  
 - **JSON Request/Response Samples**  
+
+## Stock-in: which ERPNext documents reach EFRIS
+
+EFRIS records stock arriving through T131 with a *stock-in type* (import, local
+purchase, manufacture, opening stock) and, for purchases, a supplier. The app
+therefore sends stock-in from the documents that carry that information:
+
+| ERPNext document | Sent to EFRIS | Notes |
+|---|---|---|
+| Purchase Receipt | yes (T131, type from *EFRIS Stock-in Type*) | supplier name/TIN taken from the receipt |
+| Stock Reconciliation, purpose *Opening Stock* | yes (T131, type 102 / "Opening Balance") | items ticked *EFRIS Reconciliation* |
+| Stock Reconciliation, purpose *Stock Reconciliation* | yes, **negative** adjustments only (T131 operation 102) | EFRIS does not accept positive adjustments here |
+| Stock Entry, *Material Transfer* | yes, when rows reference a Purchase Receipt | keeps the goods under the receipt's stock-in |
+| Stock Entry, *Material Receipt* | **no** — deliberate | it has no supplier and no stock-in type, so EFRIS would reject or mis-classify it. Use a Purchase Receipt (bought goods) or an *Opening Stock* reconciliation (balances). |
