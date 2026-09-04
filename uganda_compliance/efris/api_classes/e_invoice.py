@@ -396,9 +396,83 @@ class EInvoiceAPI:
     @staticmethod
     def on_cancel_sales_invoice(doc):
         einvoice = EInvoiceAPI.get_einvoice(doc.name)
-        if einvoice:
-            einvoice.cancel()
-            einvoice.save()
+        if not einvoice:
+            return
+        if doc.get("is_return"):
+            # A credit note that URA has issued must be cancelled at URA as well
+            # (T114); a pending application cannot be withdrawn through the API.
+            if einvoice.irn:
+                EInvoiceAPI.cancel_credit_note(
+                    einvoice,
+                    "102",
+                    doc.get("efris_creditnote_remarks") or "Credit note cancelled in ERPNext",
+                )
+            elif einvoice.credit_note_application_ref_no and not einvoice.irn_cancelled:
+                frappe.throw(
+                    _(
+                        "EFRIS credit note application {0} is still pending at URA. "
+                        "It has to be approved or rejected on the EFRIS portal before "
+                        "this return can be cancelled."
+                    ).format(einvoice.credit_note_application_ref_no),
+                    title=_("EFRIS Credit Note Pending"),
+                )
+        einvoice.cancel()
+        einvoice.save()
+
+    @staticmethod
+    def cancel_credit_note(einvoice, reason_code, remark):
+        """Cancel an ISSUED credit note at URA (interface T114, category 104).
+
+        URA needs the original invoice's invoiceId and the credit note's own FDN.
+        The request/response is logged by make_post; URA's answer is also kept on
+        the E Invoice. A refusal raises, so the ERPNext cancel is blocked too.
+        """
+        if not einvoice.irn:
+            frappe.throw(_("This credit note has no EFRIS FDN yet; nothing to cancel at URA."))
+        if einvoice.irn_cancelled:
+            frappe.throw(_("This credit note is already cancelled at URA."))
+        original = EInvoiceAPI.get_einvoice(
+            frappe.db.get_value("Sales Invoice", einvoice.invoice, "return_against")
+        )
+        if not original or not original.invoice_id:
+            frappe.throw(_("Original invoice's EFRIS record was not found."))
+
+        content = {
+            "oriInvoiceId": original.invoice_id,
+            "invoiceNo": einvoice.irn,
+            "reason": remark or "",
+            "reasonCode": reason_code or "102",
+            "invoiceApplyCategoryCode": "104",
+        }
+        status, response = make_post(
+            interfaceCode="T114",
+            content=content,
+            company_name=einvoice.company,
+            reference_doc_type=einvoice.doctype,
+            reference_document=einvoice.name,
+        )
+        if not status:
+            frappe.throw(str(response), title=_("EFRIS Credit Note Cancellation Failed"))
+
+        einvoice.update(
+            {
+                "irn_cancelled": 1,
+                "irn_cancel_date": frappe.utils.today(),
+                "efris_cancel_response": json.dumps(response) if response else "SUCCESS",
+            }
+        )
+        einvoice.flags.ignore_permissions = True
+        einvoice.save()
+        frappe.db.set_value(
+            "Sales Invoice",
+            einvoice.invoice,
+            {
+                "efris_einvoice_status": "EFRIS Credit Note Cancelled",
+                "efris_irn_cancel_date": frappe.utils.today(),
+            },
+        )
+        frappe.msgprint(_("EFRIS credit note {0} cancelled at URA.").format(einvoice.irn), alert=1)
+        return status, response
 
 
 ###cancel rn#####
@@ -1234,6 +1308,17 @@ def confirm_irn_cancellation(sales_invoice):
 @frappe.whitelist()
 def cancel_irn(sales_invoice, reasonCode, remark):
     return EInvoiceAPI.cancel_irn(sales_invoice, reasonCode, remark)
+
+
+@frappe.whitelist()
+def cancel_credit_note(sales_invoice, reasonCode="102", remark=""):
+    """Cancel an issued EFRIS credit note (T114) for a return Sales Invoice."""
+    sales_invoice = EInvoiceAPI.parse_sales_invoice(sales_invoice)
+    einvoice = EInvoiceAPI.get_einvoice(sales_invoice.name)
+    if not einvoice:
+        frappe.throw(_("No EFRIS record found for {0}.").format(sales_invoice.name))
+    status, _response = EInvoiceAPI.cancel_credit_note(einvoice, reasonCode, remark)
+    return status
 
 
 @frappe.whitelist()
