@@ -342,8 +342,17 @@ def validate_is_efris_item(doc):
     validate_uoms(doc)
 
 def validate_item_tax_template(doc):
-    if not doc.get('taxes'):
-        frappe.throw("Please select an Item Tax Template for an EFRIS ITEM.")
+    if doc.get('taxes'):
+        return
+    # no template chosen: take it from the commodity code's tax category (which
+    # "Fetch from URA" keeps aligned with URA's own rate), same as item.js does
+    category = doc.get('efris_commodity_code') and frappe.db.get_value(
+        'EFRIS Commodity Code', doc.get('efris_commodity_code'), 'e_tax_category')
+    template = category and get_item_tax_template(doc.get('efris_e_company'), category)
+    if template:
+        doc.append('taxes', {'item_tax_template': template})
+        return
+    frappe.throw("Please select an Item Tax Template for an EFRIS ITEM.")
 
 def validate_uoms(doc):
     uoms = doc.get("uoms", [])
