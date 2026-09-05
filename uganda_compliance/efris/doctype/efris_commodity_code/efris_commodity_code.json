@@ -10,7 +10,18 @@
  "field_order": [
   "commodity_code",
   "commodity_name",
-  "e_tax_category"
+  "e_tax_category",
+  "ura_section",
+  "efris_rate",
+  "is_zero_rate",
+  "is_exempt",
+  "exclusion",
+  "ura_col_break",
+  "parent_code",
+  "commodity_category_level",
+  "enabled_in_efris",
+  "mapping_source",
+  "last_synced_from_ura"
  ],
  "fields": [
   {
@@ -33,11 +44,77 @@
     "in_list_view": 1,
     "options":"E Tax Category",
     "label": "E Tax Category"
-   }
+   },
+  {
+   "fieldname": "ura_section",
+   "fieldtype": "Section Break",
+   "label": "From URA (T124)"
+  },
+  {
+   "description": "rate as returned by T124, e.g. 0.18 or 0",
+   "fieldname": "efris_rate",
+   "fieldtype": "Data",
+   "label": "URA Tax Rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "is_zero_rate",
+   "fieldtype": "Check",
+   "label": "Zero Rated (URA)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "is_exempt",
+   "fieldtype": "Check",
+   "label": "Exempt (URA)",
+   "read_only": 1
+  },
+  {
+   "description": "0: Zero, 1: Exempt, 2: No exclusion, 3: Both 0% and -",
+   "fieldname": "exclusion",
+   "fieldtype": "Data",
+   "label": "Exclusion",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ura_col_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "parent_code",
+   "fieldtype": "Data",
+   "label": "Parent Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commodity_category_level",
+   "fieldtype": "Data",
+   "label": "Level",
+   "read_only": 1
+  },
+  {
+   "fieldname": "enabled_in_efris",
+   "fieldtype": "Check",
+   "label": "Enabled in EFRIS",
+   "read_only": 1
+  },
+  {
+   "description": "Manual mappings are never overwritten by Fetch from URA",
+   "fieldname": "mapping_source",
+   "fieldtype": "Select",
+   "label": "Tax Category Set By",
+   "options": "\nManual\nURA"
+  },
+  {
+   "fieldname": "last_synced_from_ura",
+   "fieldtype": "Datetime",
+   "label": "Last Synced From URA",
+   "read_only": 1
+  }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-06 22:38:17.065164",
+ "modified": "2026-09-04 11:40:57.283966",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "EFRIS Commodity Code",
