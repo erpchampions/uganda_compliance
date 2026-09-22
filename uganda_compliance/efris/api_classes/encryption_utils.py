@@ -31,7 +31,7 @@ def decrypt_aes_ecb(aeskey, ciphertext):
     plaintext = plaintext_with_padding[:-padding_length]
     return plaintext
 
-def get_AES_key(tin, device_no, private_key, sandbox_mode, brn):
+def get_AES_key(tin, device_no, private_key, mode_post_url, brn):
     try:
         data = fetch_data()
 
@@ -46,7 +46,7 @@ def get_AES_key(tin, device_no, private_key, sandbox_mode, brn):
 
         data_json = json.dumps(data, separators=(',', ':'))  
         
-        resp = post_req(data_json, sandbox_mode)
+        resp = post_req(data_json, mode_post_url)
 
         jsonresp = json.loads(resp)
 

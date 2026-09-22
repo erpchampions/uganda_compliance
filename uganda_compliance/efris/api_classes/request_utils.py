@@ -2,6 +2,12 @@ import requests
 import uuid
 from datetime import datetime
 import pytz
+import frappe
+from frappe.model.document import Document
+from frappe import _
+from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
+
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
 
 def fetch_data():
     now = get_ug_time_str()
@@ -48,11 +54,10 @@ def guidv4():
     my_uuid_str_32 = my_uuid_str.replace("-", "")
     return my_uuid_str_32
 
-def post_req(data, sandbox_mode):    
-    if sandbox_mode:
-        url = "https://efristest.ura.go.ug/efrisws/ws/taapp/getInformation"
-    else:
-        url = "https://efris.ura.go.ug/efrisws/ws/taapp/getInformation"
+def post_req(data, mode_post_url): 
+    frappe.log(f"Mode post URl is {mode_post_url}")   
+    if mode_post_url:
+        url = mode_post_url    
 
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, data=data, headers=headers)

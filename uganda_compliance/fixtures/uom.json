@@ -2,6 +2,226 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
+  "efris_uom_code": "PA",
+  "enabled": 1,
+  "modified": "2025-12-03 08:57:20.486945",
+  "must_be_whole_number": 0,
+  "name": "pck",
+  "uom_name": "pck"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-10-22 17:58:36.949581",
+  "must_be_whole_number": 0,
+  "name": "m",
+  "uom_name": "m"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "110",
+  "enabled": 1,
+  "modified": "2025-12-01 14:27:29.691845",
+  "must_be_whole_number": 0,
+  "name": "pc/bx",
+  "uom_name": "pc/bx"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BO",
+  "enabled": 1,
+  "modified": "2025-12-01 14:31:27.778974",
+  "must_be_whole_number": 0,
+  "name": "bottl",
+  "uom_name": "bottl"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-10-22 20:35:30.339368",
+  "must_be_whole_number": 0,
+  "name": "r",
+  "uom_name": "r"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "110",
+  "enabled": 1,
+  "modified": "2025-12-03 08:58:00.587834",
+  "must_be_whole_number": 0,
+  "name": "Box/25pcs",
+  "uom_name": "Box/25pcs"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BO",
+  "enabled": 1,
+  "modified": "2025-12-01 14:30:59.357630",
+  "must_be_whole_number": 0,
+  "name": "Bottle",
+  "uom_name": "Bottle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RK",
+  "enabled": 1,
+  "modified": "2025-12-01 14:35:32.400899",
+  "must_be_whole_number": 0,
+  "name": "Rack",
+  "uom_name": "Rack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.029561",
+  "must_be_whole_number": 0,
+  "name": "each",
+  "uom_name": "each"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.044998",
+  "must_be_whole_number": 0,
+  "name": "metre",
+  "uom_name": "metre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.052580",
+  "must_be_whole_number": 0,
+  "name": "Test",
+  "uom_name": "Test"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "MGM",
+  "enabled": 1,
+  "modified": "2025-12-01 14:26:37.235607",
+  "must_be_whole_number": 0,
+  "name": "ml",
+  "uom_name": "ml"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "103",
+  "enabled": 1,
+  "modified": "2025-12-03 09:00:03.953796",
+  "must_be_whole_number": 0,
+  "name": "kilogram",
+  "uom_name": "kilogram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.082413",
+  "must_be_whole_number": 0,
+  "name": "CM",
+  "uom_name": "CM"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.089809",
+  "must_be_whole_number": 0,
+  "name": "Pkts",
+  "uom_name": "Pkts"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.097323",
+  "must_be_whole_number": 0,
+  "name": "Pr",
+  "uom_name": "Pr"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RA",
+  "enabled": 1,
+  "modified": "2025-12-03 08:58:32.353792",
+  "must_be_whole_number": 0,
+  "name": "Rck",
+  "uom_name": "Rck"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.112512",
+  "must_be_whole_number": 0,
+  "name": "tst",
+  "uom_name": "tst"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "BG",
+  "enabled": 1,
+  "modified": "2025-05-28 11:32:12.969093",
+  "must_be_whole_number": 0,
+  "name": "bags",
+  "uom_name": "bags"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "114",
+  "enabled": 1,
+  "modified": "2025-09-02 09:48:18.429752",
+  "must_be_whole_number": 0,
+  "name": "Per week",
+  "uom_name": "Per week"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "102",
+  "enabled": 1,
+  "modified": "2025-12-01 14:34:01.899201",
+  "must_be_whole_number": 0,
+  "name": "Ltr",
+  "uom_name": "Ltr"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RO",
+  "enabled": 1,
+  "modified": "2025-12-01 14:35:43.299438",
+  "must_be_whole_number": 0,
+  "name": "Roll",
+  "uom_name": "Roll"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
   "efris_uom_code": "102",
   "enabled": 1,
   "modified": "2024-10-29 15:08:44.832475",
@@ -42,42 +262,12 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": "UN",
-  "enabled": 1,
-  "modified": "2024-07-30 21:40:07.165126",
-  "must_be_whole_number": 1,
-  "name": "Unit",
-  "uom_name": "Unit"
- },
- {
-  "docstatus": 0,
-  "doctype": "UOM",
-  "efris_uom_code": "110",
-  "enabled": 1,
-  "modified": "2024-07-30 21:40:07.140175",
-  "must_be_whole_number": 1,
-  "name": "Box",
-  "uom_name": "Box"
- },
- {
-  "docstatus": 0,
-  "doctype": "UOM",
   "efris_uom_code": "111",
   "enabled": 1,
   "modified": "2024-07-30 21:40:07.093958",
   "must_be_whole_number": 1,
   "name": "Pair",
   "uom_name": "Pair"
- },
- {
-  "docstatus": 0,
-  "doctype": "UOM",
-  "efris_uom_code": "SET",
-  "enabled": 1,
-  "modified": "2024-07-30 21:40:07.072415",
-  "must_be_whole_number": 1,
-  "name": "Set",
-  "uom_name": "Set"
  },
  {
   "docstatus": 0,
@@ -5522,16 +5712,6 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": "RO",
-  "enabled": 1,
-  "modified": "2024-07-30 21:37:28.059844",
-  "must_be_whole_number": 0,
-  "name": "RO-Roll",
-  "uom_name": "RO-Roll"
- },
- {
-  "docstatus": 0,
-  "doctype": "UOM",
   "efris_uom_code": "RL",
   "enabled": 1,
   "modified": "2024-07-30 21:37:28.075451",
@@ -5802,16 +5982,6 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": "PP",
-  "enabled": 1,
-  "modified": "2024-07-30 21:37:28.850807",
-  "must_be_whole_number": 0,
-  "name": "PP-Piece",
-  "uom_name": "PP-Piece"
- },
- {
-  "docstatus": 0,
-  "doctype": "UOM",
   "efris_uom_code": "PO",
   "enabled": 1,
   "modified": "2024-07-30 21:37:28.883355",
@@ -5858,16 +6028,6 @@
   "must_be_whole_number": 0,
   "name": "PJ-Punnet",
   "uom_name": "PJ-Punnet"
- },
- {
-  "docstatus": 0,
-  "doctype": "UOM",
-  "efris_uom_code": "PI",
-  "enabled": 1,
-  "modified": "2024-07-30 21:37:29.075234",
-  "must_be_whole_number": 0,
-  "name": "PI-Pipe",
-  "uom_name": "PI-Pipe"
  },
  {
   "docstatus": 0,
@@ -5938,16 +6098,6 @@
   "must_be_whole_number": 0,
   "name": "PB-Pallet, box",
   "uom_name": "PB-Pallet, box"
- },
- {
-  "docstatus": 0,
-  "doctype": "UOM",
-  "efris_uom_code": "PA",
-  "enabled": 1,
-  "modified": "2024-07-30 21:37:29.360832",
-  "must_be_whole_number": 0,
-  "name": "PA-Packet",
-  "uom_name": "PA-Packet"
  },
  {
   "docstatus": 0,
@@ -6632,16 +6782,6 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
-  "efris_uom_code": "PCE",
-  "enabled": 1,
-  "modified": "2024-07-30 21:37:31.410209",
-  "must_be_whole_number": 0,
-  "name": "PCE-Piece",
-  "uom_name": "PCE-Piece"
- },
- {
-  "docstatus": 0,
-  "doctype": "UOM",
   "efris_uom_code": "ONZ",
   "enabled": 1,
   "modified": "2024-07-30 21:37:31.434495",
@@ -7042,11 +7182,231 @@
  {
   "docstatus": 0,
   "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-07-25 14:26:17.262271",
+  "must_be_whole_number": 0,
+  "name": "Room",
+  "uom_name": "Room"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GRM",
+  "enabled": 1,
+  "modified": "2025-06-27 13:11:03.532810",
+  "must_be_whole_number": 0,
+  "name": "GRM-Gram",
+  "uom_name": "GRM-Gram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PD",
+  "enabled": 1,
+  "modified": "2025-09-02 09:46:35.419184",
+  "must_be_whole_number": 0,
+  "name": "Per day",
+  "uom_name": "Per day"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "GRM",
+  "enabled": 1,
+  "modified": "2025-12-01 14:37:21.932253",
+  "must_be_whole_number": 0,
+  "name": "grams",
+  "uom_name": "grams"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "110",
+  "enabled": 1,
+  "modified": "2025-12-01 14:27:23.565558",
+  "must_be_whole_number": 0,
+  "name": "bx",
+  "uom_name": "bx"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "103",
+  "enabled": 1,
+  "modified": "2025-12-01 14:56:52.667840",
+  "must_be_whole_number": 0,
+  "name": "kgm-kilogram",
+  "uom_name": "kgm-kilogram"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "CMT",
+  "enabled": 1,
+  "modified": "2025-12-01 14:57:21.959817",
+  "must_be_whole_number": 0,
+  "name": "cmt-centimetre",
+  "uom_name": "cmt-centimetre"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PP",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.850807",
+  "must_be_whole_number": 0,
+  "name": "PP-Piece",
+  "uom_name": "PP-Piece"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": null,
+  "enabled": 1,
+  "modified": "2025-06-10 22:09:08.036893",
+  "must_be_whole_number": 0,
+  "name": "Cassete",
+  "uom_name": "Cassete"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "110",
+  "enabled": 1,
+  "modified": "2025-12-01 14:34:56.898466",
+  "must_be_whole_number": 0,
+  "name": "pc/box",
+  "uom_name": "pc/box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PA",
+  "enabled": 1,
+  "modified": "2025-12-01 14:31:42.314978",
+  "must_be_whole_number": 0,
+  "name": "Packets",
+  "uom_name": "Packets"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PA",
+  "enabled": 1,
+  "modified": "2025-12-01 14:31:58.505084",
+  "must_be_whole_number": 0,
+  "name": "Pack",
+  "uom_name": "Pack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "KI",
+  "enabled": 1,
+  "modified": "2025-12-01 14:32:16.076738",
+  "must_be_whole_number": 0,
+  "name": "kit",
+  "uom_name": "kit"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PCE",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:31.410209",
+  "must_be_whole_number": 0,
+  "name": "PCE-Piece",
+  "uom_name": "PCE-Piece"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "SET",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:07.072415",
+  "must_be_whole_number": 1,
+  "name": "Set",
+  "uom_name": "Set"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PI",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.075234",
+  "must_be_whole_number": 0,
+  "name": "PI-Pipe",
+  "uom_name": "PI-Pipe"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "RO",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:28.059844",
+  "must_be_whole_number": 0,
+  "name": "RO-Roll",
+  "uom_name": "RO-Roll"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
   "efris_uom_code": "NMB",
   "enabled": 1,
-  "modified": "2024-07-30 21:40:07.118209",
-  "must_be_whole_number": 1,
+  "modified": "2026-02-27 17:04:25.016227",
+  "must_be_whole_number": 0,
   "name": "Nos",
   "uom_name": "Nos"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PP",
+  "enabled": 1,
+  "modified": "2025-12-01 14:38:36.588754",
+  "must_be_whole_number": 0,
+  "name": "pc",
+  "uom_name": "pc"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "UN",
+  "enabled": 1,
+  "modified": "2024-07-30 21:40:07.165126",
+  "must_be_whole_number": 1,
+  "name": "Unit",
+  "uom_name": "Unit"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PA",
+  "enabled": 1,
+  "modified": "2024-07-30 21:37:29.360832",
+  "must_be_whole_number": 0,
+  "name": "PA-Packet",
+  "uom_name": "PA-Packet"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "110",
+  "enabled": 1,
+  "modified": "2026-02-23 09:29:18.044056",
+  "must_be_whole_number": 0,
+  "name": "Box",
+  "uom_name": "Box"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "UOM",
+  "efris_uom_code": "PCE",
+  "enabled": 1,
+  "modified": "2026-02-26 16:35:21.146653",
+  "must_be_whole_number": 0,
+  "name": "Piece",
+  "uom_name": "Piece"
  }
 ]

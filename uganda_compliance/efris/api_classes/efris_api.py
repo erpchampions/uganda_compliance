@@ -4,18 +4,19 @@ import base64
 from .encryption_utils import encrypt_aes_ecb, decrypt_aes_ecb, get_AES_key, get_private_key, sign_data
 from .request_utils import fetch_data, post_req
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
-from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
 
 def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
     try:
         # Fetch company settings
         e_settings = get_e_company_settings(company_name)
-        tin, device_no, private_key_path, sandbox_mode, brn = (
+        tin, device_no, private_key_path, sandbox_mode, brn,mode_post_url = (
             e_settings.tin,
             e_settings.device_no,
             get_mode_private_key_path(e_settings),
             e_settings.sandbox_mode,
             e_settings.brn,
+            get_mode_post_url(e_settings)
         )
         brn = brn if brn else ""
     
@@ -23,14 +24,15 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
 
         private_key = get_private_key(private_key_path, e_settings)
 
-        aes_key = get_AES_key(tin, device_no, private_key, sandbox_mode, brn)
+        aes_key = get_AES_key(tin, device_no, private_key, mode_post_url, brn)
 
         encrypted_data = encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, brn, private_key, data)
         if not encrypted_data:
             return False, "Failed to encrypt and prepare data"
 
-        # Send the request and handle the response
-        response = send_request_and_handle_response(encrypted_data, aes_key, sandbox_mode, content, reference_doc_type, reference_document)
+        # Send the request and handle the response      
+       
+        response = send_request_and_handle_response(encrypted_data, aes_key, mode_post_url, content, reference_doc_type, reference_document)
         return response
 
     except Exception as e:
@@ -70,9 +72,9 @@ def encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, br
         frappe.log_error(f"An error occurred while encrypting and preparing data: {e}")
         return None
 
-def send_request_and_handle_response(data_json, aes_key, sandbox_mode, content, reference_doc_type, reference_document):
+def send_request_and_handle_response(data_json, aes_key, mode_post_url, content, reference_doc_type, reference_document):
     try:
-        json_resp = post_req(data_json, sandbox_mode)
+        json_resp = post_req(data_json, mode_post_url)
         resp = json.loads(json_resp)
 
         errorMsg = resp["returnStateInfo"]["returnMessage"]

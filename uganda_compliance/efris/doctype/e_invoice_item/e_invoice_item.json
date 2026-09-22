@@ -25,7 +25,10 @@
   "column_break_19",
   "other_charges",
   "section_break_24",
-  "total_item_value"
+  "total_item_value",
+  "total_weight",
+  "piece_qty",
+  "piece_measure_unit"
  ],
  "fields": [
   {
@@ -152,6 +155,30 @@
    "fieldname": "e_tax_category",
    "fieldtype": "Data",
    "label": "E Tax Category"
+  },
+  {
+   "fieldname": "total_weight",
+   "fieldtype": "Float",
+   "hidden": 0,
+   "label": "EFRIS Total Weight (KG)",
+   "options": "",
+   "precision": ""
+  },
+  {
+   "fieldname": "piece_qty",
+   "fieldtype": "Float",
+   "hidden": 0,
+   "label": "EFRIS Piece Quantity",
+   "options": "",
+   "precision": ""
+  },
+  {
+   "fieldname": "piece_measure_unit",
+   "fieldtype": "Data",
+   "hidden": 0,
+   "label": "EFRIS Piece Measure Unit",
+   "options": "",
+   "precision": ""
   }
  ],
  "index_web_pages_for_search": 1,
