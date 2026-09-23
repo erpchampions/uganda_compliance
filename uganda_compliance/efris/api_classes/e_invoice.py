@@ -438,22 +438,40 @@ class EInvoiceAPI:
         if not original or not original.invoice_id:
             frappe.throw(_("Original invoice's EFRIS record was not found."))
 
-        content = {
-            "oriInvoiceId": original.invoice_id,
-            "invoiceNo": einvoice.irn,
-            "reason": remark or "",
-            "reasonCode": reason_code or "102",
-            "invoiceApplyCategoryCode": "104",
-        }
-        status, response = make_post(
-            interfaceCode="T114",
-            content=content,
-            company_name=einvoice.company,
-            reference_doc_type=einvoice.doctype,
-            reference_document=einvoice.name,
-        )
-        if not status:
-            frappe.throw(str(response), title=_("EFRIS Credit Note Cancellation Failed"))
+        # URA's own view first (T108 isInvalid): a retry after a lost answer must
+        # not send a second cancellation for a note URA already cancelled.
+        before = credit_note_is_invalid(einvoice)
+        if before:
+            response = {"note": "already cancelled at URA (T108 isInvalid=1)"}
+        else:
+            content = {
+                "oriInvoiceId": original.invoice_id,
+                "invoiceNo": einvoice.irn,
+                "reason": remark or "",
+                "reasonCode": reason_code or "102",
+                "invoiceApplyCategoryCode": "104",
+            }
+            status, response = make_post(
+                interfaceCode="T114",
+                content=content,
+                company_name=einvoice.company,
+                reference_doc_type=einvoice.doctype,
+                reference_document=einvoice.name,
+            )
+            if not status:
+                frappe.throw(str(response), title=_("EFRIS Credit Note Cancellation Failed"))
+            if not credit_note_is_invalid(einvoice):
+                # accepted as an application: URA still has to approve it
+                einvoice.db_set(
+                    "efris_cancel_response",
+                    json.dumps({"t114": response or "SUCCESS", "t108_isInvalid": "0"}),
+                )
+                frappe.msgprint(
+                    _("EFRIS accepted the cancellation of credit note {0}; URA shows it "
+                      "as still valid, so it awaits approval on the EFRIS portal.").format(einvoice.irn)
+                )
+                return True, response
+        status = True
 
         # URA has cancelled it: record that without a full save - the E Invoice is
         # submitted and these fields are not allow-on-submit, so a save() would
@@ -462,7 +480,7 @@ class EInvoiceAPI:
             {
                 "irn_cancelled": 1,
                 "irn_cancel_date": frappe.utils.today(),
-                "efris_cancel_response": json.dumps(response) if response else "SUCCESS",
+                "efris_cancel_response": json.dumps({"t114": response or "SUCCESS", "t108_isInvalid": "1"}),
             }
         )
         frappe.db.set_value(
@@ -475,6 +493,14 @@ class EInvoiceAPI:
         )
         frappe.msgprint(_("EFRIS credit note {0} cancelled at URA.").format(einvoice.irn), alert=1)
         return status, response
+
+
+def credit_note_is_invalid(einvoice):
+    """True when URA reports the credit note as cancelled (T108 isInvalid = 1)."""
+    details = fetch_fdn_details(einvoice, einvoice.irn)
+    if not details:
+        frappe.throw(_("Could not read credit note {0} from EFRIS (T108).").format(einvoice.irn))
+    return str(details.get("basicInformation", {}).get("isInvalid")) == "1"
 
 
 ###cancel rn#####
