@@ -5,6 +5,7 @@ import frappe
 import six
 from frappe import _
 from frappe.integrations.utils import create_request_log
+from frappe.utils import flt
 from frappe.utils.user import get_users_with_role
 
 from uganda_compliance.efris.api_classes.efris_api import make_post
@@ -454,15 +455,16 @@ class EInvoiceAPI:
         if not status:
             frappe.throw(str(response), title=_("EFRIS Credit Note Cancellation Failed"))
 
-        einvoice.update(
+        # URA has cancelled it: record that without a full save - the E Invoice is
+        # submitted and these fields are not allow-on-submit, so a save() would
+        # roll back the local record while URA already holds the cancellation.
+        einvoice.db_set(
             {
                 "irn_cancelled": 1,
                 "irn_cancel_date": frappe.utils.today(),
                 "efris_cancel_response": json.dumps(response) if response else "SUCCESS",
             }
         )
-        einvoice.flags.ignore_permissions = True
-        einvoice.save()
         frappe.db.set_value(
             "Sales Invoice",
             einvoice.invoice,
@@ -729,7 +731,7 @@ def handle_approved_credit_note(einvoice, response):
 
     update_sales_invoice_return_status(einvoice)
 
-    update_original_invoice_status(einvoice)
+    update_original_invoice_status(einvoice, response["records"][0])
 
     return (
         True,
@@ -793,23 +795,35 @@ def update_einvoice_with_fdn_details(
 def update_sales_invoice_return_status(einvoice):
     """
     Update the Sales Invoice Return status to "EFRIS Generated".
+    The return is already submitted; the status field is allow-on-submit.
     """
-    sales_invoice_return = frappe.get_doc("Sales Invoice", einvoice.name)
-    sales_invoice_return.efris_einvoice_status = "EFRIS Generated"
-    sales_invoice_return.submit()
+    frappe.db.set_value(
+        "Sales Invoice",
+        einvoice.invoice,
+        {"efris_einvoice_status": "EFRIS Generated", "efris_irn": einvoice.irn},
+    )
 
 
-def update_original_invoice_status(einvoice):
+def update_original_invoice_status(einvoice, record=None):
     """
-    Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
-    """
-    original_einvoice = get_einvoice(einvoice.return_against)
-    original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
-    original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
-    original_sales_invoice.save()
+    Mark the original invoice "EFRIS Cancelled" - only when the approved credit
+    note reverses it in full. A partial return leaves the original as issued.
 
-    original_einvoice.status = "EFRIS Cancelled"
-    original_einvoice.save()
+    The original is found through the return Sales Invoice: E Invoice has no
+    return_against field.
+    """
+    original_name = frappe.db.get_value("Sales Invoice", einvoice.invoice, "return_against")
+    if not original_name:
+        return
+    if record:
+        credited = abs(flt(record.get("grossAmount")))
+        original_gross = abs(flt(record.get("oriGrossAmount")))
+        if original_gross and credited < original_gross:
+            return
+    frappe.db.set_value("Sales Invoice", original_name, "efris_einvoice_status", "EFRIS Cancelled")
+    original_einvoice = get_einvoice(original_name)
+    if original_einvoice:
+        frappe.db.set_value("E Invoice", original_einvoice.name, "status", "EFRIS Cancelled")
 
 
 #####End of credit note status update
