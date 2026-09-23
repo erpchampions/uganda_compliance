@@ -2256,7 +2256,19 @@
     "translatable": 0,
     "unique": 0,
     "width": null
-   }
+   },
+  {
+   "doctype": "Custom Field",
+   "dt": "E Invoice",
+   "fieldname": "efris_cancel_response",
+   "fieldtype": "Small Text",
+   "insert_after": "antifake_code",
+   "label": "EFRIS Cancel Response",
+   "description": "URA's response to the T114 credit-note cancellation",
+   "module": "EFRIS",
+   "name": "E Invoice-efris_cancel_response",
+   "read_only": 1
+  }
    
  ],
  "custom_perms": [],

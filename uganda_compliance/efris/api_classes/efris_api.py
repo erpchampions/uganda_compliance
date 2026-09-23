@@ -91,6 +91,18 @@ def send_request_and_handle_response(data_json, aes_key, mode_post_url, content,
 
         # Decrypt the response content
         respcontent = resp["data"]["content"]
+        if not respcontent:
+            # Some interfaces (T114 cancel application among them) answer
+            # SUCCESS with no content; that is a success, not a parse error.
+            log_request_to_efris(
+                request_data=content,
+                request_full=data_json,
+                response_data={"returnMessage": errorMsg},
+                response_full=resp,
+                reference_doc_type=reference_doc_type,
+                reference_document=reference_document
+            )
+            return True, {}
         efris_response = decrypt_aes_ecb(aes_key, respcontent)
 
         resp_json = json.loads(efris_response)
