@@ -9,6 +9,7 @@ from datetime import datetime
 from uganda_compliance.efris.utils.utils import get_qr_code
  
 from frappe.utils.user import get_users_with_role
+from frappe.utils import flt
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
@@ -19,25 +20,33 @@ class EInvoiceAPI:
 		if isinstance(sales_invoice, six.string_types):
 			sales_invoice = safe_load_json(sales_invoice)
 			if not isinstance(sales_invoice, dict):
-				frappe.throw(_('Invalid Argument: Sales Invoice')) 
+				frappe.throw(_('Invalid Argument: Sales Invoice or POS Invoice'))
 			sales_invoice = frappe._dict(sales_invoice)
-			return sales_invoice
+		elif isinstance(sales_invoice, dict) and not isinstance(sales_invoice, frappe._dict):
+			sales_invoice = frappe._dict(sales_invoice)
+
+		doctype = sales_invoice.get('doctype', 'Sales Invoice')
+		if doctype not in ('Sales Invoice', 'POS Invoice'):
+			frappe.throw(_(f'Invalid Argument: Expected Sales Invoice or POS Invoice, got {doctype}'))
+
+		return sales_invoice
 
 
 	@staticmethod
-	def create_einvoice(sales_invoice_name):
+	def create_einvoice(sales_invoice_name, source_doctype='Sales Invoice'):
 		if frappe.db.exists('E Invoice', {'invoice': sales_invoice_name}):
 			efris_log_info("found existing e_invoice")
 			einvoice = frappe.get_doc('E Invoice', {'invoice': sales_invoice_name})
 		else:
 			efris_log_info("creating new e_invoice")
 			einvoice = frappe.new_doc('E Invoice')
+			einvoice.source_doctype = source_doctype
 			einvoice.invoice = sales_invoice_name
 			einvoice.sync_with_sales_invoice()
 			einvoice.flags.ignore_permissions = True
 			einvoice.save()
-			frappe.db.set_value('Sales Invoice', sales_invoice_name, 'efris_e_invoice', einvoice.name)  # Link E-Invoice to Sales Invoice
-		   
+			frappe.db.set_value(source_doctype, sales_invoice_name, 'efris_e_invoice', einvoice.name)
+
 		return einvoice
 	
 	
@@ -107,12 +116,13 @@ class EInvoiceAPI:
 	@staticmethod
 	def generate_irn(sales_invoice):
 		efris_log_info(f"generate_irn called ...")
-		
+
 		sales_invoice = EInvoiceAPI.parse_sales_invoice(sales_invoice)
 		efris_log_info(f" after parse done...")
-		
-		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
-		einvoice.fetch_invoice_details() 
+
+		source_doctype = sales_invoice.get('doctype') or 'Sales Invoice'
+		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name, source_doctype=source_doctype)
+		einvoice.fetch_invoice_details()
 		
 		einvoice_json = einvoice.get_einvoice_json()
 		
@@ -874,18 +884,41 @@ def after_save_sales_invoice(doc, method):
 		return
 	
 
-@frappe.whitelist()	
-def send_to_efris(doc):	 
+@frappe.whitelist()
+def send_to_efris(doc):
 	if isinstance(doc, str):
 		doc = json.loads(doc)
 	# Convert dict to Frappe Document
 	if isinstance(doc, dict):
-		doc = frappe.get_doc(doc) 
+		doc = frappe.get_doc(doc)
 	on_submit_sales_invoice(doc,'manual_submit')
 	return {
 		"message": "Sales Invoice sent to EFRIS successfully.",
 		"status": "success"
 	}
+
+@frappe.whitelist()
+def send_pos_invoice_to_efris(doc):
+	if isinstance(doc, str):
+		doc = json.loads(doc)
+	if isinstance(doc, dict):
+		doc = frappe.get_doc(doc)
+	on_submit_pos_invoice(doc, 'manual_submit')
+	return {
+		"message": "POS Invoice sent to EFRIS successfully.",
+		"status": "success"
+	}
+
+def on_submit_pos_invoice(doc, method):
+	auto_send = doc.get("efris_invoice") and get_e_company_settings(doc.get("company")).auto_send_submitted_invoice
+	if (auto_send == 1) or (method == 'manual_submit'):
+		pos_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
+		validate_payment(pos_invoice)
+		if not pos_invoice.efris_invoice or pos_invoice.is_consolidated:
+			return
+		if not validate_company(pos_invoice):
+			return
+		_handle_efris_logic(pos_invoice, doc)
 
 def on_submit_sales_invoice(doc, method):	
 	"""
@@ -1155,6 +1188,43 @@ def _validate_item_uom(item):
 	if not any(row.uom == sales_uom for row in uoms_detail):
 		frappe.throw(f"The Sales UOM ({sales_uom}) must be in the Item's UOMs list for item {item_code}.")
 		
+def sync_additional_discount_percentage(doc, method=None):
+	"""
+	Validate hook for Sales Invoice / POS Invoice.
+
+	When the document was discounted by absolute amount (`discount_amount` set,
+	`additional_discount_percentage` blank/0), derive the equivalent percentage
+	so downstream EFRIS logic and the EFRIS server agree on per-item tax math.
+	Without this, EFRIS rejects the payload with:
+	"goodsDetails-->tax: Tax calculation error!Collection index:0".
+	"""
+	if not doc:
+		return
+
+	current_percentage = flt(doc.get('additional_discount_percentage') or 0)
+	discount_amount = abs(flt(doc.get('discount_amount') or 0))
+
+	if current_percentage or not discount_amount:
+		return
+
+	apply_on = doc.get('apply_discount_on') or 'Grand Total'
+	if apply_on == 'Net Total':
+		base_total = flt(doc.get('net_total') or doc.get('total') or 0)
+	else:
+		base_total = flt(doc.get('total') or doc.get('net_total') or 0)
+
+	if not base_total:
+		return
+
+	derived = round((discount_amount / base_total) * 100, 6)
+	doc.additional_discount_percentage = derived
+	efris_log_info(
+		f"sync_additional_discount_percentage: set additional_discount_percentage="
+		f"{derived}% from discount_amount={discount_amount} on {apply_on}={base_total} "
+		f"for {doc.doctype} {doc.get('name')}"
+	)
+
+
 def calculate_additional_discounts(doc, method):
 	"""
 	Calculate additional discounts and adjust tax values on Sales Invoice items for EFRIS compliance.
@@ -1252,7 +1322,7 @@ def validate_company(doc):
 	company_name = doc.get('company', '')
 
 	if not company_name:
-		return valid
+		return frappe.throw("Company is required for EFRIS integration.")
 
 	try:        
 		
