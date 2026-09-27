@@ -11,6 +11,9 @@
   "column_break_yuehm",
   "reference_doc_type",
   "reference_document",
+  "status",
+  "interface_code",
+  "error_message",
   "section_break_hc9fl",
   "request_full",
   "request_data",
@@ -87,11 +90,33 @@
   {
    "fieldname": "section_break_hc9fl",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nSuccess\nFailed",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "interface_code",
+   "fieldtype": "Data",
+   "label": "Interface Code",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "label": "Error Message",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-02 03:04:46.382001",
+ "modified": "2026-09-28 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoice Request Log",

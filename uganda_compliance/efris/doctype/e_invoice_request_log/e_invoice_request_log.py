@@ -9,7 +9,7 @@ from frappe import enqueue
 class EInvoiceRequestLog(Document):
 	pass
 
-def log_request_to_efris(request_data, request_full, response_data, response_full, reference_doc_type=None, reference_document=None):
+def log_request_to_efris(request_data, request_full, response_data, response_full, reference_doc_type=None, reference_document=None, status=None, interface_code=None, error_message=None):
     try:        
         # Enqueue the logging operation
         enqueue(
@@ -21,14 +21,16 @@ def log_request_to_efris(request_data, request_full, response_data, response_ful
             response_full=response_full,
             reference_doc_type=reference_doc_type,
             reference_document=reference_document,
+            status=status,
+            interface_code=interface_code,
+            error_message=error_message,
         )
     except Exception as e:
         frappe.log_error(f"Failed to enqueue request log. Error: {str(e)}")
 
 
-def enqueue_log_request(request_data, request_full, response_data, response_full, reference_doc_type, reference_document):
+def enqueue_log_request(request_data, request_full, response_data, response_full, reference_doc_type, reference_document, status=None, interface_code=None, error_message=None):
     try:
-        frappe.log_error("enqueue_log_request called.")
         user = frappe.session.user
         log_entry = frappe.get_doc({
             "doctype": "E Invoice Request Log",
@@ -40,6 +42,9 @@ def enqueue_log_request(request_data, request_full, response_data, response_full
             "timestamp": now(),
             "reference_doc_type": reference_doc_type,
             "reference_document": reference_document,
+            "status": status,
+            "interface_code": interface_code,
+            "error_message": (error_message or "")[:1000] or None,
         })
         log_entry.insert(ignore_permissions=True)
         frappe.db.commit()  # Explicitly commit since this is outside the main transaction

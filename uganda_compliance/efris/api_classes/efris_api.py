@@ -42,7 +42,7 @@ def make_post(interfaceCode, content, company_name, reference_doc_type=None, ref
 
         # Send the request and handle the response      
        
-        response = send_request_and_handle_response(encrypted_data, aes_key, mode_post_url, content, reference_doc_type, reference_document)
+        response = send_request_and_handle_response(encrypted_data, aes_key, mode_post_url, content, reference_doc_type, reference_document, interfaceCode)
         return response
 
     except Exception as e:
@@ -82,7 +82,7 @@ def encrypt_and_prepare_data(content, aes_key, interfaceCode, tin, device_no, br
         frappe.log_error(f"An error occurred while encrypting and preparing data: {e}")
         return None
 
-def send_request_and_handle_response(data_json, aes_key, mode_post_url, content, reference_doc_type, reference_document):
+def send_request_and_handle_response(data_json, aes_key, mode_post_url, content, reference_doc_type, reference_document, interface_code=None):
     try:
         json_resp = post_req(data_json, mode_post_url)
         resp = json.loads(json_resp)
@@ -95,7 +95,10 @@ def send_request_and_handle_response(data_json, aes_key, mode_post_url, content,
                 response_data={"error": errorMsg},
                 response_full=resp,
                 reference_doc_type=reference_doc_type,
-                reference_document=reference_document
+                reference_document=reference_document,
+                status="Failed",
+                interface_code=interface_code,
+                error_message=errorMsg,
             )
             return False, errorMsg
 
@@ -112,7 +115,9 @@ def send_request_and_handle_response(data_json, aes_key, mode_post_url, content,
             response_data=json.loads(efris_response),
             response_full=resp_json,
             reference_doc_type=reference_doc_type,
-            reference_document=reference_document
+            reference_document=reference_document,
+            status="Success",
+            interface_code=interface_code,
         )
         return True, resp_json
     except Exception as e:

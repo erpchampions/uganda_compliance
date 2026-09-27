@@ -6,8 +6,40 @@ from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from frappe.utils.password import get_decrypted_password, set_encrypted_password    
 
 
-# Global cache to store E Invoicing Settings by company name
-e_company_settings_cache = {}
+class _RequestScopedCache:
+    """E Invoicing Settings cache that lives for one request/job only.
+
+    It used to be a module-level dict, i.e. per worker process and never invalidated
+    across processes: after a Sandbox -> Production switch, running workers kept
+    posting to the sandbox URL with the sandbox key until restarted.
+    """
+
+    def _store(self):
+        store = getattr(frappe.local, "efris_company_settings_cache", None)
+        if store is None:
+            store = frappe.local.efris_company_settings_cache = {}
+        return store
+
+    def __contains__(self, key):
+        return key in self._store()
+
+    def __getitem__(self, key):
+        return self._store()[key]
+
+    def __setitem__(self, key, value):
+        self._store()[key] = value
+
+    def __delitem__(self, key):
+        del self._store()[key]
+
+    def pop(self, key, default=None):
+        return self._store().pop(key, default)
+
+    def clear(self):
+        self._store().clear()
+
+
+e_company_settings_cache = _RequestScopedCache()
 
 def before_save_e_invoicing_settings(doc):
     old_doc = doc.get_doc_before_save()
@@ -90,8 +122,28 @@ def get_mode_post_url(e_settings):
     else:
         frappe.throw("E Invoicing Settings are disabled")
 
-@frappe.whitelist()    
+# Fields safe to return to browser clients (no key paths, passwords or portal URLs).
+CLIENT_SAFE_SETTINGS_FIELDS = (
+    "name", "company", "enabled", "sandbox_mode", "auto_send_submitted_invoice",
+    "enforce_update_stock", "sales_invoice_submission",
+)
+
+
+@frappe.whitelist()
+def get_e_company_client_settings(company_name):
+    """Browser-facing subset of E Invoicing Settings (form scripts only need flags)."""
+    if not frappe.has_permission("Company", "read", company_name):
+        frappe.throw(_("Not permitted"), frappe.PermissionError)
+    settings = get_e_company_settings(company_name)
+    return frappe._dict({k: settings.get(k) for k in CLIENT_SAFE_SETTINGS_FIELDS})
+
+
 def get_e_company_settings(company_name):
+    """Full settings (incl. key paths) for server-side use. Not whitelisted."""
+    return _get_e_company_settings(company_name)
+
+
+def _get_e_company_settings(company_name):
     if company_name in e_company_settings_cache:
         return e_company_settings_cache[company_name]
     

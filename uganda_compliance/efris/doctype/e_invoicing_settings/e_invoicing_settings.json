@@ -34,6 +34,8 @@
   "invoicing_settings_section",
   "column_break_nvrr",
   "auto_send_submitted_invoice",
+  "sales_invoice_submission",
+  "efris_max_attempts",
   "e_invoice_price_list_section",
   "efris_price_list",
   "efris_synchronization_section",
@@ -294,10 +296,26 @@
    "fieldtype": "Data",
    "label": "SandBox Portal URL",
    "mandatory_depends_on": "eval:doc.sandbox_mode"
+  },
+  {
+   "default": "Background",
+   "description": "Background: the invoice is submitted immediately and sent to EFRIS by a background job with automatic retry (POS Invoices always use this). Synchronous: submission blocks until EFRIS answers and fails if EFRIS fails.",
+   "fieldname": "sales_invoice_submission",
+   "fieldtype": "Select",
+   "label": "Sales Invoice EFRIS Submission",
+   "options": "Background\nSynchronous"
+  },
+  {
+   "default": "8",
+   "description": "Automatic retries stop after this many failed attempts. \"Send to EFRIS\" can still be used manually.",
+   "fieldname": "efris_max_attempts",
+   "fieldtype": "Int",
+   "label": "Max EFRIS Submission Attempts",
+   "non_negative": 1
   }
  ],
  "links": [],
- "modified": "2025-07-21 11:06:42.186040",
+ "modified": "2026-09-28 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",

@@ -230,7 +230,7 @@ function get_auto_send_submitted_invoice_flag(frm) {
         }
 
         frappe.call({
-            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
+            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_client_settings",
             args: { company_name: frm.doc.company },
             callback: function(r) {
                 if (r.message && r.message.auto_send_submitted_invoice == 1) {
