@@ -1,4 +1,4 @@
-dit[project]
+[project]
 name = "uganda_compliance"
 authors = [
     { name = "ERP Champions Ltd", email = "moki@erpchampions.com"}
@@ -9,13 +9,15 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     # "frappe~=15.0.0" # Installed and managed by bench.
-    "pycryptodome==3.21.0",
-    "pyopenssl==25.0.0",
+    "pycryptodome>=3.21.0,<4",
+    # Frappe v15.108 pins pyOpenSSL~=26.0 and Pillow~=12.2: do not pin below them,
+    # pip would otherwise downgrade Frappe's own dependencies.
+    "pyopenssl>=25.0.0",
     "qrcode~=7.4.2",
-    "PyQRCode==1.2.1",
-    "pillow>=10.4.0,<11.0.0",
+    "PyQRCode~=1.2.1",
+    "pillow>=10.2.0",
     "pypng==0.20220715.0",
-    "numpy==2.2.4"
+    "numpy>=1.26,<3"
 
 ]
 
