@@ -53,10 +53,9 @@ app_license = "MIT"
 # ----------
 
 # add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "uganda_compliance.utils.jinja_methods",
-# 	"filters": "uganda_compliance.utils.jinja_filters"
-# }
+jinja = {
+	"methods": ["uganda_compliance.efris.print_utils.efris_receipt_data"],
+}
 
 # Installation
 # ------------
@@ -135,10 +134,11 @@ scheduler_events = {
     # ],
     "daily": [
         #   "uganda_compliance.tasks.daily",
-        "uganda_compliance.efris.api_classes.e_invoice.check_credit_note_approval_status",
         "uganda_compliance.efris.api_classes.efris_invoice_sync.efris_invoice_sync"
     ],
     "hourly": [
+        "uganda_compliance.efris.efris_queue.retry_pending_efris_submissions",
+        "uganda_compliance.efris.api_classes.e_invoice.check_credit_note_approval_status",
         "uganda_compliance.efris.page.efris_synchronizatio.efris_synchronization_center.process_pending_efris_entries",
         "uganda_compliance.efris.api_classes.stock_in.process_pending_efris_stock_entries"
     ]
@@ -226,8 +226,9 @@ app_include_js = "/assets/uganda_compliance/js/item_custom.js"
 
 doc_events = {
     "Sales Invoice": {
-        "on_submit": "uganda_compliance.efris.api_classes.e_invoice.on_submit_sales_invoice",
+        "on_submit": "uganda_compliance.efris.efris_queue.on_submit_invoice",
         "on_update": "uganda_compliance.efris.api_classes.e_invoice.on_update_sales_invoice",
+        "before_cancel": "uganda_compliance.efris.efris_queue.on_cancel_invoice",
         "on_cancel": "uganda_compliance.efris.api_classes.e_invoice.on_cancel_sales_invoice",
         "before_save": ["uganda_compliance.efris.api_classes.e_invoice.Sales_invoice_is_efris_validation",
                         "uganda_compliance.efris.api_classes.e_invoice.sales_uom_validation",
@@ -276,8 +277,9 @@ doc_events = {
     "POS Invoice": {
         "on_submit": [
             "uganda_compliance.efris.api_classes.e_invoice.sync_additional_discount_percentage",
-            "uganda_compliance.efris.api_classes.e_invoice.on_submit_pos_invoice",
+            "uganda_compliance.efris.efris_queue.on_submit_invoice",
         ],
+        "before_cancel": "uganda_compliance.efris.efris_queue.on_cancel_invoice",
         "before_save": [
             "uganda_compliance.efris.api_classes.e_invoice.Sales_invoice_is_efris_validation",
             "uganda_compliance.efris.api_classes.e_invoice.sales_uom_validation",

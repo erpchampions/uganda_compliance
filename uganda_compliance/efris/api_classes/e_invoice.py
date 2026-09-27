@@ -2,6 +2,7 @@ import six
 import frappe
 import json
 from frappe import _
+from frappe.rate_limiter import rate_limit
 from uganda_compliance.efris.api_classes.efris_api import make_post
 from uganda_compliance.efris.utils.utils import efris_log_info, safe_load_json, efris_log_error
 from uganda_compliance.efris.api_classes.request_utils import get_ug_time_str
@@ -55,7 +56,8 @@ class EInvoiceAPI:
 		efris_log_info(f"generate_credit_note_return called ...")
 				
 		#EInvoiceAPI.validate_credit_note_return(sales_invoice)
-		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name)
+		source_doctype = sales_invoice.get('doctype') or 'Sales Invoice'
+		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name, source_doctype=source_doctype)
 
 		status, response = EInvoiceAPI.make_credit_note_return_application_request(einvoice, sales_invoice)
 
@@ -77,7 +79,8 @@ class EInvoiceAPI:
 			reason = "102:Cancellation of the purchase"
 			
 		reasonCode = reason.split(":")[0]
-		irn = frappe.get_doc("Sales Invoice",sale_invoice.return_against).efris_irn 
+		source_doctype = sale_invoice.get('doctype') or 'Sales Invoice'
+		irn = frappe.db.get_value(source_doctype, sale_invoice.return_against, "efris_irn")
 		currency = einvoice.currency
 		original_einvoice = get_einvoice(sale_invoice.return_against)
 		if not original_einvoice:
@@ -321,10 +324,17 @@ class EInvoiceAPI:
 
 	@staticmethod
 	def on_cancel_sales_invoice(doc):
+		# Fiscalised invoices are blocked in before_cancel (efris_queue.on_cancel_invoice);
+		# what can remain here is an unsent/draft E Invoice.
 		einvoice = EInvoiceAPI.get_einvoice(doc.name)
-		if einvoice:
+		if not einvoice:
+			return
+		einvoice.flags.ignore_permissions = True
+		if einvoice.docstatus == 1:
 			einvoice.cancel()
-			einvoice.save()
+		elif einvoice.docstatus == 0:
+			frappe.db.set_value(doc.doctype, doc.name, "efris_e_invoice", None, update_modified=False)
+			einvoice.delete(ignore_permissions=True)
 
 ###cancel rn#####
 def create_credit_note(einvoice, reason_code, remark):		
@@ -494,33 +504,33 @@ def negate_credit_note_values(credit_note):
 	credit_note["payWay"][0]["paymentAmount"] = str(-abs(float(credit_note["payWay"][0]["paymentAmount"])))
 
 
+def _einvoice_source_doctype(einvoice):
+	return einvoice.get("source_doctype") or "Sales Invoice"
+
 ##Handle credit note cancelation
 def handle_rejected_credit_note(einvoice, response):
+	"""URA rejected the credit note application of a return (Sales or POS Invoice).
+
+	The original invoice stays fiscalised; the return is flagged so staff can follow up.
+	"""
 	efris_log_info(f"The Approval status is {response['records'][0]['approveStatus']}")
+	source_doctype = _einvoice_source_doctype(einvoice)
 
-	einvoice.flags.ignore_permissions = True
-	einvoice.status = 'Credit Note Rejected'
-	einvoice.credit_note_approval_status = '103:Rejected'
-	einvoice.docstatus = '2'
-	einvoice.save()
+	einvoice.db_set({
+		'status': 'EFRIS Credit Note Rejected',
+		'credit_note_approval_status': '103:Rejected',
+	}, update_modified=False)
 
-	sales_invoice_return = frappe.get_doc("Sales Invoice", einvoice.name)
-	sales_invoice_return.efris_einvoice_status = "Credit Note Rejected"
-	sales_invoice_return.flags.ignore_permissions = True
-	sales_invoice_return.docstatus = 'Return Cancelled'
-	sales_invoice_return.save()
-	notify_system_managers(sales_invoice_return)
+	frappe.db.set_value(source_doctype, einvoice.invoice, {
+		'efris_einvoice_status': 'EFRIS Credit Note Rejected',
+		'efris_status': 'Failed',
+		'efris_last_error': _('URA rejected the credit note application {0}').format(
+			einvoice.credit_note_application_ref_no or ''),
+		'efris_next_retry': None,
+	}, update_modified=False)
+	notify_system_managers(einvoice.invoice)
 
-	original_einvoice = get_einvoice(sales_invoice_return.return_against)
-	original_sales_invoice = frappe.get_doc("Sales Invoice", original_einvoice)
-	original_sales_invoice.efris_einvoice_status = "EFRIS Generated"
-	original_sales_invoice.status = 'Return Cancelled'
-	original_sales_invoice.save()
-
-	original_einvoice.status = "EFRIS Generated"
-	original_einvoice.save()
-
-	return True, "Credit Note Cancelled Successfully"
+	return True, "Credit Note Rejected by URA"
 
 def notify_system_managers(credit_note_name):
 	"""
@@ -543,13 +553,11 @@ def notify_system_managers(credit_note_name):
 	ERPNext System
 	"""
 
-	for user in system_managers:
-		frappe.sendmail(
-			recipients=[user.email],
-			subject=subject,
-			message=message
-		)
-		efris_log_info(f"Email sent to {user.email} about rejected credit note {credit_note_name}.")
+	recipients = [u if isinstance(u, str) else u.get("email") or u.get("name") for u in system_managers]
+	recipients = [r for r in recipients if r and r not in ("Administrator", "Guest")]
+	if recipients:
+		frappe.sendmail(recipients=recipients, subject=subject, message=message)
+		efris_log_info(f"Email sent to {recipients} about rejected credit note {credit_note_name}.")
 		
 def handle_approved_credit_note(einvoice, response):
 	credit_invoice_no = response["records"][0]["invoiceNo"]
@@ -614,35 +622,48 @@ def update_einvoice_with_fdn_details(einvoice, fdn_response, credit_invoice_no, 
 
 def update_sales_invoice_return_status(einvoice):
 	"""
-	Update the Sales Invoice Return status to "EFRIS Generated".
+	Mark the return (Sales or POS Invoice) "EFRIS Generated" once URA approved the credit note.
 	"""
-	sales_invoice_return = frappe.get_doc("Sales Invoice", einvoice.name)
-	sales_invoice_return.efris_einvoice_status = "EFRIS Generated"
-	sales_invoice_return.submit()
+	source_doctype = _einvoice_source_doctype(einvoice)
+	invoice_return = frappe.get_doc(source_doctype, einvoice.invoice)
+	if invoice_return.docstatus == 0:
+		# legacy flow: Sales Invoice credit notes kept in draft until URA approval
+		invoice_return.efris_einvoice_status = "EFRIS Generated"
+		invoice_return.flags.ignore_permissions = True
+		invoice_return.submit()
+	else:
+		frappe.db.set_value(source_doctype, invoice_return.name, {
+			"efris_einvoice_status": "EFRIS Generated",
+			"efris_irn": einvoice.irn,
+		}, update_modified=False)
 
 
 def update_original_invoice_status(einvoice):
-    """
-    Update the original Sales Invoice and e-invoice status to "EFRIS Cancelled".
-    """
+	"""
+	After an approved credit note: mark the original invoice "EFRIS Cancelled" when the
+	return reverses it completely (partial returns leave it "EFRIS Generated").
+	"""
+	source_doctype = _einvoice_source_doctype(einvoice)
+	invoice_return = frappe.get_doc(source_doctype, einvoice.invoice)
+	if not invoice_return.return_against:
+		frappe.throw(f"No return_against found for {source_doctype} {invoice_return.name}")
 
-    # Get the linked Sales Invoice (names match)
-    sales_invoice = frappe.get_doc("Sales Invoice", einvoice.name)
+	original_name = invoice_return.return_against
+	original_total = flt(frappe.db.get_value(source_doctype, original_name, "grand_total"))
+	returned_total = abs(flt(frappe.db.sql(
+		f"""select sum(grand_total) from `tab{source_doctype}`
+		where return_against=%s and docstatus=1 and efris_einvoice_status='EFRIS Generated'""",
+		original_name,
+	)[0][0]))
+	if returned_total + 0.5 < abs(original_total):
+		return
 
-    # Get the original invoice name from the return_against field
-    if not sales_invoice.return_against:
-        frappe.throw(f"No return_against found for Sales Invoice {sales_invoice.name}")
-
-    # Fetch the original e-invoice using the original sales invoice name
-    original_einvoice = get_einvoice(sales_invoice.return_against)
-    original_sales_invoice = frappe.get_doc("Sales Invoice", sales_invoice.return_against)
-
-    # Update statuses
-    original_sales_invoice.efris_einvoice_status = "EFRIS Cancelled"
-    original_sales_invoice.save()
-
-    original_einvoice.status = "EFRIS Cancelled"
-    original_einvoice.save()
+	frappe.db.set_value(
+		source_doctype, original_name, "efris_einvoice_status", "EFRIS Cancelled", update_modified=False
+	)
+	original_einvoice = get_einvoice(original_name)
+	if original_einvoice:
+		original_einvoice.db_set("status", "EFRIS Cancelled", update_modified=False)
 
 #####End of credit note status update
 
@@ -884,41 +905,39 @@ def after_save_sales_invoice(doc, method):
 		return
 	
 
-@frappe.whitelist()
-def send_to_efris(doc):
-	if isinstance(doc, str):
-		doc = json.loads(doc)
-	# Convert dict to Frappe Document
-	if isinstance(doc, dict):
-		doc = frappe.get_doc(doc)
-	on_submit_sales_invoice(doc,'manual_submit')
-	return {
-		"message": "Sales Invoice sent to EFRIS successfully.",
-		"status": "success"
-	}
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=30, seconds=60)
+def send_to_efris(doc=None, name=None):
+	"""Manual "Submit To EFRIS" for a Sales Invoice.
 
-@frappe.whitelist()
-def send_pos_invoice_to_efris(doc):
-	if isinstance(doc, str):
-		doc = json.loads(doc)
-	if isinstance(doc, dict):
-		doc = frappe.get_doc(doc)
-	on_submit_pos_invoice(doc, 'manual_submit')
-	return {
-		"message": "POS Invoice sent to EFRIS successfully.",
-		"status": "success"
-	}
+	Only the document name is used: the invoice is loaded server-side and the user
+	must have submit permission on it (a client-built doc is never fiscalised).
+	"""
+	from uganda_compliance.efris.efris_queue import send_invoice_to_efris
+	result = send_invoice_to_efris("Sales Invoice", name or doc)
+	return _manual_send_response(result, "Sales Invoice")
 
-def on_submit_pos_invoice(doc, method):
-	auto_send = doc.get("efris_invoice") and get_e_company_settings(doc.get("company")).auto_send_submitted_invoice
-	if (auto_send == 1) or (method == 'manual_submit'):
-		pos_invoice = EInvoiceAPI.parse_sales_invoice(frappe.as_json(doc))
-		validate_payment(pos_invoice)
-		if not pos_invoice.efris_invoice or pos_invoice.is_consolidated:
-			return
-		if not validate_company(pos_invoice):
-			return
-		_handle_efris_logic(pos_invoice, doc)
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=30, seconds=60)
+def send_pos_invoice_to_efris(doc=None, name=None):
+	"""Manual "Send To EFRIS" for a POS Invoice (see send_to_efris)."""
+	from uganda_compliance.efris.efris_queue import send_invoice_to_efris
+	result = send_invoice_to_efris("POS Invoice", name or doc)
+	return _manual_send_response(result, "POS Invoice")
+
+def _manual_send_response(result, doctype):
+	ok = result.get("outcome") in ("submitted", "already_submitted")
+	if ok:
+		message = _("{0} sent to EFRIS successfully.").format(_(doctype))
+	else:
+		message = _("EFRIS submission failed: {0}").format(result.get("message") or "")
+	result.update({"status": "success" if ok else "failed", "message": message})
+	return result
+
+def on_submit_pos_invoice(doc, method=None):
+	"""Kept for backwards compatibility; POS Invoices are always sent in the background."""
+	from uganda_compliance.efris.efris_queue import on_submit_invoice
+	on_submit_invoice(doc, method)
 
 def on_submit_sales_invoice(doc, method):	
 	"""
@@ -1048,50 +1067,58 @@ def _set_sales_taxes_template(doc, company):
 		frappe.throw("No Sales Taxes and Charges Template found!")
 
 
-#ToDo: 
 def check_credit_note_approval_status():
-	
-	sales_invoices = frappe.get_all("Sales Invoice", filters={
-		'efris_einvoice_status': 'EFRIS Credit Note Pending'
-	})
+	"""Poll URA (T111) for pending credit note applications of Sales/POS Invoice returns."""
+	for doctype in ("Sales Invoice", "POS Invoice"):
+		pending = frappe.get_all(doctype, filters={
+			'efris_einvoice_status': 'EFRIS Credit Note Pending',
+			'docstatus': ['!=', 2],
+		}, pluck="name")
 
-	if not sales_invoices:
-		efris_log_info("No Sales Invoices found with 'EFRIS Credit Note Pending'.")
-		return
-	
-	for sales_invoice in sales_invoices:
-		try:
-			sales_invoice_doc = frappe.get_doc("Sales Invoice", sales_invoice.name)
-			efris_log_info(f"Checking approval status for Sales Invoice: {sales_invoice.name}")
-			
-			status, response = EInvoiceAPI.confirm_irn_cancellation(sales_invoice_doc)
+		for invoice_name in pending:
+			try:
+				einvoice = EInvoiceAPI.get_einvoice(invoice_name)
+				if not einvoice or not einvoice.credit_note_application_ref_no:
+					continue
+				efris_log_info(f"Checking credit note approval status for {doctype}: {invoice_name}")
+				status, response = EInvoiceAPI.make_confirm_irn_cancellation_request(einvoice)
+				if not status:
+					efris_log_info(f"Credit note approval check failed for {doctype} {invoice_name}: {response}")
+			except Exception:
+				frappe.log_error(
+					title=f"EFRIS credit note approval check failed: {doctype} {invoice_name}",
+					message=frappe.get_traceback(),
+				)
 
-			if status:
-				efris_log_info(f"Credit note approval successful for Sales Invoice: {sales_invoice.name}.")
-			else:
-				frappe.logger().error(f"Failed to check approval for Sales Invoice: {sales_invoice.name}. Response: {response}")
-		
-		except Exception as e:
-			frappe.log_error(f"Error checking EFRIS status for Sales Invoice {sales_invoice.name}: {e}", "EFRIS Credit Note Approval Check")
-
-	efris_log_info("Completed daily check for EFRIS credit note approval status.")
+	efris_log_info("Completed check for EFRIS credit note approval status.")
 
 
-@frappe.whitelist()
+def _load_invoice(doc_or_name, ptype):
+	from uganda_compliance.efris.efris_queue import _extract_name, load_invoice_for_efris
+	_name, doctype = _extract_name(doc_or_name)
+	return load_invoice_for_efris(doctype or "Sales Invoice", doc_or_name, ptype)
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=30, seconds=60)
 def generate_irn(sales_invoice_doc):
-	efris_log_info(f"generate_irn for doc: {sales_invoice_doc}")
-	return EInvoiceAPI.generate_irn(sales_invoice_doc)
+	doc = _load_invoice(sales_invoice_doc, "submit")
+	if doc.docstatus != 1:
+		frappe.throw(_("Only submitted invoices can be sent to EFRIS"))
+	efris_log_info(f"generate_irn for doc: {doc.doctype} {doc.name}")
+	return EInvoiceAPI.generate_irn(frappe.as_json(doc))
 
 			
 # Similarly, add bridge methods for other required functionalities
 @frappe.whitelist()
 def confirm_irn_cancellation(sales_invoice):
 	efris_log_info(f"confirm_irn_cancellation called ...")
-	return EInvoiceAPI.confirm_irn_cancellation(sales_invoice)
+	doc = _load_invoice(sales_invoice, "read")
+	return EInvoiceAPI.confirm_irn_cancellation(frappe.as_json(doc))
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def cancel_irn(sales_invoice, reasonCode, remark):
-	return EInvoiceAPI.cancel_irn(sales_invoice, reasonCode, remark)
+	doc = _load_invoice(sales_invoice, "submit")
+	return EInvoiceAPI.cancel_irn(frappe.as_json(doc), reasonCode, remark)
 
 @frappe.whitelist()
 def check_efris_flag_for_sales_invoice(is_return,return_against):
@@ -1099,7 +1126,6 @@ def check_efris_flag_for_sales_invoice(is_return,return_against):
    efris_log_info(f"Returned value is {is_efris_flag}")
    return is_efris_flag
 
-@frappe.whitelist()
 def Sales_invoice_is_efris_validation(doc, method):
 	"""Validate EFRIS compliance for Sales Invoice."""
 	doc = _parse_doc(doc)
@@ -1163,7 +1189,6 @@ def set_efris_based_on_items(doc, items):
 			efris_log_info(f"Updated Sales Invoice for EFRIS compliance.")
 			break  
 
-@frappe.whitelist()
 def sales_uom_validation(doc, method):
 	"""
 	Validate that the Sales UOM for each item in the document exists in the Item's UOMs list.
@@ -1369,19 +1394,28 @@ def before_save(doc, method):
 			item.amount = item.rate * item.qty
 
 def get_order_no(invoice, item_code, item_name):
-	doc_list = frappe.get_all(
+	"""orderNumber of the item in the original T109 request (needed by the credit note)."""
+	source_doctype = invoice.get("source_doctype") or "Sales Invoice"
+	logs = frappe.get_all(
 		"E Invoice Request Log",
-		filters={"reference_doc_type":"Sales Invoice", "reference_document": invoice.name},
-		fields=["name"],
-		order_by="creation DESC",  
-		limit_page_length=1  
+		filters={"reference_doc_type": source_doctype, "reference_document": invoice.name},
+		fields=["name", "status", "request_data"],
+		order_by="creation DESC",
+		limit_page_length=20,
 	)
+	request_data = None
+	for log in logs:
+		if log.status == "Failed" or not log.request_data:
+			continue
+		data = safe_load_json(log.request_data)
+		if isinstance(data, str):
+			data = safe_load_json(data)
+		if isinstance(data, dict) and data.get("goodsDetails"):
+			request_data = data
+			break
 
-	if not doc_list:
-		frappe.throw(f"No E Invoice Request Log found for invoice: {invoice}")
-	doc_name = doc_list[0]["name"]
-	request_log = frappe.get_doc("E Invoice Request Log", doc_name)
-	request_data = json.loads(request_log.request_data)
+	if not request_data:
+		frappe.throw(f"No EFRIS invoice request (E Invoice Request Log) found for invoice: {invoice.name}")
 	item_code = get_efris_product_code(item_code)
 	for item in request_data.get("goodsDetails", []):
 		if item.get("itemCode") == item_code and item.get("item") == item_name:

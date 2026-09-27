@@ -24,7 +24,7 @@ frappe.ui.form.on('Sales Invoice', {
                         try {
                             await frappe.call({
                                 method: 'uganda_compliance.efris.api_classes.e_invoice.confirm_irn_cancellation',
-                                args: { sales_invoice: frm.doc },
+                                args: { sales_invoice: frm.doc.name },
                                 freeze: false, 
                                 callback: function(r) {
                                     if (!r.exc) {
@@ -275,7 +275,7 @@ function handle_update_stock_setting(frm) {
     let is_efris_invoice = frm.doc.efris_invoice === 1; 
     if (is_efris_invoice) {
         frappe.call({
-            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
+            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_client_settings",
             args: { company_name: frm.doc.company },
             callback: function(r) {
                 if (r.message && r.message.enforce_update_stock == 1) {
@@ -296,7 +296,7 @@ function get_auto_send_submitted_invoice_flag(frm) {
         }
 
         frappe.call({
-            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
+            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_client_settings",
             args: { company_name: frm.doc.company },
             callback: function(r) {
                 if (r.message && r.message.auto_send_submitted_invoice == 1) {
@@ -366,14 +366,25 @@ function reset_discounts(frm) {
 
 async function add_custom_buttons(frm) {  
 
-    if (frm.doc.docstatus != 1 || !frm.doc.efris_company || frm.doc.efris_irn || !frm.doc.efris_invoice || frm.doc.efris_e_invoice) {
-        console.log("Skipping EFRIS submission button for non-EFRIS or return invoices");
+    if (frm.doc.docstatus == 1 && frm.doc.efris_invoice && frm.doc.efris_status) {
+        const colours = {'Pending': 'orange', 'Submitted': 'green', 'Failed': 'red', 'Cancelled': 'grey'};
+        frm.dashboard.add_indicator(__('EFRIS: {0}', [__(frm.doc.efris_status)]), colours[frm.doc.efris_status] || 'blue');
+        if (frm.doc.efris_status === 'Failed' && frm.doc.efris_last_error) {
+            frm.dashboard.set_headline_alert(
+                `<div class="text-danger">${__('EFRIS submission failed')}: ${frappe.utils.escape_html(frm.doc.efris_last_error)}</div>`
+            );
+        }
+    }
+
+    if (frm.doc.docstatus != 1 || !frm.doc.efris_company || frm.doc.efris_irn || !frm.doc.efris_invoice || frm.doc.is_consolidated
+        || ['Submitted', 'Cancelled'].includes(frm.doc.efris_status)) {
         return;
     }
 
-    const auto_send_submitted_invoice = await get_auto_send_submitted_invoice_flag(frm);   
+    const auto_send_submitted_invoice = await get_auto_send_submitted_invoice_flag(frm);
 
-    if (auto_send_submitted_invoice != 1) {
+    // Manual mode, or background mode where the last attempt failed / is stuck: offer (re)send.
+    if (auto_send_submitted_invoice != 1 || ['Failed', 'Pending'].includes(frm.doc.efris_status)) {
         frm.add_custom_button(__('Submit To EFRIS'), async function () {
             frappe.confirm(
                 __('Are you sure you want to submit?'),
@@ -382,13 +393,13 @@ async function add_custom_buttons(frm) {
                     try {
                         const response = await frappe.call({
                             method: 'uganda_compliance.efris.api_classes.e_invoice.send_to_efris',
-                            args: { doc: frm.doc },
+                            args: { name: frm.doc.name },
                             freeze: true,
                             freeze_message: __('Submitting to EFRIS...')
                         });
 
                         if (response.message) {
-                            frappe.msgprint(__('Sales Invoice submitted to EFRIS successfully.'));
+                            frappe.msgprint(response.message.message || __('Sales Invoice submitted to EFRIS successfully.'));
                             frm.reload_doc();
                         } else {
                             console.log(__('Failed to submit Sales Invoice to EFRIS.'));

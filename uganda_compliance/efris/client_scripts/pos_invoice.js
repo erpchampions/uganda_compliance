@@ -1,75 +1,57 @@
 frappe.ui.form.on('POS Invoice', {
-    refresh: async function(frm) {
+    refresh: function(frm) {
         if (frm.is_dirty()) return;
+        show_efris_status_pos(frm);
         add_custom_buttons_pos(frm);
     },
-    after_submit: async function(frm) {
+    after_submit: function(frm) {
         add_custom_buttons_pos(frm);
     }
 });
 
-const raise_form_is_dirty_error_pos = () => {
-    frappe.throw({
-        message: __('You must save the document before making e-invoicing request.'),
-        title: __('Unsaved Document')
-    });
+const EFRIS_STATUS_COLOURS = {
+    'Pending': 'orange',
+    'Submitted': 'green',
+    'Failed': 'red',
+    'Cancelled': 'grey'
 };
 
-function get_auto_send_pos_invoice_flag(frm) {
-    return new Promise((resolve) => {
-        if (!frm.doc.efris_invoice) {
-            return resolve(0);
-        }
-
-        frappe.call({
-            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
-            args: { company_name: frm.doc.company },
-            callback: function(r) {
-                if (r.message && r.message.auto_send_submitted_invoice == 1) {
-                    resolve(1);
-                } else {
-                    resolve(0);
-                }
-            }
-        });
-    });
+function show_efris_status_pos(frm) {
+    if (frm.doc.docstatus != 1 || !frm.doc.efris_invoice || !frm.doc.efris_status) return;
+    const colour = EFRIS_STATUS_COLOURS[frm.doc.efris_status] || 'blue';
+    let label = __('EFRIS: {0}', [__(frm.doc.efris_status)]);
+    if (frm.doc.efris_status === 'Failed' && frm.doc.efris_next_retry) {
+        label += ' · ' + __('retry {0}', [frappe.datetime.comment_when(frm.doc.efris_next_retry)]);
+    }
+    frm.dashboard.add_indicator(label, colour);
+    if (frm.doc.efris_status === 'Failed' && frm.doc.efris_last_error) {
+        frm.dashboard.set_headline_alert(
+            `<div class="text-danger">${__('EFRIS submission failed')}: ${frappe.utils.escape_html(frm.doc.efris_last_error)}</div>`
+        );
+    }
 }
 
-async function add_custom_buttons_pos(frm) {
-    if (frm.doc.docstatus != 1 || !frm.doc.efris_invoice || frm.doc.efris_irn || frm.doc.efris_e_invoice) {
-        return;
-    }
+function add_custom_buttons_pos(frm) {
+    if (frm.doc.docstatus != 1 || !frm.doc.efris_invoice || frm.doc.is_consolidated) return;
+    if (frm.doc.efris_irn || frm.doc.efris_status === 'Submitted' || frm.doc.efris_status === 'Cancelled') return;
 
-    const auto_send = await get_auto_send_pos_invoice_flag(frm);
-
-    if (auto_send != 1) {
-        frm.add_custom_button(__('Submit To EFRIS'), async function () {
-            frappe.confirm(
-                __('Are you sure you want to submit?'),
-                async function () {
-                    try {
-                        const response = await frappe.call({
-                            method: 'uganda_compliance.efris.api_classes.e_invoice.send_pos_invoice_to_efris',
-                            args: { doc: frm.doc },
-                            freeze: true,
-                            freeze_message: __('Submitting to EFRIS...')
-                        });
-
-                        if (response.message) {
-                            frappe.msgprint(__('POS Invoice submitted to EFRIS successfully.'));
-                            frm.reload_doc();
-                        } else {
-                            console.log(__('Failed to submit POS Invoice to EFRIS.'));
-                        }
-                    } catch (error) {
-                        console.error("Error submitting to EFRIS:", error);
-                        frappe.msgprint(__('An error occurred while submitting to EFRIS.'));
-                    }
-                },
-                function () {
-                    console.log("Submission to EFRIS was cancelled by the user.");
+    const label = frm.doc.efris_status === 'Failed' ? __('Retry EFRIS') : __('Send To EFRIS');
+    frm.add_custom_button(label, function () {
+        frappe.confirm(__('Send this invoice to EFRIS now?'), function () {
+            frappe.call({
+                method: 'uganda_compliance.efris.api_classes.e_invoice.send_pos_invoice_to_efris',
+                args: { name: frm.doc.name },
+                freeze: true,
+                freeze_message: __('Submitting to EFRIS...'),
+                callback: function (r) {
+                    const res = r.message || {};
+                    frappe.show_alert({
+                        message: res.message || __('Done'),
+                        indicator: res.status === 'success' ? 'green' : 'red'
+                    }, 10);
+                    frm.reload_doc();
                 }
-            );
-        }, __('E-Invoicing'));
-    }
+            });
+        });
+    }, __('E-Invoicing'));
 }
