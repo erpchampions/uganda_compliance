@@ -288,46 +288,19 @@ doc_events = {
 
 }
 
-doctype_list_js = {
-    "Sales Invoice": [
-        "efris/client_scripts/sales_invoice.js"
-
-    ],
-    "Purchase Receipt": [
-        "efris/client_scripts/purchase_receipt.js"
-
-    ],
-
-    "Stock Entry": [
-        "efris/client_scripts/stock_entry.js"
-
-    ],
-
-    "E Invoicing Settings": [
-        "efris/doctype/e_invoicing_settings/e_invoicing_settings.js"
-
-    ],
-    "Stock Reconciliation": [
-        "efris/client_scripts/stock_reconciliation.js"
-
-    ],
-    "Item": [
-        "efris/client_scripts/item.js"
-
-    ],
-    "Company": [
-        "efris/client_scripts/company.js"
-
-    ],
-    "Warehouse": [
-        "efris/client_scripts/warehouse.js"
-
-    ],
-    "POS Invoice": [
-        "efris/client_scripts/pos_invoice.js"
-
-    ]
-
+# Form scripts: these register frappe.ui.form.on handlers, so they belong in
+# doctype_js (loaded with the form). They used to be registered via
+# doctype_list_js, which only worked after the list view had been opened.
+# E Invoicing Settings is not listed: its own doctype JS is loaded by Frappe.
+doctype_js = {
+    "Sales Invoice": "efris/client_scripts/sales_invoice.js",
+    "Purchase Receipt": "efris/client_scripts/purchase_receipt.js",
+    "Stock Entry": "efris/client_scripts/stock_entry.js",
+    "Stock Reconciliation": "efris/client_scripts/stock_reconciliation.js",
+    "Item": "efris/client_scripts/item.js",
+    "Company": "efris/client_scripts/company.js",
+    "Warehouse": "efris/client_scripts/warehouse.js",
+    "POS Invoice": "efris/client_scripts/pos_invoice.js",
 }
 
 fixtures = [

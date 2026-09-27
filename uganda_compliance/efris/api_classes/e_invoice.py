@@ -1102,9 +1102,13 @@ def check_efris_flag_for_sales_invoice(is_return,return_against):
 @frappe.whitelist()
 def Sales_invoice_is_efris_validation(doc, method):
 	"""Validate EFRIS compliance for Sales Invoice."""
+	doc = _parse_doc(doc)
+	if doc and doc.get("is_consolidated"):
+		# POS closing merges already-fiscalised POS Invoices; never re-validate/re-flag them.
+		efris_log_info("Skipping EFRIS validation for consolidated invoice.")
+		return
 	efris_log_info("Before Save is called ...")
 	try:
-		doc = _parse_doc(doc)
 		
 		is_efris = doc.get('efris_invoice')
 		items = doc.get('items', [])
