@@ -58,6 +58,8 @@ class EInvoiceAPI:
 		#EInvoiceAPI.validate_credit_note_return(sales_invoice)
 		source_doctype = sales_invoice.get('doctype') or 'Sales Invoice'
 		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name, source_doctype=source_doctype)
+		# an existing (draft) E Invoice is loaded from the DB: refresh the computed, non-field values
+		einvoice.fetch_invoice_details()
 
 		status, response = EInvoiceAPI.make_credit_note_return_application_request(einvoice, sales_invoice)
 

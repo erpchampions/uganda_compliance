@@ -11,6 +11,7 @@ frappe.ui.form.on('POS Invoice', {
 
 const EFRIS_STATUS_COLOURS = {
     'Pending': 'orange',
+    'Submitting': 'blue',
     'Submitted': 'green',
     'Failed': 'red',
     'Cancelled': 'grey'

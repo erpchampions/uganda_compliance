@@ -85,7 +85,8 @@ class TestEfrisPosSubmission(EfrisTestCase):
 			self.assertEqual(inv.efris_attempts, 1)
 			self.assertIn("Connection refused", inv.efris_last_error)
 			self.assertFalse(inv.efris_irn)
-			self.assertFalse(frappe.db.exists("E Invoice", inv.name), "partial E Invoice rolled back")
+			# the E Invoice is committed before the URA call; it stays a draft and is reused
+			self.assertEqual(frappe.db.get_value("E Invoice", inv.name, ["docstatus", "irn"]), (0, None))
 			delay = get_datetime(inv.efris_next_retry) - now_datetime()
 			self.assertTrue(timedelta(minutes=14) < delay <= timedelta(minutes=15))
 
@@ -104,13 +105,13 @@ class TestEfrisPosSubmission(EfrisTestCase):
 
 			# sweep respects the back-off
 			self.assertNotIn(("POS Invoice", inv.name), efris_queue.retry_pending_efris_submissions())
-			self.assertEqual(ura.enqueued, [])
+			self.assertNotIn(inv.name, [j.name for j in ura.enqueued])
 
 			frappe.db.set_value(
 				"POS Invoice", inv.name, "efris_next_retry", add_to_date(now_datetime(), minutes=-1)
 			)
 			self.assertIn(("POS Invoice", inv.name), efris_queue.retry_pending_efris_submissions())
-			(result,) = run_queued(ura)
+			(result,) = run_queued(ura, only=inv)
 
 		self.assertEqual(result["outcome"], "submitted")
 		inv = reload(inv)
@@ -147,7 +148,7 @@ class TestEfrisPosSubmission(EfrisTestCase):
 				"POS Invoice", inv.name, "efris_next_retry", add_to_date(now_datetime(), minutes=-1)
 			)
 			efris_queue.retry_pending_efris_submissions()
-			run_queued(ura)
+			run_queued(ura, only=inv)
 
 			inv = reload(inv)
 			self.assertEqual(inv.efris_status, "Failed")
@@ -561,3 +562,124 @@ class TestEfrisSalesInvoice(EfrisTestCase):
 			si.is_consolidated = 1
 			efris_queue.on_submit_invoice(si)
 		self.assertEqual(ura.enqueued, [])
+
+
+class TestEfrisClaimAndStaleClaims(EfrisTestCase):
+	"""The worker claims an invoice (efris_status = Submitting + lease) instead of holding a row lock."""
+
+	def _claimed(self, ura, attempts=1, lease_minutes=5):
+		inv = make_pos_invoice(self.ctx)
+		ura.enqueued.clear()
+		frappe.db.set_value(
+			"POS Invoice",
+			inv.name,
+			{
+				"efris_status": "Submitting",
+				"efris_attempts": attempts,
+				"efris_next_retry": add_to_date(now_datetime(), minutes=lease_minutes),
+			},
+			update_modified=False,
+		)
+		return inv
+
+	def test_live_claim_is_not_sent_again(self):
+		with fake_ura() as ura:
+			inv = self._claimed(ura)
+			self.assertEqual(
+				efris_queue.process_efris_submission("POS Invoice", inv.name)["outcome"], "in_progress"
+			)
+			self.assertEqual(e_invoice.send_pos_invoice_to_efris(name=inv.name)["outcome"], "in_progress")
+			self.assertNotIn(("POS Invoice", inv.name), efris_queue.retry_pending_efris_submissions())
+		self.assertEqual(ura.calls, [])
+		self.assertEqual(reload(inv).efris_attempts, 1)
+
+	def test_expired_claim_is_taken_over_and_looked_up_at_ura_first(self):
+		# the worker died during the URA call: the invoice may or may not be at URA
+		with fake_ura() as ura:
+			inv = self._claimed(ura, lease_minutes=-1)
+			self.assertIn(("POS Invoice", inv.name), efris_queue.retry_pending_efris_submissions())
+			(result,) = run_queued(ura, only=inv)
+		self.assertEqual(result["outcome"], "submitted")
+		self.assertEqual([c["interfaceCode"] for c in ura.calls], ["T106", "T109"])
+		inv = reload(inv)
+		self.assertEqual((inv.efris_status, inv.efris_attempts), ("Submitted", 2))
+
+	def test_dead_last_attempt_is_marked_failed_not_left_submitting(self):
+		with fake_ura() as ura:
+			inv = self._claimed(ura, attempts=3, lease_minutes=-1)  # max_attempts = 3
+			self.assertIn(("POS Invoice", inv.name), efris_queue.retry_pending_efris_submissions())
+			(result,) = run_queued(ura, only=inv)
+		self.assertEqual(result["outcome"], "max_attempts")
+		self.assertEqual(ura.calls, [])
+		inv = reload(inv)
+		self.assertEqual(inv.efris_status, "Failed")
+		self.assertIn("stopped while waiting for URA", inv.efris_last_error)
+
+	def test_cancel_blocked_while_submitting(self):
+		# without the row lock, a cancel during the URA call would leave a fiscalised cancelled sale
+		with fake_ura() as ura:
+			inv = self._claimed(ura)
+			with self.assertRaises(frappe.ValidationError) as cm:
+				reload(inv).cancel()
+		self.assertIn("being sent to EFRIS", str(cm.exception))
+		self.assertEqual(frappe.db.get_value("POS Invoice", inv.name, "docstatus"), 1)
+
+
+class TestEfrisRowLockNotHeldDuringUraCall(EfrisTestCase):
+	"""Regression: the job held `select ... for update` on the invoice for the whole URA call
+	(up to 2 x 120 s), so a POS Closing consolidating that invoice hit a lock-wait timeout.
+
+	Uses real commits (the claim must be visible to other connections)."""
+
+	def _in_second_connection(self, fn):
+		# primary_connection() restores the worker's connection afterwards: on first use,
+		# FrappeTestCase.secondary_connection() "restores" the new secondary connection
+		with self.primary_connection(), self.secondary_connection():
+			try:
+				return fn()
+			finally:
+				frappe.db.rollback()
+
+	def _row_lock_is_free(self, name):
+		def try_lock():
+			try:
+				frappe.db.sql("select name from `tabPOS Invoice` where name=%s for update nowait", name)
+				return True
+			except Exception as e:
+				if frappe.db.is_timedout(e) or "lock" in str(e).lower():
+					return False
+				raise
+
+		return self._in_second_connection(try_lock)
+
+	def test_invoice_not_locked_during_ura_call(self):
+		seen = []
+		with fake_ura(real_commit=True) as ura:
+			inv = make_pos_invoice(self.ctx)
+
+			def during_http_call(code):
+				if code != "T109":
+					return
+				status = self._in_second_connection(
+					lambda: frappe.db.get_value("POS Invoice", inv.name, "efris_status")
+				)
+				# another worker (duplicate job / manual resend) does not send it again
+				other = self._in_second_connection(
+					lambda: efris_queue.process_efris_submission("POS Invoice", inv.name)["outcome"]
+				)
+				seen.append((status, self._row_lock_is_free(inv.name), other))
+
+			ura.on_call = during_http_call
+			ura.responses["T109"] = [(False, "URA down")]
+			(first,) = run_queued(ura)
+			self.assertEqual(first["outcome"], "failed")
+			self.assertEqual(reload(inv).efris_status, "Failed")
+
+			second = efris_queue.process_efris_submission("POS Invoice", inv.name, manual=True)
+
+		self.assertEqual(seen, [("Submitting", True, "in_progress")] * 2)
+		self.assertEqual(second["outcome"], "submitted")
+		self.assertEqual([c["interfaceCode"] for c in ura.calls], ["T109", "T106", "T109"])
+		inv = reload(inv)
+		self.assertEqual((inv.efris_status, inv.efris_attempts), ("Submitted", 2))
+		self.assertEqual(frappe.db.count("E Invoice", {"invoice": inv.name}), 1)
