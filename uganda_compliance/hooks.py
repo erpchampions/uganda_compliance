@@ -333,7 +333,13 @@ fixtures = [
         }
     },
     "EFRIS Payment Mode",
-    "Tax Category",
+    # used by export invoicing (Item Tax rows per Tax Category); the DocType itself is ERPNext's
+    {
+        "doctype": "Tax Category",
+        "filters": {
+            "name": ["in", ["Default", "Foreign"]]
+        }
+    },
     {
         "doctype": "File",
         "filters": {
