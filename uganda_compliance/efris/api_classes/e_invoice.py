@@ -1121,10 +1121,12 @@ def cancel_irn(sales_invoice, reasonCode, remark):
 	return EInvoiceAPI.cancel_irn(frappe.as_json(doc), reasonCode, remark)
 
 @frappe.whitelist()
-def check_efris_flag_for_sales_invoice(is_return,return_against):
-   is_efris_flag = bool(is_return and frappe.db.exists('E Invoice', return_against)) or False
-   efris_log_info(f"Returned value is {is_efris_flag}")
-   return is_efris_flag
+def check_efris_flag_for_sales_invoice(is_return, return_against):
+	"""Whether the invoice a return is made against has an E Invoice."""
+	if not frappe.utils.cint(is_return) or not return_against:
+		return False
+	frappe.has_permission("Sales Invoice", "read", return_against, throw=True)
+	return bool(frappe.db.exists("E Invoice", {"invoice": return_against}))
 
 def Sales_invoice_is_efris_validation(doc, method):
 	"""Validate EFRIS compliance for Sales Invoice."""

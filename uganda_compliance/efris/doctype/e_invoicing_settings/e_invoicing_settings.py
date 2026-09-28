@@ -68,24 +68,23 @@ def get_mode_decrypted_password(doc):
     return None
 
 
-@frappe.whitelist()
-def before_save(doc, method):
-    doc.before_save()
+TAX_TEMPLATE_DOCTYPES = {
+    "Sales Tax": ("Sales Taxes and Charges Template", "sales_taxes_and_charges_template"),
+    "Purchase Tax": ("Purchase Taxes and Charges Template", "purchase_taxes_and_charges_template"),
+}
+
 
 @frappe.whitelist()
 def get_e_tax_template(company_name, tax_type):
-    efris_log_info(f"get_e_tax_template called with company_name, tax_type: {company_name}, {tax_type} ")
-    e_settings = get_e_company_settings(company_name)
-    template_name = None
-    if tax_type == 'Sales Tax':
-        template_name = e_settings.sales_taxes_and_charges_template
-    elif tax_type == 'Purchase Tax':
-        template_name = e_settings.purchase_taxes_and_charges_template
-    else:
-        frappe.throw(f"Unsupported Tax Type: {tax_type}")
-    
-    # Fetch the template and its child table details
-    template_doc = frappe.get_doc('Sales Taxes and Charges Template', template_name)
+    if not frappe.has_permission("Company", "read", company_name):
+        frappe.throw(_("Not permitted"), frappe.PermissionError)
+    if tax_type not in TAX_TEMPLATE_DOCTYPES:
+        frappe.throw(_("Unsupported Tax Type: {0}").format(tax_type))
+    template_doctype, settings_field = TAX_TEMPLATE_DOCTYPES[tax_type]
+
+    template_name = get_e_company_settings(company_name).get(settings_field)
+    frappe.has_permission(template_doctype, "read", template_name, throw=True)
+    template_doc = frappe.get_doc(template_doctype, template_name)
     taxes_details = [
         {
             'charge_type': tax.charge_type,
@@ -171,8 +170,8 @@ def _get_e_company_settings(company_name):
 
 class EInvoicingSettings(Document):
     def before_save(self):
+        # validate() has already run (Frappe calls it before before_save)
         e_company_settings_cache.pop(self.company, None)
-        self.validate()
         before_save_e_invoicing_settings(self)
 
     def validate(self):
@@ -276,8 +275,8 @@ class EInvoicingSettings(Document):
         purchase_template.insert(ignore_permissions=True)
         return purchase_template
 
-@frappe.whitelist()
 def create_item_tax_templates(doc):
+    """Called from E Invoicing Settings.validate only (not an API: it inserts with ignore_permissions)."""
     output_vat_account = doc.get("output_vat_account")
     e_company = doc.get("company")
     
