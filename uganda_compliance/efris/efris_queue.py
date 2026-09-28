@@ -14,7 +14,7 @@ Flow
   is first looked up at URA (T106) so an attempt whose answer was lost is adopted, not
   sent again. It sends either the invoice (T109) or, for returns, the credit note
   application (T110).
-  Success -> ``Submitted``. Failure -> ``Failed`` + ``E Invoice Request Log``
+  Success -> ``Submitted``. Failure -> ``Failed`` + one ``E Invoice Request Log``
   (status Failed) + exponential back-off in ``efris_next_retry``.
 * ``retry_pending_efris_submissions`` (hourly) re-enqueues Pending/Failed invoices
   whose back-off has elapsed, and Submitting invoices whose lease expired (worker died
@@ -291,6 +291,7 @@ def process_efris_submission(doctype, name, manual=False):
 	if doctype not in SUPPORTED_DOCTYPES:
 		frappe.throw(_("EFRIS submission is not supported for {0}").format(doctype))
 
+	frappe.flags.efris_failed_requests_logged = set()  # filled by make_post's request log
 	doc, settings, result = _claim(doctype, name, manual)
 	frappe.db.commit()  # publish the claim (or the skip) and release the row lock
 	if result:
@@ -420,8 +421,15 @@ def _mark_failed(doc, error, settings, traceback=None):
 		efris_last_error=error_text,
 		efris_next_retry=next_retry,
 	)
-	log_failed_request(doc, error, traceback=traceback)
+	if not _ura_failure_already_logged(doc):
+		log_failed_request(doc, error, traceback=traceback)
 	efris_log_info(f"EFRIS submission failed for {doc.doctype} {doc.name} (attempt {attempts}): {error}")
+
+
+def _ura_failure_already_logged(doc):
+	"""``make_post`` already wrote a Failed request log for this attempt (URA rejected it)."""
+	interface_code = "T110" if cint(doc.get("is_return")) else "T109"
+	return (doc.doctype, doc.name, interface_code) in (frappe.flags.efris_failed_requests_logged or ())
 
 
 def _submit_invoice(doc):

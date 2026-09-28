@@ -10,6 +10,11 @@ class EInvoiceRequestLog(Document):
 	pass
 
 def log_request_to_efris(request_data, request_full, response_data, response_full, reference_doc_type=None, reference_document=None, status=None, interface_code=None, error_message=None):
+    if status == "Failed":
+        # lets the EFRIS queue skip its own Failed log for the same attempt (one row per failure)
+        if frappe.flags.efris_failed_requests_logged is None:
+            frappe.flags.efris_failed_requests_logged = set()
+        frappe.flags.efris_failed_requests_logged.add((reference_doc_type, reference_document, interface_code))
     try:        
         # Enqueue the logging operation
         enqueue(
