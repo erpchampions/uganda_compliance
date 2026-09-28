@@ -46,6 +46,10 @@ The POS path has only run against the URA sandbox (FB-Fashions UAT, 17 POS e-inv
   original FDN on credit notes, and clear *EFRIS PENDING* / *CREDIT NOTE PENDING URA APPROVAL* /
   *SANDBOX* states. Data comes from the Jinja method `efris_receipt_data(doc)`.
 * **Provisioning** `uganda_compliance.tillking.configure_efris / set_efris_mode / get_efris_config`.
+* Sandbox-run fixes: request logs are written after commit (they were lost for new items/invoices,
+  which breaks credit notes), `efris_registered` is persisted (every item save re-uploaded it),
+  UGX documents no longer call T121, no bogus `''` key-password default, and every HTTP call to URA
+  is logged as `EFRIS POST <interface> -> <url>` in `logs/uganda_compliance.efris_http.log`.
 * Fixes: `pyproject.toml` parse error and pins below Frappe 15.108's Pillow/pyOpenSSL; FB-Fashions
   fields removed from the POS fixture; form JS via `doctype_js`; per-request settings cache (the old
   per-process cache kept sandbox settings after a mode switch); `efris_log_info` writes to
@@ -67,11 +71,15 @@ Keys/passwords are uploaded in *E Invoicing Settings* by ops; they are never com
 
 ## 4. Known gaps
 
-* T106/T108 recovery uses the field names from the EFRIS interface spec (`referenceNo`, `invoiceNo`,
-  `grossAmount`, `deviceNo`); confirm against the URA sandbox before go-live.
-* The credit note needs the original T109 request in `E Invoice Request Log` (for `orderNumber`).
-  Request logs are written by an enqueued job, so a return made seconds after the sale can fail
-  once and is retried.
+* URA sandbox run (28 Sep 2026, see `artifacts/tillking/efris-sandbox/RESULT.md`): T109, T110, T111,
+  T106 and T108 field names used by the code were confirmed against the real sandbox. Credit-note
+  *approval* (T111 `approveStatus` 101 → T108 of the credit note) was not exercised: the sandbox
+  application stays at 102 until approved on the URA portal.
+* URA rejects a Seller Reference No. already used under the TIN ("Invoice(s)/receipt(s) (...) with the
+  same Seller's Reference Number have already been issued"), including references issued by other
+  systems on the same TIN. References are therefore `<seller_reference_prefix>-<invoice name>`
+  (prefix generated per E Invoicing Settings) and fixed on the invoice before the first attempt.
+  A tenant migrating from another EFRIS system on the same TIN keeps the generated prefix.
 * The Point-of-Sale page (Past Orders) has no EFRIS button/badge yet; the retail pack should call
   `send_pos_invoice_to_efris(name=...)` / `get_efris_status`.
 * The job holds a row lock on the invoice during the URA call (≤ 2 × 120 s). A POS Closing that

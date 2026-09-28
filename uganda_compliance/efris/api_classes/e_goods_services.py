@@ -262,6 +262,10 @@ def upload_item_to_efris(doc, e_company, goods_upload):
         frappe.msgprint(f"Item successfully uploaded to EFRIS for {e_company}")
         if not doc.efris_registered:
             doc.efris_registered = 1
+            if not doc.is_new():
+                # runs in on_update: persist, otherwise every later save re-queries (T144) and
+                # re-uploads the item to URA
+                doc.db_set("efris_registered", 1, update_modified=False)
             efris_log_info(f"The Value Of Is EFRIS Registered is updated to {doc.get('efris_registered', '')}")
     else:
         efris_log_error(f"Failed to upload item to EFRIS for {e_company}: {response}")

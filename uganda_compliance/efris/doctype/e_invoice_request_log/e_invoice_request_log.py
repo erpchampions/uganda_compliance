@@ -15,6 +15,9 @@ def log_request_to_efris(request_data, request_full, response_data, response_ful
         enqueue(
             "uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log.enqueue_log_request",
             queue="short",
+            # the referenced document is usually created in the same transaction: a job that
+            # runs before the commit fails link validation and the log is lost
+            enqueue_after_commit=True,
             request_data=request_data,
             request_full=request_full,
             response_data=response_data,
@@ -46,6 +49,7 @@ def enqueue_log_request(request_data, request_full, response_data, response_full
             "interface_code": interface_code,
             "error_message": (error_message or "")[:1000] or None,
         })
+        log_entry.flags.ignore_links = True
         log_entry.insert(ignore_permissions=True)
         frappe.db.commit()  # Explicitly commit since this is outside the main transaction
     except Exception as e:

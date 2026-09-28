@@ -600,7 +600,8 @@ def query_currency_exchange_rate(doc):
     e_company = doc.get('company')
     today = date.today().strftime("%Y-%m-%d")
     e_currency = doc.get('currency')
-    if e_company == 'UGX':
+    if not e_currency or e_currency == 'UGX':
+        # was `e_company == 'UGX'` (never true): UGX documents queried URA T121 needlessly
         return 
     efris_log_info(f"The E-currency is {e_currency}")
     exchange_rate_T121 = {

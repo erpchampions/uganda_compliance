@@ -1,3 +1,5 @@
+import json
+import logging
 import requests
 import uuid
 from datetime import datetime
@@ -63,7 +65,15 @@ def post_req(data, mode_post_url):
         # earlier call. Fail loudly and clearly instead.
         raise ValueError("post_req(): no EFRIS post URL configured (mode_post_url is empty).")
 
-    efris_log_info(f"EFRIS POST -> {mode_post_url}")
+    try:
+        interface_code = json.loads(data)["globalInfo"]["interfaceCode"]
+    except (ValueError, KeyError, TypeError):
+        interface_code = "?"
+    # One line per HTTP call to URA (audit trail of traffic; never logs the payload).
+    # Frappe loggers default to ERROR outside the dev server, so set INFO explicitly.
+    http_logger = frappe.logger("uganda_compliance.efris_http", allow_site=True)
+    http_logger.setLevel(logging.INFO)
+    http_logger.info(f"EFRIS POST {interface_code} -> {mode_post_url}")
     headers = {"Content-Type": "application/json"}
 
     try:
