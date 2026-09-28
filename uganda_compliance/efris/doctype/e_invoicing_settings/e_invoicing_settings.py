@@ -179,6 +179,8 @@ class EInvoicingSettings(Document):
         """
         Validate E Invoicing Settings before saving.
         """
+        if not self.seller_reference_prefix:
+            self.seller_reference_prefix = frappe.generate_hash(length=5).upper()
         self.create_tax_templates()
 
     def create_tax_templates(self):

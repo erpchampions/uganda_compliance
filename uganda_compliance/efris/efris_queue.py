@@ -72,6 +72,7 @@ def get_efris_settings(company):
 			"auto_send_submitted_invoice",
 			"sales_invoice_submission",
 			"efris_max_attempts",
+			"seller_reference_prefix",
 		],
 		as_dict=True,
 	)
@@ -180,6 +181,21 @@ def enqueue_efris_submission(doctype, name, manual=False):
 	)
 
 
+def make_seller_reference(doc, settings):
+	"""Seller Reference No. for URA: unique per TIN across systems (URA rejects reuse).
+
+	Also the idempotency key for the T106 lookup, so it is stored on the invoice before the
+	first attempt and never changed afterwards.
+	"""
+	prefix = (settings.get("seller_reference_prefix") or "").strip()
+	return (f"{prefix}-{doc.name}" if prefix else doc.name)[:50]
+
+
+def ensure_seller_reference(doc, settings):
+	if not doc.get("efris_seller_reference_no"):
+		_set_state(doc, efris_seller_reference_no=make_seller_reference(doc, settings))
+
+
 def queue_efris_submission(doc):
 	"""Flag ``doc`` Pending and enqueue the background submission."""
 	_set_state(doc, efris_status=STATUS_PENDING, efris_next_retry=None)
@@ -194,6 +210,8 @@ def on_submit_invoice(doc, method=None):
 	if not cint(settings.auto_send_submitted_invoice):
 		# Manual mode: the user sends from the form ("Send to EFRIS").
 		return
+
+	ensure_seller_reference(doc, settings)
 
 	if doc.doctype == "Sales Invoice" and settings.sales_invoice_submission == "Synchronous":
 		# Legacy blocking mode (opt-in, Sales Invoice only): EFRIS errors abort the submit.
@@ -269,6 +287,8 @@ def process_efris_submission(doctype, name, manual=False):
 		return _result(doc, "already_submitted", fdn=fdn)
 
 	attempts = cint(doc.get("efris_attempts"))
+	if not attempts:
+		ensure_seller_reference(doc, settings)
 	if not manual and attempts >= get_max_attempts(settings):
 		return _result(doc, "max_attempts", doc.get("efris_last_error"))
 

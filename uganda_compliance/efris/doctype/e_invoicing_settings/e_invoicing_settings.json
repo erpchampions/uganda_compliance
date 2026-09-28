@@ -36,6 +36,7 @@
   "auto_send_submitted_invoice",
   "sales_invoice_submission",
   "efris_max_attempts",
+  "seller_reference_prefix",
   "e_invoice_price_list_section",
   "efris_price_list",
   "efris_synchronization_section",
@@ -224,7 +225,6 @@
    "label": "Enable Integration Logging"
   },
   {
-   "default": "''",
    "depends_on": "eval:doc.sandbox_mode",
    "description": "Enter the password for the private key file",
    "fieldname": "sandbox_private_key_password",
@@ -312,10 +312,17 @@
    "fieldtype": "Int",
    "label": "Max EFRIS Submission Attempts",
    "non_negative": 1
+  },
+  {
+   "description": "Prefix of the Seller Reference No. sent to URA (reference = prefix-invoice name). URA rejects a reference already used under the TIN, so it must be unique to this system; generated automatically, change it only when another system already issued invoices under this TIN with the same naming series.",
+   "fieldname": "seller_reference_prefix",
+   "fieldtype": "Data",
+   "label": "Seller Reference Prefix",
+   "length": 10
   }
  ],
  "links": [],
- "modified": "2026-09-28 09:00:00.000000",
+ "modified": "2026-09-28 01:10:00.000000",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",

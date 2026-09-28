@@ -61,7 +61,12 @@ class TestEfrisPosSubmission(EfrisTestCase):
 			approx(payload["summary"]["grossAmount"], inv.grand_total),
 			(payload["summary"], inv.grand_total, inv.net_total, inv.total_taxes_and_charges),
 		)
-		self.assertEqual(payload["sellerDetails"]["referenceNo"], inv.name)
+		prefix = frappe.db.get_value(
+			"E Invoicing Settings", {"company": self.company}, "seller_reference_prefix"
+		)
+		self.assertTrue(prefix)
+		self.assertEqual(inv.efris_seller_reference_no, f"{prefix}-{inv.name}")
+		self.assertEqual(payload["sellerDetails"]["referenceNo"], inv.efris_seller_reference_no)
 		einv = frappe.get_doc("E Invoice", inv.name)
 		self.assertEqual(einv.source_doctype, "POS Invoice")
 		self.assertEqual(einv.docstatus, 1)
@@ -114,7 +119,7 @@ class TestEfrisPosSubmission(EfrisTestCase):
 		self.assertFalse(inv.efris_last_error)
 		# retry looked the invoice up at URA first (idempotency), then fiscalised once
 		self.assertEqual([c["interfaceCode"] for c in ura.calls], ["T109", "T106", "T109"])
-		self.assertEqual(ura.calls_for("T106")[0]["content"]["referenceNo"], inv.name)
+		self.assertEqual(ura.calls_for("T106")[0]["content"]["referenceNo"], inv.efris_seller_reference_no)
 
 	def test_exception_in_worker_is_recorded(self):
 		with fake_ura() as ura:
@@ -198,7 +203,7 @@ class TestEfrisPosSubmission(EfrisTestCase):
 							},
 							{
 								"invoiceNo": lost_fdn,
-								"referenceNo": inv.name,
+								"referenceNo": reload(inv).efris_seller_reference_no,
 								"grossAmount": str(inv.grand_total),
 								"deviceNo": "1000000001_01",
 							},
@@ -214,6 +219,48 @@ class TestEfrisPosSubmission(EfrisTestCase):
 		inv = reload(inv)
 		self.assertEqual(inv.efris_irn, lost_fdn)
 		self.assertEqual(inv.efris_status, "Submitted")
+
+	def test_other_systems_invoice_with_same_reference_is_not_adopted(self):
+		"""Sandbox finding: several systems share one TIN and device; URA returned another system's
+		invoice for our reference. Only a record with our gross amount may be adopted."""
+		with fake_ura() as ura:
+			ura.responses["T109"] = [TimeoutError("read timed out")]
+			inv = make_pos_invoice(self.ctx)
+			run_queued(ura)
+			ura.responses["T106"] = [
+				(
+					True,
+					{
+						"page": {"pageCount": 1},
+						"records": [
+							{
+								"invoiceNo": "325043814241",
+								"referenceNo": reload(inv).efris_seller_reference_no,
+								"grossAmount": "53100",
+								"deviceNo": "1000000001_01",
+							}
+						],
+					},
+				)
+			]
+			result = efris_queue.process_efris_submission("POS Invoice", inv.name)
+		self.assertEqual(result["outcome"], "submitted")
+		self.assertEqual(ura.calls_for("T108"), [])
+		self.assertEqual(len(ura.calls_for("T109")), 2)
+		self.assertNotEqual(reload(inv).efris_irn, "325043814241")
+
+	def test_seller_reference_fixed_before_first_attempt(self):
+		# regression (sandbox): reference = invoice name collided with another system on the same TIN
+		with fake_ura() as ura:
+			inv = make_pos_invoice(self.ctx)
+			ref = reload(inv).efris_seller_reference_no
+			self.assertNotEqual(ref, inv.name)
+			frappe.db.set_value(
+				"E Invoicing Settings", {"company": self.company}, "seller_reference_prefix", "OTHER"
+			)
+			run_queued(ura)
+		self.assertEqual(reload(inv).efris_seller_reference_no, ref, "never changes once assigned")
+		self.assertEqual(ura.calls_for("T109")[0]["content"]["sellerDetails"]["referenceNo"], ref)
 
 	def test_sweep_requeues_stale_pending(self):
 		with fake_ura() as ura:
