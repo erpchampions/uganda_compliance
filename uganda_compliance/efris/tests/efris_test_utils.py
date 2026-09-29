@@ -1,7 +1,7 @@
 """Shared fixtures for EFRIS tests: fictional Ugandan retailer data + a fake URA."""
 
 import json
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from unittest.mock import patch
 
 import frappe
@@ -265,6 +265,7 @@ class FakeURA:
 		self.calls = []
 		self.responses = {}
 		self.fdn_counter = 3240000000000
+		self.on_call = None  # optional hook run at the start of every call ("during the HTTP call")
 
 	def next_fdn(self):
 		self.fdn_counter += 1
@@ -299,6 +300,8 @@ class FakeURA:
 				"reference_document": reference_document,
 			}
 		)
+		if self.on_call:
+			self.on_call(interfaceCode)
 		scripted = self.responses.get(interfaceCode)
 		if scripted:
 			result = scripted.pop(0)
@@ -338,7 +341,12 @@ class FakeURA:
 
 
 @contextmanager
-def fake_ura():
+def fake_ura(real_commit=False):
+	"""Fake URA + captured enqueues.
+
+	The worker commits (claim, E Invoice, result). Unless ``real_commit``, commits are no-ops so
+	each test class keeps rolling back its data; tests of the commit/lock behaviour pass True.
+	"""
 	ura = FakeURA()
 	enqueued = []
 
@@ -349,16 +357,23 @@ def fake_ura():
 		patch("uganda_compliance.efris.api_classes.e_invoice.make_post", ura),
 		patch("uganda_compliance.efris.api_classes.efris_api.make_post", ura),
 		patch("uganda_compliance.efris.efris_queue.frappe.enqueue", fake_enqueue),
+		nullcontext() if real_commit else patch.object(frappe.db, "commit", lambda *a, **kw: None),
 	):
 		ura.enqueued = enqueued
 		yield ura
 
 
-def run_queued(ura):
-	"""Simulate the worker: run every queued EFRIS job once."""
+def run_queued(ura, only=None):
+	"""Simulate the worker: run every queued EFRIS job once.
+
+	``only`` (a document): run just its job. Sweep tests use it because the sweep also picks up
+	invoices committed by other tests (the lock test commits for real).
+	"""
 	from uganda_compliance.efris.efris_queue import process_efris_submission
 
 	jobs, ura.enqueued[:] = list(ura.enqueued), []
+	if only:
+		jobs = [j for j in jobs if (j.doctype, j.name) == (only.doctype, only.name)]
 	return [process_efris_submission(j.doctype, j.name, manual=j.get("manual", False)) for j in jobs]
 
 

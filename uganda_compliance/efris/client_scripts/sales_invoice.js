@@ -367,7 +367,7 @@ function reset_discounts(frm) {
 async function add_custom_buttons(frm) {  
 
     if (frm.doc.docstatus == 1 && frm.doc.efris_invoice && frm.doc.efris_status) {
-        const colours = {'Pending': 'orange', 'Submitted': 'green', 'Failed': 'red', 'Cancelled': 'grey'};
+        const colours = {'Pending': 'orange', 'Submitting': 'blue', 'Submitted': 'green', 'Failed': 'red', 'Cancelled': 'grey'};
         frm.dashboard.add_indicator(__('EFRIS: {0}', [__(frm.doc.efris_status)]), colours[frm.doc.efris_status] || 'blue');
         if (frm.doc.efris_status === 'Failed' && frm.doc.efris_last_error) {
             frm.dashboard.set_headline_alert(

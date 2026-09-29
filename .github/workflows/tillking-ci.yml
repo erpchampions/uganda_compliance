@@ -1,0 +1,132 @@
+name: Till King CI
+
+# CI for the Till King line (tillking-v15): Frappe v15.108 / ERPNext v15.108.3, Python 3.11.
+# The legacy ci.yml (develop) is left as it is.
+
+on:
+  push:
+    branches:
+      - tillking-v15
+      - chore/p2p3-ci
+  pull_request:
+    branches:
+      - tillking-v15
+
+concurrency:
+  group: tillking-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (changed files)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        # same version as tillking_packs' pre-commit
+        run: pip install ruff==0.8.1
+
+      - name: Ruff on files changed against the base
+        # The legacy code base does not pass ruff repo-wide; see .github/scripts/lint_changed.sh.
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          elif [ "${{ github.ref_name }}" = "tillking-v15" ]; then
+            base="${{ github.event.before }}"
+          else
+            base="$(git merge-base origin/tillking-v15 HEAD)"
+          fi
+          if ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            base="$(git rev-parse HEAD~1)"  # new branch / force push
+          fi
+          .github/scripts/lint_changed.sh "$base"
+
+  tests:
+    name: Server tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      redis-cache:
+        image: redis:alpine
+        ports:
+          - 13000:6379
+      redis-queue:
+        image: redis:alpine
+        ports:
+          - 11000:6379
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mariadb-admin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-frappe-v15.108.0-erpnext-v15.108.3
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install MariaDB client
+        run: sudo apt-get update && sudo apt-get install -y mariadb-client
+
+      - name: Set up bench
+        run: |
+          pip install frappe-bench
+          bench init --skip-redis-config-generation --skip-assets --frappe-branch v15.108.0 \
+            --python "$(which python)" ~/frappe-bench
+          mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'"
+          mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"
+
+      - name: Install apps and test site
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench get-app --skip-assets --branch v15.108.3 erpnext https://github.com/frappe/erpnext
+          bench get-app --skip-assets uganda_compliance "$GITHUB_WORKSPACE"
+          bench setup requirements --dev
+          bench set-config -g db_host 127.0.0.1
+          bench new-site test_site --db-root-password root --admin-password admin \
+            --mariadb-user-host-login-scope='%' --install-app erpnext
+          bench --site test_site install-app uganda_compliance
+          bench --site test_site set-config allow_tests true
+          bench --site test_site execute erpnext.setup.utils.before_tests
+          bench build --app frappe
+        env:
+          CI: "Yes"
+
+      - name: Run tests
+        working-directory: /home/runner/frappe-bench
+        run: bench --site test_site run-tests --app uganda_compliance
+        env:
+          TYPE: server
+          TK_SKIP_INTEGRATION: "1"

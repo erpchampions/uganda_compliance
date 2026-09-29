@@ -58,6 +58,8 @@ class EInvoiceAPI:
 		#EInvoiceAPI.validate_credit_note_return(sales_invoice)
 		source_doctype = sales_invoice.get('doctype') or 'Sales Invoice'
 		einvoice = EInvoiceAPI.create_einvoice(sales_invoice.name, source_doctype=source_doctype)
+		# an existing (draft) E Invoice is loaded from the DB: refresh the computed, non-field values
+		einvoice.fetch_invoice_details()
 
 		status, response = EInvoiceAPI.make_credit_note_return_application_request(einvoice, sales_invoice)
 
@@ -1121,10 +1123,12 @@ def cancel_irn(sales_invoice, reasonCode, remark):
 	return EInvoiceAPI.cancel_irn(frappe.as_json(doc), reasonCode, remark)
 
 @frappe.whitelist()
-def check_efris_flag_for_sales_invoice(is_return,return_against):
-   is_efris_flag = bool(is_return and frappe.db.exists('E Invoice', return_against)) or False
-   efris_log_info(f"Returned value is {is_efris_flag}")
-   return is_efris_flag
+def check_efris_flag_for_sales_invoice(is_return, return_against):
+	"""Whether the invoice a return is made against has an E Invoice."""
+	if not frappe.utils.cint(is_return) or not return_against:
+		return False
+	frappe.has_permission("Sales Invoice", "read", return_against, throw=True)
+	return bool(frappe.db.exists("E Invoice", {"invoice": return_against}))
 
 def Sales_invoice_is_efris_validation(doc, method):
 	"""Validate EFRIS compliance for Sales Invoice."""

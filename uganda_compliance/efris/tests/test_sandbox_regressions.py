@@ -5,8 +5,9 @@ from unittest.mock import patch
 
 import frappe
 
+from uganda_compliance.efris.api_classes import efris_api
 from uganda_compliance.efris.doctype.e_invoice_request_log import e_invoice_request_log
-from uganda_compliance.efris.tests.efris_test_utils import TEST_ITEM
+from uganda_compliance.efris.tests.efris_test_utils import TEST_ITEM, fake_ura, make_pos_invoice, run_queued
 from uganda_compliance.efris.tests.test_efris_queue import EfrisTestCase
 
 
@@ -92,3 +93,59 @@ class TestSandboxRegressions(EfrisTestCase):
 				json.dumps({"globalInfo": {"interfaceCode": "T109"}}), "https://efristest.example/x"
 			)
 		self.assertEqual(lines, ["EFRIS POST T109 -> https://efristest.example/x"])
+
+
+REAL_MAKE_POST = efris_api.make_post
+
+
+class TestOneFailedLogPerRejection(EfrisTestCase):
+	"""Regression (sandbox): when URA rejected a T109, make_post logged a Failed request and the
+	queue logged a second one. Runs the real make_post; only crypto and the HTTP call are faked."""
+
+	def _run(self, post_req):
+		queued_logs = []
+		with (
+			fake_ura() as ura,
+			patch("uganda_compliance.efris.api_classes.e_invoice.make_post", REAL_MAKE_POST),
+			patch.object(efris_api, "get_private_key", return_value=object()),
+			patch.object(efris_api, "get_AES_key", return_value=b"0" * 16),
+			patch.object(efris_api, "encrypt_and_prepare_data", return_value="{}"),
+			patch.object(efris_api, "post_req", post_req),
+			patch.object(e_invoice_request_log, "enqueue", lambda method, **kw: queued_logs.append(kw)),
+		):
+			inv = make_pos_invoice(self.ctx)
+			(result,) = run_queued(ura)
+		self.assertEqual(result["outcome"], "failed")
+		queued = [
+			kw for kw in queued_logs if kw["status"] == "Failed" and kw["reference_document"] == inv.name
+		]
+		direct = frappe.get_all(
+			"E Invoice Request Log",
+			filters={"reference_document": inv.name, "status": "Failed"},
+			pluck="error_message",
+		)
+		return queued, direct
+
+	def test_rejected_invoice_writes_one_failed_log(self):
+		rejection = json.dumps(
+			{
+				"returnStateInfo": {
+					"returnCode": "2253",
+					"returnMessage": "Seller's Reference Number already issued",
+				}
+			}
+		)
+		queued, direct = self._run(lambda data, url: rejection)
+		self.assertEqual(len(queued) + len(direct), 1)
+		# the kept row is make_post's, which has the request and URA's full response
+		self.assertEqual(queued[0]["interface_code"], "T109")
+		self.assertIn("already issued", queued[0]["error_message"])
+
+	def test_transport_error_still_logged_once_by_the_queue(self):
+		def refused(data, url):
+			raise ConnectionError("Connection refused (efristest.ura.go.ug)")
+
+		queued, direct = self._run(refused)
+		self.assertEqual(queued, [])
+		self.assertEqual(len(direct), 1)
+		self.assertIn("Connection refused", direct[0])

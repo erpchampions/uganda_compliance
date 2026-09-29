@@ -5,13 +5,20 @@ Flow
 * ``on_submit_invoice`` (doc_event) flags the invoice ``efris_status = Pending`` and
   enqueues ``process_efris_submission`` after the transaction commits. The sale is
   never blocked by EFRIS (POS must keep trading when URA is unreachable).
-* ``process_efris_submission`` locks the invoice row, checks that it has not already
-  been fiscalised (local FDN, then a URA lookup on retries) and sends either the
-  invoice (T109) or, for returns, the credit note application (T110).
-  Success -> ``Submitted``. Failure -> ``Failed`` + ``E Invoice Request Log``
+* ``process_efris_submission`` claims the invoice in a short transaction: it locks the
+  row, checks that the invoice has not been fiscalised and is not being submitted by
+  another job, flips ``efris_status`` to ``Submitting`` (lease until
+  ``efris_next_retry``), counts the attempt and commits. URA is then called without
+  holding any row lock (a POS Closing that consolidates the invoice meanwhile no longer
+  waits for URA), and the result is recorded in a new transaction. On a retry the invoice
+  is first looked up at URA (T106) so an attempt whose answer was lost is adopted, not
+  sent again. It sends either the invoice (T109) or, for returns, the credit note
+  application (T110).
+  Success -> ``Submitted``. Failure -> ``Failed`` + one ``E Invoice Request Log``
   (status Failed) + exponential back-off in ``efris_next_retry``.
 * ``retry_pending_efris_submissions`` (hourly) re-enqueues Pending/Failed invoices
-  whose back-off has elapsed, until ``E Invoicing Settings.efris_max_attempts``.
+  whose back-off has elapsed, and Submitting invoices whose lease expired (worker died
+  mid-call), until ``E Invoicing Settings.efris_max_attempts``.
 * ``send_invoice_to_efris`` is the whitelisted "Send to EFRIS" endpoint: it takes a
   document *name*, loads the document server-side and checks permissions.
 """
@@ -32,6 +39,7 @@ from uganda_compliance.efris.utils.utils import efris_log_info
 SUPPORTED_DOCTYPES = ("Sales Invoice", "POS Invoice")
 
 STATUS_PENDING = "Pending"
+STATUS_SUBMITTING = "Submitting"
 STATUS_SUBMITTED = "Submitted"
 STATUS_FAILED = "Failed"
 STATUS_CANCELLED = "Cancelled"
@@ -57,6 +65,9 @@ DUPLICATE_REFERENCE_ERROR = re.compile(r"same seller'?s reference number.*alread
 
 JOB_QUEUE = "default"
 JOB_TIMEOUT = 600  # make_post may do two HTTP calls with a 120 s timeout each
+# A claim outlives the job that holds it (RQ kills the job at JOB_TIMEOUT), so an expired
+# claim always belongs to a dead job and may be taken over.
+CLAIM_LEASE = timedelta(seconds=JOB_TIMEOUT + 60)
 
 
 class EfrisRetryLater(Exception):
@@ -263,6 +274,16 @@ def on_cancel_invoice(doc, method=None):
 			title=_("EFRIS Invoice Cannot Be Cancelled"),
 		)
 
+	if frappe.db.get_value(doc.doctype, doc.name, "efris_status") == STATUS_SUBMITTING:
+		# The row lock is no longer held during the URA call: without this check the invoice
+		# could be cancelled here and fiscalised by the running job a moment later.
+		frappe.throw(
+			_("{0} {1} is being sent to EFRIS right now. Try again in a few minutes.").format(
+				_(doc.doctype), doc.name
+			),
+			title=_("EFRIS Submission In Progress"),
+		)
+
 	if doc.get("efris_status") in (STATUS_PENDING, STATUS_FAILED):
 		_set_state(doc, efris_status=STATUS_CANCELLED, efris_next_retry=None)
 
@@ -277,59 +298,101 @@ def _lock_invoice(doctype, name):
 
 
 def process_efris_submission(doctype, name, manual=False):
-	"""Background job (also used by the manual endpoint). Returns a result dict."""
+	"""Background job (also used by the manual endpoint). Returns a result dict.
+
+	Commits: the claim, the invoice's E Invoice (before the URA call) and the result are
+	committed separately so that no row lock is held while URA is called.
+	"""
 	if doctype not in SUPPORTED_DOCTYPES:
 		frappe.throw(_("EFRIS submission is not supported for {0}").format(doctype))
 
+	frappe.flags.efris_failed_requests_logged = set()  # filled by make_post's request log
+	doc, settings, result = _claim(doctype, name, manual)
+	frappe.db.commit()  # publish the claim (or the skip) and release the row lock
+	if result:
+		return result
+
+	# Idempotency 2: a previous attempt may have reached URA even though we did not get
+	# the answer (timeout, worker killed). Look the invoice up before sending again.
+	is_retry = cint(doc.efris_attempts) > 1
+	frappe.db.savepoint("efris_submission")
+	try:
+		if cint(doc.is_return):
+			_submit_credit_note(doc)
+		elif not (is_retry and _recover_fdn_from_ura(doc, settings)):
+			_submit_invoice(doc, settings)
+	except Exception as e:
+		frappe.db.rollback(save_point="efris_submission")
+		frappe.clear_last_message()
+		retry_later = isinstance(e, EfrisRetryLater)
+		error = _clean_error(e)
+		_mark_failed(doc, error, settings, traceback=None if retry_later else frappe.get_traceback())
+		frappe.db.commit()
+		return _result(doc, "failed", error)
+
+	_mark_submitted(doc)
+	frappe.db.commit()
+	fdn, _einvoice = get_fiscal_state(doc)
+	return _result(doc, "submitted", fdn=fdn)
+
+
+def _claim(doctype, name, manual):
+	"""Lock the invoice, decide whether it must be sent and, if so, claim it.
+
+	Returns ``(doc, settings, None)`` when claimed or ``(doc, settings, result)`` when there
+	is nothing to send. The caller commits either way, which releases the lock.
+	"""
 	_lock_invoice(doctype, name)
 	doc = frappe.get_doc(doctype, name)
 
 	if doc.docstatus == 2:
 		if doc.get("efris_status") in (STATUS_PENDING, STATUS_FAILED):
 			_set_state(doc, efris_status=STATUS_CANCELLED, efris_next_retry=None)
-		return _result(doc, "skipped", _("Invoice is cancelled"))
+		return doc, None, _result(doc, "skipped", _("Invoice is cancelled"))
 	if doc.docstatus != 1:
-		return _result(doc, "skipped", _("Invoice is not submitted"))
+		return doc, None, _result(doc, "skipped", _("Invoice is not submitted"))
 
 	settings = get_efris_settings(doc.company)
 	if not is_efris_applicable(doc, settings):
-		return _result(doc, "skipped", _("EFRIS is not enabled for this invoice/company"))
+		return doc, settings, _result(doc, "skipped", _("EFRIS is not enabled for this invoice/company"))
 
 	# Idempotency 1: never re-send an invoice that already has an FDN / credit note application.
 	fdn, _einvoice = get_fiscal_state(doc)
 	if fdn:
 		_mark_submitted(doc)
-		return _result(doc, "already_submitted", fdn=fdn)
+		return doc, settings, _result(doc, "already_submitted", fdn=fdn)
+
+	was_claimed = doc.get("efris_status") == STATUS_SUBMITTING
+	if was_claimed and _claim_is_live(doc):
+		return doc, settings, _result(doc, "in_progress", _("Another job is sending this invoice to EFRIS"))
 
 	attempts = cint(doc.get("efris_attempts"))
-	if not attempts:
-		ensure_seller_reference(doc, settings)
 	if not manual and attempts >= get_max_attempts(settings):
-		return _result(doc, "max_attempts", doc.get("efris_last_error"))
+		if was_claimed:
+			# last attempt died mid-call: the next (manual) attempt looks it up at URA first
+			_mark_failed(doc, _("The EFRIS job stopped while waiting for URA"), settings)
+		return doc, settings, _result(doc, "max_attempts", doc.get("efris_last_error"))
 
+	ensure_seller_reference(doc, settings)
+	_set_state(
+		doc,
+		efris_status=STATUS_SUBMITTING,
+		efris_attempts=attempts + 1,
+		efris_next_retry=now_datetime() + CLAIM_LEASE,
+	)
+	return doc, settings, None
+
+
+def _claim_is_live(doc):
+	return bool(doc.get("efris_next_retry")) and get_datetime(doc.efris_next_retry) > now_datetime()
+
+
+def _commit_before_ura_call():
+	"""Creating the E Invoice writes the invoice row (``efris_e_invoice``): commit it so the
+	URA call does not hold that row lock. A draft E Invoice left by a failed attempt is
+	reused by the next one."""
+	frappe.db.commit()
 	frappe.db.savepoint("efris_submission")
-	try:
-		if cint(doc.is_return):
-			_submit_credit_note(doc)
-		else:
-			# Idempotency 2: a previous attempt may have reached URA even though we did
-			# not get the answer (timeout). Look the invoice up before sending again.
-			if attempts > 0 and _recover_fdn_from_ura(doc, settings):
-				pass
-			else:
-				_submit_invoice(doc, settings)
-	except Exception as e:
-		frappe.db.rollback(save_point="efris_submission")
-		frappe.clear_last_message()
-		retry_later = isinstance(e, EfrisRetryLater)
-		error = _clean_error(e)
-		traceback = None if retry_later else frappe.get_traceback()
-		_mark_failed(doc, error, settings, traceback=traceback)
-		return _result(doc, "failed", error)
-
-	_mark_submitted(doc)
-	fdn, _einvoice = get_fiscal_state(doc)
-	return _result(doc, "submitted", fdn=fdn)
 
 
 def _result(doc, outcome, message=None, fdn=None):
@@ -352,7 +415,7 @@ def _mark_submitted(doc):
 
 
 def _mark_failed(doc, error, settings, traceback=None):
-	attempts = cint(doc.get("efris_attempts")) + 1
+	attempts = cint(doc.get("efris_attempts"))  # counted when the invoice was claimed
 	max_attempts = get_max_attempts(settings)
 	if attempts >= max_attempts:
 		next_retry = None
@@ -370,12 +433,18 @@ def _mark_failed(doc, error, settings, traceback=None):
 	_set_state(
 		doc,
 		efris_status=STATUS_FAILED,
-		efris_attempts=attempts,
 		efris_last_error=error_text,
 		efris_next_retry=next_retry,
 	)
-	log_failed_request(doc, error, traceback=traceback)
+	if not _ura_failure_already_logged(doc):
+		log_failed_request(doc, error, traceback=traceback)
 	efris_log_info(f"EFRIS submission failed for {doc.doctype} {doc.name} (attempt {attempts}): {error}")
+
+
+def _ura_failure_already_logged(doc):
+	"""``make_post`` already wrote a Failed request log for this attempt (URA rejected it)."""
+	interface_code = "T110" if cint(doc.get("is_return")) else "T109"
+	return (doc.doctype, doc.name, interface_code) in (frappe.flags.efris_failed_requests_logged or ())
 
 
 def _submit_invoice(doc, settings):
@@ -386,6 +455,8 @@ def _submit_invoice(doc, settings):
 	looked up: our own earlier attempt is adopted, another invoice's moves this
 	invoice to the next free reference, which is sent once more.
 	"""
+	e_invoice_api.EInvoiceAPI.create_einvoice(doc.name, source_doctype=doc.doctype)
+	_commit_before_ura_call()
 	try:
 		e_invoice_api.EInvoiceAPI.generate_irn(frappe.as_json(doc))
 	except frappe.ValidationError as e:
@@ -423,6 +494,8 @@ def _submit_credit_note(doc):
 			)
 		)
 
+	e_invoice_api.EInvoiceAPI.create_einvoice(doc.name, source_doctype=doc.doctype)
+	_commit_before_ura_call()
 	e_invoice_api.EInvoiceAPI.generate_credit_note_return_application(doc)
 	frappe.db.set_value(
 		doc.doctype,
@@ -531,6 +604,9 @@ def _bump_seller_reference(doc, taken_by):
 	_set_state(doc, efris_seller_reference_no=new_reference)
 	doc.add_comment("Comment", message)
 	efris_log_info(message)
+	# the old reference is taken at URA for good: keep the new one even if this attempt
+	# fails, and do not hold the invoice row lock during the next URA call
+	_commit_before_ura_call()
 
 
 def _adopt_ura_record(doc, record):
@@ -572,7 +648,7 @@ def retry_pending_efris_submissions():
 			filters={
 				"docstatus": 1,
 				"efris_invoice": 1,
-				"efris_status": ["in", [STATUS_PENDING, STATUS_FAILED]],
+				"efris_status": ["in", [STATUS_PENDING, STATUS_FAILED, STATUS_SUBMITTING]],
 			},
 			fields=[
 				"name",
@@ -592,9 +668,12 @@ def retry_pending_efris_submissions():
 			settings = settings_cache[row.company]
 			if not settings:
 				continue
-			if cint(row.efris_attempts) >= get_max_attempts(settings):
+			if row.efris_status != STATUS_SUBMITTING and cint(row.efris_attempts) >= get_max_attempts(
+				settings
+			):
 				continue
-			if row.efris_status == STATUS_FAILED:
+			if row.efris_status in (STATUS_FAILED, STATUS_SUBMITTING):
+				# Failed: back-off; Submitting: claim lease (only a dead job's claim expires)
 				if row.efris_next_retry and get_datetime(row.efris_next_retry) > now:
 					continue
 			elif get_datetime(row.creation) > stale_pending and not row.efris_attempts:

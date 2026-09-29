@@ -6,6 +6,9 @@ on:
     branches:
       - develop
   pull_request:
+    # tillking-v15 (Frappe/ERPNext v15.108) is tested by tillking-ci.yml
+    branches-ignore:
+      - tillking-v15
 
 concurrency:
   group: develop-uganda_compliance-${{ github.event.number }}

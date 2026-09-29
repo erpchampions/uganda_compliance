@@ -29,7 +29,7 @@ The POS path has only run against the URA sandbox (FB-Fashions UAT, 17 POS e-inv
     (15 min doubling, max 12 h) and an `E Invoice Request Log` with `status = Failed`.
   * Hourly `retry_pending_efris_submissions` re-queues due Failed and stale Pending invoices until
     *Max EFRIS Submission Attempts* (default 8). "Send to EFRIS"/"Retry EFRIS" still works after that.
-  * Idempotency: the job locks the invoice row, skips invoices that already have an FDN (or, for a
+  * Idempotency: the job claims the invoice (§5), skips invoices that already have an FDN (or, for a
     return, a credit note application); on a retry it first looks the invoice up at URA (T106 by
     seller reference = invoice name, T108 for details) and adopts that FDN instead of sending again.
 * **POS returns / cancel.** A submitted POS return sends the T110 credit note application (same code
@@ -94,8 +94,39 @@ Keys/passwords are uploaded in *E Invoicing Settings* by ops; they are never com
   fiscalised number (forward only, recorded as a Version of the Series).
 * The Point-of-Sale page (Past Orders) has no EFRIS button/badge yet; the retail pack should call
   `send_pos_invoice_to_efris(name=...)` / `get_efris_status`.
-* The job holds a row lock on the invoice during the URA call (≤ 2 × 120 s). A POS Closing that
-  consolidates that invoice at the same moment can hit a lock-wait timeout and must be retried.
-* Pre-existing, not changed here: the app takes over ERPNext's `Tax Category` doctype (module EFRIS);
-  `create_item_tax_templates`, `check_efris_flag_for_sales_invoice`, `get_e_tax_template` are
-  whitelisted without permission checks; `e_invoicing_settings.before_save` is whitelisted.
+* Pre-existing, not changed here: `uganda_compliance/patches.txt` is empty, so
+  `set_source_doctype_on_einvoices` (listed only in the repo-root `patches.txt`) never runs; the
+  Company and Customer custom fields files carry `custom_perms` that replace ERPNext's role
+  permissions on those doctypes (Sales User loses Company read); private `.p12` keys are committed
+  under `uganda_compliance/tests/test_keys` and `tests/test-keys`.
+
+## 5. Changes on `chore/p2p3-ci` (28 Sep 2026)
+
+* **No row lock during the URA call.** The job claims the invoice (`efris_status = Submitting`,
+  `efris_attempts + 1`, lease in `efris_next_retry` = job timeout + 60 s) and commits; the E Invoice
+  is committed before the call; the result is recorded afterwards. A second job or a manual resend
+  sees a live claim and returns `in_progress`; an expired claim (worker killed) is re-queued by the
+  hourly sweep and starts with a T106 lookup, so an invoice is never fiscalised twice. Cancelling an
+  invoice while it is `Submitting` is refused. A failed attempt leaves a draft E Invoice, reused by
+  the next attempt.
+* **Permission checks:** `get_e_tax_template` (Company read + read on the template;
+  *Purchase Tax* now reads the Purchase template), `check_efris_flag_for_sales_invoice` (Sales
+  Invoice read; `is_return="0"` is false). `create_item_tax_templates` and the
+  `e_invoicing_settings.before_save` wrapper are no longer whitelisted; the wrapper and its duplicate
+  doc_event are removed (E Invoicing Settings' own `before_save` runs once per save).
+* **One Failed request log per rejected invoice** (was two: `make_post`'s and the queue's). The queue
+  still logs failures that never reached URA (transport errors, original not fiscalised yet).
+* **Tax Category belongs to ERPNext again.** The app shipped an identical copy of ERPNext's DocType
+  under module EFRIS, so the DocType record pointed at this app: `bench uninstall-app
+  uganda_compliance` would have deleted ERPNext's Tax Category DocType and table (links from Customer,
+  Supplier, Address, Tax Rule, Item Tax), module profiles blocking EFRIS hid it, and every migrate
+  re-imported both copies. The copy is removed; the pre-model-sync patch
+  `restore_erpnext_tax_category` sets the module back to Accounts and reloads ERPNext's definition
+  (records are untouched). The fixture now ships only the `Default` and `Foreign` categories used by
+  export invoicing (not a customer's `fixed Assest`).
+* **CI** `.github/workflows/tillking-ci.yml` (push to `tillking-v15` / `chore/p2p3-ci`, PRs into
+  `tillking-v15`): ruff 0.8.1 lint + format check on Python files changed against the base (new
+  files and files that were clean must pass; legacy files that already failed must not get more
+  lint errors), then tests on Frappe v15.108.0 + ERPNext v15.108.3. The legacy `ci.yml` (develop,
+  unpinned Frappe, no ERPNext) no longer runs for PRs into `tillking-v15`.
+

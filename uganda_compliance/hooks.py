@@ -258,9 +258,9 @@ doc_events = {
         "on_submit": "uganda_compliance.efris.api_classes.stock_in.before_submit_on_stock_entry"
     },
     "E Invoicing Settings": {
-        "before_save": ["uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.before_save",
-                        "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.update_efris_company"
-                        ],
+        # EInvoicingSettings.before_save (the controller) already runs on save; it used to be
+        # registered here too, through a whitelisted wrapper, and so ran twice.
+        "before_save": "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.update_efris_company",
         "on_update": "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.on_update"
 
     },
@@ -333,7 +333,13 @@ fixtures = [
         }
     },
     "EFRIS Payment Mode",
-    "Tax Category",
+    # used by export invoicing (Item Tax rows per Tax Category); the DocType itself is ERPNext's
+    {
+        "doctype": "Tax Category",
+        "filters": {
+            "name": ["in", ["Default", "Foreign"]]
+        }
+    },
     {
         "doctype": "File",
         "filters": {
