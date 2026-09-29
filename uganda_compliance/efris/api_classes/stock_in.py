@@ -1,4 +1,5 @@
 import frappe
+from uganda_compliance.efris.utils.dates import efris_date_str
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from uganda_compliance.efris.api_classes.efris_api import make_post
 import json
@@ -249,13 +250,13 @@ def send_stock_reconciliation(doc):
         # Construct the EFRIS payload based on the purpose
         if purpose == "Opening Stock":
             supplierTin=tax_Id if tax_Id else ""
-            goods_Stock_Reconciliation_T131 = goods_Stock_T131_data("101", "", remark,doc.get("posting_date"), stockIntype, "", "", "", "", "", "", "101", goodsStockInItem, supplier, supplierTin)
+            goods_Stock_Reconciliation_T131 = goods_Stock_T131_data("101", "", remark,efris_date_str(doc.get("posting_date")), stockIntype, "", "", "", "", "", "", "101", goodsStockInItem, supplier, supplierTin)
         
         elif purpose == "Stock Reconciliation":
             if not remark:
                 remark = "Stock Reconciliation"
             
-            goods_Stock_Reconciliation_T131 = goods_Stock_T131_data("102", adjustment_code, remark,doc.get("posting_date"), "", "", "", "", "", "", "", "101", goodsStockInItem)
+            goods_Stock_Reconciliation_T131 = goods_Stock_T131_data("102", adjustment_code, remark,efris_date_str(doc.get("posting_date")), "", "", "", "", "", "", "", "101", goodsStockInItem)
 
         # Make the post request to EFRIS for the current group
         success, response = make_post(interfaceCode="T131", content=goods_Stock_Reconciliation_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
