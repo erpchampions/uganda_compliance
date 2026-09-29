@@ -17,12 +17,14 @@ Flow
 """
 
 import json
-from datetime import timedelta
+import re
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
-from frappe.utils import add_days, cint, flt, get_datetime, getdate, now_datetime
+from frappe.utils import add_days, cint, flt, get_datetime, get_system_timezone, getdate, now_datetime
 
 from uganda_compliance.efris.api_classes import e_invoice as e_invoice_api
 from uganda_compliance.efris.utils.utils import efris_log_info
@@ -40,6 +42,18 @@ BACKOFF_CAP_MINUTES = 12 * 60
 SWEEP_BATCH_SIZE = 500
 # A "Pending" invoice whose job was lost (worker/redis restart) is re-queued after this.
 STALE_PENDING_MINUTES = 10
+
+# Seller-reference lookups (T106) look this far back: after a restore from backup,
+# invoices fiscalised since the backup can be days older than the new sale.
+REFERENCE_LOOKUP_DAYS = 60
+# URA reports issuedDate in Uganda time. A record issued more than this before the
+# invoice was created cannot be this invoice (allowance for clock skew).
+URA_TIMEZONE = "Africa/Kampala"
+ISSUED_SKEW = timedelta(minutes=2)
+# A reference found at URA for another invoice moves to "<reference>-R<n>"
+MAX_REFERENCE_BUMPS = 5
+# URA's T109 answer when the Seller Reference No. was already used under the TIN
+DUPLICATE_REFERENCE_ERROR = re.compile(r"same seller'?s reference number.*already been issued", re.I | re.S)
 
 JOB_QUEUE = "default"
 JOB_TIMEOUT = 600  # make_post may do two HTTP calls with a 120 s timeout each
@@ -185,7 +199,8 @@ def make_seller_reference(doc, settings):
 	"""Seller Reference No. for URA: unique per TIN across systems (URA rejects reuse).
 
 	Also the idempotency key for the T106 lookup, so it is stored on the invoice before the
-	first attempt and never changed afterwards.
+	first attempt. It only changes when URA holds another invoice under it
+	(``_bump_seller_reference``, e.g. after a restore from backup).
 	"""
 	prefix = (settings.get("seller_reference_prefix") or "").strip()
 	return (f"{prefix}-{doc.name}" if prefix else doc.name)[:50]
@@ -302,7 +317,7 @@ def process_efris_submission(doctype, name, manual=False):
 			if attempts > 0 and _recover_fdn_from_ura(doc, settings):
 				pass
 			else:
-				_submit_invoice(doc)
+				_submit_invoice(doc, settings)
 	except Exception as e:
 		frappe.db.rollback(save_point="efris_submission")
 		frappe.clear_last_message()
@@ -363,9 +378,27 @@ def _mark_failed(doc, error, settings, traceback=None):
 	efris_log_info(f"EFRIS submission failed for {doc.doctype} {doc.name} (attempt {attempts}): {error}")
 
 
-def _submit_invoice(doc):
-	"""T109. ``EInvoiceAPI.generate_irn`` throws on any URA/transport error."""
-	e_invoice_api.EInvoiceAPI.generate_irn(frappe.as_json(doc))
+def _submit_invoice(doc, settings):
+	"""T109. ``EInvoiceAPI.generate_irn`` throws on any URA/transport error.
+
+	When URA answers that the Seller Reference No. was already issued (a tenant
+	restored from backup reuses invoice names URA has fiscalised), the reference is
+	looked up: our own earlier attempt is adopted, another invoice's moves this
+	invoice to the next free reference, which is sent once more.
+	"""
+	try:
+		e_invoice_api.EInvoiceAPI.generate_irn(frappe.as_json(doc))
+	except frappe.ValidationError as e:
+		if not DUPLICATE_REFERENCE_ERROR.search(str(e)):
+			raise
+		frappe.db.rollback(save_point="efris_submission")
+		frappe.clear_last_message()
+		reference = doc.efris_seller_reference_no
+		if _recover_fdn_from_ura(doc, settings):
+			return
+		if doc.efris_seller_reference_no == reference:
+			raise
+		e_invoice_api.EInvoiceAPI.generate_irn(frappe.as_json(doc))
 
 
 def _submit_credit_note(doc):
@@ -401,18 +434,41 @@ def _submit_credit_note(doc):
 
 
 def _recover_fdn_from_ura(doc, settings):
-	"""Look up the invoice at URA by seller reference number (T106) and, when found,
-	adopt its FDN (details via T108) instead of fiscalising it a second time.
+	"""Look up the invoice's Seller Reference No. at URA (T106) before sending it again.
+
+	* This invoice's own record (an earlier attempt reached URA but the answer was
+	  lost): adopt its FDN (details via T108) instead of fiscalising it twice.
+	* Another invoice's record (another system on the TIN, or — after a restore from
+	  backup — the invoice that had this name before): the reference can never be
+	  accepted, so the invoice moves to the next free reference. Our own attempts
+	  under the old reference were all rejected by URA as duplicates, so this can
+	  not fiscalise the sale twice.
 
 	Returns True when the invoice was found and recorded locally.
 	"""
-	reference_no = doc.get("efris_seller_reference_no") or doc.name
-	posting_date = getdate(doc.posting_date)
+	for _attempt in range(MAX_REFERENCE_BUMPS + 1):
+		records = _ura_records_for_reference(doc, settings, doc.get("efris_seller_reference_no") or doc.name)
+		if not records:
+			return False
+		own = next((r for r in records if _is_own_ura_record(r, doc, settings)), None)
+		if own:
+			_adopt_ura_record(doc, own)
+			return True
+		_bump_seller_reference(doc, records[0])
+	raise frappe.ValidationError(
+		_("Seller Reference No. of {0} is still in use at URA after {1} changes").format(
+			doc.name, MAX_REFERENCE_BUMPS
+		)
+	)
+
+
+def _ura_records_for_reference(doc, settings, reference_no):
+	"""URA records (T106) issued under ``reference_no``; None when the lookup failed."""
 	query = {
 		"referenceNo": reference_no,
 		"deviceNo": settings.device_no or "",
 		"invoiceType": "1",
-		"startDate": str(add_days(posting_date, -1)),
+		"startDate": str(add_days(getdate(doc.posting_date), -REFERENCE_LOOKUP_DAYS)),
 		"endDate": str(add_days(getdate(), 1)),
 		"pageNo": "1",
 		"pageSize": "10",
@@ -426,25 +482,61 @@ def _recover_fdn_from_ura(doc, settings):
 	)
 	if not ok or not isinstance(response, dict):
 		efris_log_info(f"EFRIS T106 lookup failed for {doc.name}: {response}")
-		return False
+		return None
+	return [
+		r
+		for r in response.get("records") or []
+		if r.get("referenceNo") == reference_no and r.get("invoiceNo")
+	]
 
-	match = None
-	for record in response.get("records") or []:
-		if record.get("referenceNo") != reference_no:
-			continue
-		if record.get("deviceNo") and settings.device_no and record.get("deviceNo") != settings.device_no:
-			continue
-		gross = record.get("grossAmount")
-		if gross not in (None, "") and abs(flt(gross) - flt(doc.grand_total)) > 1:
-			continue
-		match = record
-		break
-	if not match or not match.get("invoiceNo"):
-		return False
 
+def _is_own_ura_record(record, doc, settings):
+	"""Could URA's ``record`` be this invoice? Same device, same gross amount, and not
+	issued before the invoice existed."""
+	if record.get("deviceNo") and settings.device_no and record.get("deviceNo") != settings.device_no:
+		return False
+	gross = record.get("grossAmount")
+	if gross not in (None, "") and abs(flt(gross) - flt(doc.grand_total)) > 1:
+		return False
+	issued = ura_issued_at(record.get("issuedDate"))
+	return not issued or issued >= get_datetime(doc.creation) - ISSUED_SKEW
+
+
+def ura_issued_at(value):
+	"""URA's issuedDate (Uganda time, dd/mm/yyyy or ISO) as a naive system-time datetime."""
+	for fmt in ("%d/%m/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
+		try:
+			issued = datetime.strptime((value or "").strip()[:19], fmt)
+		except ValueError:
+			continue
+		return (
+			issued.replace(tzinfo=ZoneInfo(URA_TIMEZONE))
+			.astimezone(ZoneInfo(get_system_timezone()))
+			.replace(tzinfo=None)
+		)
+	return None
+
+
+def _bump_seller_reference(doc, taken_by):
+	"""Move ``doc`` to the next reference: ``<reference>-R1``, ``-R2`` ... (50 chars max)."""
+	current = doc.get("efris_seller_reference_no") or doc.name
+	match = re.match(r"^(.*)-R(\d+)$", current)
+	root, n = (match.group(1), cint(match.group(2)) + 1) if match else (current, 1)
+	suffix = f"-R{n}"
+	new_reference = root[: 50 - len(suffix)] + suffix
+	message = _(
+		"EFRIS: Seller Reference No. {0} is already used at URA by FDN {1} (issued {2}), "
+		"e.g. after a restore from backup. This invoice is sent as {3}."
+	).format(current, taken_by.get("invoiceNo"), taken_by.get("issuedDate") or "?", new_reference)
+	_set_state(doc, efris_seller_reference_no=new_reference)
+	doc.add_comment("Comment", message)
+	efris_log_info(message)
+
+
+def _adopt_ura_record(doc, record):
 	ok, details = e_invoice_api.make_post(
 		interfaceCode="T108",
-		content={"invoiceNo": match["invoiceNo"]},
+		content={"invoiceNo": record["invoiceNo"]},
 		company_name=doc.company,
 		reference_doc_type=doc.doctype,
 		reference_document=doc.name,
@@ -452,15 +544,14 @@ def _recover_fdn_from_ura(doc, settings):
 	if not ok or not isinstance(details, dict):
 		raise frappe.ValidationError(
 			_("Invoice {0} exists at URA as {1} but its details could not be fetched: {2}").format(
-				doc.name, match["invoiceNo"], details
+				doc.name, record["invoiceNo"], details
 			)
 		)
 
 	einvoice = e_invoice_api.EInvoiceAPI.create_einvoice(doc.name, source_doctype=doc.doctype)
 	einvoice.fetch_invoice_details()
 	e_invoice_api.EInvoiceAPI.handle_successful_irn_generation(einvoice, details)
-	efris_log_info(f"EFRIS: recovered FDN {match['invoiceNo']} for {doc.doctype} {doc.name}")
-	return True
+	efris_log_info(f"EFRIS: recovered FDN {record['invoiceNo']} for {doc.doctype} {doc.name}")
 
 
 # ---------------------------------------------------------------------------

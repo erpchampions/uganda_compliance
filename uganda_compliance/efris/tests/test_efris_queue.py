@@ -248,6 +248,8 @@ class TestEfrisPosSubmission(EfrisTestCase):
 		self.assertEqual(ura.calls_for("T108"), [])
 		self.assertEqual(len(ura.calls_for("T109")), 2)
 		self.assertNotEqual(reload(inv).efris_irn, "325043814241")
+		# URA would reject the taken reference again: the invoice moved to the next one
+		self.assertTrue(reload(inv).efris_seller_reference_no.endswith("-R1"))
 
 	def test_seller_reference_fixed_before_first_attempt(self):
 		# regression (sandbox): reference = invoice name collided with another system on the same TIN

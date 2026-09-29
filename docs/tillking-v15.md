@@ -80,6 +80,18 @@ Keys/passwords are uploaded in *E Invoicing Settings* by ops; they are never com
   systems on the same TIN. References are therefore `<seller_reference_prefix>-<invoice name>`
   (prefix generated per E Invoicing Settings) and fixed on the invoice before the first attempt.
   A tenant migrating from another EFRIS system on the same TIN keeps the generated prefix.
+* **Restore from backup.** A restored site forgets the invoices fiscalised after the backup and
+  its naming series go back with it, so new sales reuse names (and references) URA already
+  accepted. Guard: when URA answers "same Seller's Reference Number have already been issued",
+  or the retry lookup finds a record, the reference is looked up (T106, 60 days back). A record
+  that is this invoice (same device and gross, not issued before the invoice was created — URA's
+  `issuedDate` is its own Uganda time, not ours) is adopted; any other record moves the invoice to
+  `<reference>-R1`, `-R2` … (logged as a Comment on the invoice) and it is sent again. Before
+  reopening the tills after a restore, ops run
+  `bench --site <tenant> execute uganda_compliance.tillking.advance_series_after_restore --kwargs
+  "{'company': '<Company>', 'dry_run': 0}"` (dry run by default): it reads the invoices URA issued
+  on the device (T106, paged) and moves each Sales/POS Invoice series counter past the highest
+  fiscalised number (forward only, recorded as a Version of the Series).
 * The Point-of-Sale page (Past Orders) has no EFRIS button/badge yet; the retail pack should call
   `send_pos_invoice_to_efris(name=...)` / `get_efris_status`.
 * The job holds a row lock on the invoice during the URA call (≤ 2 × 120 s). A POS Closing that
