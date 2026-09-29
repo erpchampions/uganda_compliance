@@ -54,10 +54,17 @@ STALE_PENDING_MINUTES = 10
 # Seller-reference lookups (T106) look this far back: after a restore from backup,
 # invoices fiscalised since the backup can be days older than the new sale.
 REFERENCE_LOOKUP_DAYS = 60
-# URA reports issuedDate in Uganda time. A record issued more than this before the
-# invoice was created cannot be this invoice (allowance for clock skew).
+# URA reports issuedDate in Uganda time as "dd/mm/yyyy HH:MM:SS" (checked on the URA
+# sandbox, 29 Sep 2026). A record issued more than ISSUED_SKEW before the invoice was
+# created cannot be this invoice. URA's issuedDate was seen up to ~8 minutes away from
+# URA's own nowTime, and refusing our own record would fiscalise the sale twice, so the
+# allowance is generous; invoices reused after a restore are hours or days older.
 URA_TIMEZONE = "Africa/Kampala"
-ISSUED_SKEW = timedelta(minutes=2)
+ISSUED_SKEW = timedelta(minutes=15)
+# T106 filters referenceNo by exact match and URA keeps references unique per TIN, so a
+# lookup returns at most one record; paging is only a safety net (URA's page.pageCount).
+REFERENCE_LOOKUP_PAGE_SIZE = 10
+REFERENCE_LOOKUP_MAX_PAGES = 5
 # A reference found at URA for another invoice moves to "<reference>-R<n>"
 MAX_REFERENCE_BUMPS = 5
 # URA's T109 answer when the Seller Reference No. was already used under the TIN
@@ -536,31 +543,45 @@ def _recover_fdn_from_ura(doc, settings):
 
 
 def _ura_records_for_reference(doc, settings, reference_no):
-	"""URA records (T106) issued under ``reference_no``; None when the lookup failed."""
-	query = {
-		"referenceNo": reference_no,
-		"deviceNo": settings.device_no or "",
-		"invoiceType": "1",
-		"startDate": str(add_days(getdate(doc.posting_date), -REFERENCE_LOOKUP_DAYS)),
-		"endDate": str(add_days(getdate(), 1)),
-		"pageNo": "1",
-		"pageSize": "10",
-	}
-	ok, response = e_invoice_api.make_post(
-		interfaceCode="T106",
-		content=query,
-		company_name=doc.company,
-		reference_doc_type=doc.doctype,
-		reference_document=doc.name,
+	"""URA records (T106) issued under ``reference_no``; None when the lookup failed.
+
+	Reads every page URA reports (``page.pageCount``), at most REFERENCE_LOOKUP_MAX_PAGES.
+	"""
+	records = []
+	for page_no in range(1, REFERENCE_LOOKUP_MAX_PAGES + 1):
+		query = {
+			"referenceNo": reference_no,
+			"deviceNo": settings.device_no or "",
+			"invoiceType": "1",
+			"startDate": str(add_days(getdate(doc.posting_date), -REFERENCE_LOOKUP_DAYS)),
+			"endDate": str(add_days(getdate(), 1)),
+			"pageNo": str(page_no),
+			"pageSize": str(REFERENCE_LOOKUP_PAGE_SIZE),
+		}
+		ok, response = e_invoice_api.make_post(
+			interfaceCode="T106",
+			content=query,
+			company_name=doc.company,
+			reference_doc_type=doc.doctype,
+			reference_document=doc.name,
+		)
+		if not ok or not isinstance(response, dict):
+			efris_log_info(f"EFRIS T106 lookup failed for {doc.name} (page {page_no}): {response}")
+			# records already read are still URA's answer; none read means unknown
+			return records or None
+		records += [
+			r
+			for r in response.get("records") or []
+			if r.get("referenceNo") == reference_no and r.get("invoiceNo")
+		]
+		page_count = cint((response.get("page") or {}).get("pageCount"))
+		if page_no >= page_count:
+			return records
+	efris_log_info(
+		f"EFRIS T106 lookup for {doc.name}: more than {REFERENCE_LOOKUP_MAX_PAGES} pages "
+		f"for reference {reference_no}; using the first {len(records)} records"
 	)
-	if not ok or not isinstance(response, dict):
-		efris_log_info(f"EFRIS T106 lookup failed for {doc.name}: {response}")
-		return None
-	return [
-		r
-		for r in response.get("records") or []
-		if r.get("referenceNo") == reference_no and r.get("invoiceNo")
-	]
+	return records
 
 
 def _is_own_ura_record(record, doc, settings):
@@ -576,7 +597,8 @@ def _is_own_ura_record(record, doc, settings):
 
 
 def ura_issued_at(value):
-	"""URA's issuedDate (Uganda time, dd/mm/yyyy or ISO) as a naive system-time datetime."""
+	"""URA's issuedDate (Uganda time, "dd/mm/yyyy HH:MM:SS"; ISO also accepted) as a naive
+	system-time datetime; None when unreadable."""
 	for fmt in ("%d/%m/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
 		try:
 			issued = datetime.strptime((value or "").strip()[:19], fmt)
