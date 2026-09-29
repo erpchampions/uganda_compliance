@@ -227,7 +227,7 @@ scheduler_events = {
 # ]
 # Installation
 # ------------
-# before_install = "uganda_compliance.before_install"
+before_install = "uganda_compliance.install.before_install"
 
 app_include_js = "/assets/uganda_compliance/js/item_custom.js"
 
