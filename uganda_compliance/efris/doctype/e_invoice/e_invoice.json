@@ -16,7 +16,8 @@
   "qrcode_path",
   "qrcode",
   "qr_code_data",
-  "efris_qr_code",
+  "efris_qr_code",  
+  "invoice_industry_code",
   "column_break_6",
   "invoice_type",
   "invoice",
@@ -42,6 +43,8 @@
   "column_break_33",
   "buyer_phone",
   "buyer_email",
+  "non_resident_flag",
+  "delivery_terms_code",
   "column_break_43",
   "item_details_section",
   "items",
@@ -95,6 +98,31 @@
    "label": "Buyer Type",
    "options": "0\n1\n2\n3",
    "reqd": 1
+  },
+  {
+   "default": 0,
+   "fieldname": "non_resident_flag",
+   "fieldtype": "Data",
+   "label": "EFRIS Non Resident Flag",
+   "read_only": 1,
+   "report_hide": 0,
+   "reqd": 0
+  },
+  {
+   "fieldname": "delivery_terms_code",
+   "fieldtype": "Data",
+   "label": "EFRIS Delivery Terms Code",
+   "options": "",
+   "reqd": 0,
+   "read_only": 1
+  },
+   {
+   "fieldname": "invoice_industry_code",
+   "fieldtype": "Data",
+   "label": "EFRIS Invoice Industry Code",
+   "options": "",
+   "reqd": 0,
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",

@@ -2,6 +2,10 @@ const BASE_CURRENCY = 'UGX';
 
 frappe.ui.form.on("Purchase Receipt", {
     validate: async function(frm) {
+        if(!frm.doc.efris_company) {
+            console.warn("❌ EFRIS Company not set. Cannot validate EFRIS items.");
+            return;
+        }
         console.log("✅ Validate Triggered");
 
         // Ensure Document-Level Exchange Rate is Set
@@ -89,6 +93,14 @@ frappe.ui.form.on("Purchase Receipt", {
     conversion_rate: function(frm) {
         console.log("🔄 Conversion Rate Changed");
         set_document_exchange_rate(frm);
+    },
+    after_submit: async function(frm) {
+        console.log("✅ After Submit Triggered");            
+         add_custom_buttons(frm);
+    },
+    refresh: async function(frm) {
+        console.log("🔄 Onload Triggered");
+        add_custom_buttons(frm);
     }
 });
 
@@ -161,5 +173,94 @@ function check_efris_stockin(frm, cdt, cdn) {
         } else {
             resolve();
         }
+    });
+}
+
+async function add_custom_buttons(frm) {  
+    console.log("🔄 Checking conditions for adding custom buttons...");
+    const isEfrisWarehouse = await is_efris_warehouse(frm.doc.set_warehouse);
+    console.log(`Is EFRIS Warehouse: ${isEfrisWarehouse}`);
+
+    if (!isEfrisWarehouse || frm.doc.docstatus != 1 || !frm.doc.efris_company || frm.doc.efris_submitted ) {
+        console.log("Skipping EFRIS submission button for non-EFRIS or return invoices");
+        return;
+    }
+
+    const auto_send_submitted_invoice = await get_auto_send_submitted_invoice_flag(frm);  
+    console.log(`Auto Send Submitted Invoice Flag: ${auto_send_submitted_invoice}`);    
+
+    if (auto_send_submitted_invoice != 1) {
+        frm.add_custom_button(__('Submit To EFRIS'), async function () {
+            frappe.confirm(
+                __('Are you sure you want to submit?'),
+                async function () {
+                    // Yes callback
+                    try {
+                        const response = await frappe.call({
+                            method: 'uganda_compliance.efris.api_classes.stock_in.send_purchase_receipt',
+                            args: { doc: frm.doc },
+                            freeze: true,
+                            freeze_message: __('Submitting to EFRIS...')
+                        });
+
+                        if (response.message) {
+                            frappe.msgprint(__('Purchase Receipt submitted to EFRIS successfully.'));
+                            frm.reload_doc();
+                        } else {
+                            console.log(__('Failed to submit Purchase Receipt to EFRIS.'));
+                        }
+                    } catch (error) {
+                        console.error("Error submitting to EFRIS:", error);
+                        frappe.msgprint(__('An error occurred while submitting to EFRIS.'));
+                    }
+                },
+                function () {
+                    // No callback (do nothing)
+                    console.log("Submission to EFRIS was cancelled by the user.");
+                }
+            );
+        });
+    }
+}
+
+function get_auto_send_submitted_invoice_flag(frm) {    
+    return new Promise((resolve) => {
+        if (!frm.doc.efris_company || frm.doc.efris_submitted !== 1) {
+            return resolve(0);
+        }
+
+        frappe.call({
+            method: "uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings.get_e_company_settings",
+            args: { company_name: frm.doc.company },
+            callback: function(r) {
+                if (r.message && r.message.auto_send_submitted_invoice == 1) {
+                    console.log("Auto send submitted invoice is enabled in EFRIS settings");
+                    resolve(1);
+                } else {
+                    resolve(0);
+                }
+            }
+        });
+    });
+}
+function is_efris_warehouse(warehouse_name) {
+    if (!warehouse_name) {
+        console.warn("Warehouse name is not provided.");
+        return Promise.resolve(false);
+    }
+    return new Promise((resolve) => {
+        frappe.call({
+            method: "uganda_compliance.efris.api_classes.stock_in.is_efris_warehouse",
+            args: { warehouse_name: warehouse_name },
+            callback: function(r) {
+                if (r.message) {
+                    console.log(`Warehouse ${warehouse_name} is an EFRIS warehouse: ${r.message}`);
+                    resolve(r.message);
+                } else {
+                    console.warn(`Failed to determine if warehouse ${warehouse_name} is an EFRIS warehouse.`);
+                    resolve(false);
+                }
+            }
+        });
     });
 }
