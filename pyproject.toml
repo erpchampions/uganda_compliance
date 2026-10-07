@@ -31,6 +31,9 @@ build-backend = "flit_core.buildapi"
 
 # Frappe v15 app boilerplate ruff config. The legacy code base does not pass it repo-wide yet;
 # CI (.github/workflows/tillking-ci.yml) lints only files changed against tillking-v15.
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<16.0.0"
+
 [tool.ruff]
 line-length = 110
 target-version = "py310"
