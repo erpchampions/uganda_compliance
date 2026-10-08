@@ -983,7 +983,7 @@ def _handle_sales_return(sales_invoice):
 		creditnote_einvoice = get_einvoice(sales_invoice.name)
 		credit_note_status = creditnote_einvoice.status or ""
 	else:
-		frappe.log_error("Sales return name not set, assumption is it is new")
+		efris_log_info(f"No E Invoice yet for return {sales_invoice.name}: treating it as a new credit note")
 
 	if original_e_invoice.status == "EFRIS Generated" and not credit_note_status in ["EFRIS Credit Note Pending", "EFRIS Generated"]:
 		EInvoiceAPI.generate_credit_note_return_application(sales_invoice)

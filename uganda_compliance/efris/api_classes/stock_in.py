@@ -447,7 +447,6 @@ def handle_response(success, child_table, response, items, e_company, key):
 
     else:
         error_message = f"Failed to upload Stock to EFRIS for {e_company} under key {key}: {response}"
-        frappe.log_error(error_message)
         efris_log_error(error_message)
         frappe.throw(error_message)
 
@@ -476,8 +475,6 @@ def goods_Stock_T131_data(operation_type, adjustment_code, remarks,stockInDate, 
 
 @frappe.whitelist()
 def before_submit_on_stock_entry(doc, method):
-    frappe.log_error(f"Before Save is Called on Stock Entry: {doc}")
-    
     purpose = doc.get('purpose')
     efris_log_info(f"The Stock Entry Purpose is {purpose}")
     is_efris_warehouse = ''
@@ -742,7 +739,7 @@ def process_pending_efris_stock_entries():
             send_stock_entry(doc)           
             doc.db_set("efris_posted", 1,True,False,True)          
            
-            frappe.log_error(f"✅ EFRIS posted for Stock Entry {doc.name}")
+            efris_log_info(f"EFRIS posted for Stock Entry {doc.name}")
             processed_entries.append({
                 "name": doc.name,
                 "posting_date": doc.posting_date,

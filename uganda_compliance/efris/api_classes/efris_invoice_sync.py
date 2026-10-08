@@ -56,7 +56,6 @@ def process_company_invoices(company):
     for invoice in invoices:
         fdn = invoice.get("invoiceNo")
         if frappe.db.exists("Sales Invoice", {"efris_irn": fdn}):
-            frappe.log_error(f"Invoice with FDN {fdn} already exists in ERPNext, skipping.")
             efris_log_info(f"Invoice with FDN {fdn} already exists in ERPNext, skipping.")
             continue
         

@@ -156,7 +156,6 @@ class EInvoice(Document):
         self.isBatch = 0
         self.is_return = self.sales_invoice.is_return,
         if self.sales_invoice.efris_invoice_industry_code:
-            frappe.log_error(f"Industry Code :{self.sales_invoice.efris_invoice_industry_code}")
             self.invoice_industry_code = self.sales_invoice.efris_invoice_industry_code
 
     def set_summary_details(self):
