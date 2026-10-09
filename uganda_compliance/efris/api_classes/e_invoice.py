@@ -1174,20 +1174,22 @@ def set_efris_based_on_items(doc, items):
 	"""Set EFRIS flag and customer type based on items."""
 	for item in items:
 		item_code = item.get('item_code')
-		if frappe.db.get_value('Item', {'item_code': item_code}, 'efris_item'):
+		efris_item, is_stock_item = frappe.db.get_value(
+			'Item', item_code, ['efris_item', 'is_stock_item']
+		) or (0, 0)
+		if efris_item:
 			doc.efris_invoice = 1
 			target_warehouse = item.get('warehouse')
-			
-			is_efris_warehouse = frappe.db.get_value(
-				"Warehouse", {"name": target_warehouse}, "efris_warehouse"
-			)
-			if not is_efris_warehouse:
+
+			# Services (non-stock items, e.g. subscriptions) move no stock: no EFRIS warehouse
+			if is_stock_item and not (
+				target_warehouse and frappe.db.get_value("Warehouse", target_warehouse, "efris_warehouse")
+			):
 				frappe.throw(f"Target Warehouse {target_warehouse} must be an EFRIS Warehouse")
-			
+
 			customer = doc.get('customer')
-			efris_customer_type = frappe.db.get_value(
-				'Customer', {'customer_name': customer}, 'efris_customer_type'
-			)
+			# by name (the Customer ID), not customer_name, which can differ
+			efris_customer_type = frappe.db.get_value('Customer', customer, 'efris_customer_type')
 			doc.efris_customer_type = efris_customer_type
 			doc.flags.ignore_validate_update_after_submit = True
 			efris_log_info(f"Updated Sales Invoice for EFRIS compliance.")
