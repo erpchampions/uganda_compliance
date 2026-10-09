@@ -178,6 +178,32 @@ class TestEfrisPosReceipt(EfrisTestCase):
 		self.assertIn("PENDING URA APPROVAL", html)
 		self.assertIn(reload(inv).efris_irn, html)
 
+	def test_receipt_prints_momo_transaction_id_only_when_present(self):
+		with fake_ura():
+			inv = make_pos_invoice(self.ctx)
+		self.assertNotIn("Txn ID", self._render(inv))
+		frappe.db.set_value("Sales Invoice Payment", inv.payments[0].name, "reference_no", "46123456789")
+		html = self._render(reload(inv))
+		self.assertEqual(html.count("Txn ID: 46123456789"), 1)
+
+	def test_receipt_patch_updates_only_an_unchanged_payment_block(self):
+		from uganda_compliance.patches import efris_receipt_momo_txn_id as patch
+
+		shipped = frappe.db.get_value("Print Format", self.FORMAT, "html")
+		self.assertIn(patch.NEW, shipped)  # new sites get it from the JSON
+		before = shipped.replace(patch.NEW, patch.OLD)
+		edited = before.replace(
+			"<tr><td>{{ p.mode_of_payment }}", "<tr class='mine'><td>{{ p.mode_of_payment }}"
+		)
+		try:
+			for html, expected in ((before, shipped), (edited, edited)):
+				frappe.db.set_value("Print Format", self.FORMAT, "html", html)
+				patch.execute()
+				patch.execute()  # idempotent
+				self.assertEqual(frappe.db.get_value("Print Format", self.FORMAT, "html"), expected)
+		finally:
+			frappe.db.set_value("Print Format", self.FORMAT, "html", shipped)
+
 	def test_non_efris_receipt_has_no_efris_block(self):
 		frappe.db.set_value("E Invoicing Settings", {"company": self.company}, "enabled", 0)
 		with fake_ura():
