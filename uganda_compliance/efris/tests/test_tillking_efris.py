@@ -204,6 +204,39 @@ class TestEfrisPosReceipt(EfrisTestCase):
 		finally:
 			frappe.db.set_value("Print Format", self.FORMAT, "html", shipped)
 
+	def test_receipt_prints_merchant_codes_from_till_king(self):
+		with fake_ura():
+			inv = make_pos_invoice(self.ctx)
+		self.assertNotIn("merchant code", self._render(inv))  # Till King absent / no codes set
+		codes = [{"label": "MTN MoMo Pay", "code": "123456"}]
+		env = frappe.get_jenv()
+		previous = env.globals.get("tk_momo_merchant_codes")
+		env.globals["tk_momo_merchant_codes"] = lambda: codes
+		try:
+			html = self._render(reload(inv))
+		finally:
+			if previous is None:
+				env.globals.pop("tk_momo_merchant_codes")
+			else:
+				env.globals["tk_momo_merchant_codes"] = previous
+		self.assertEqual(html.count("Pay with MTN MoMo Pay: merchant code 123456"), 1)
+
+	def test_merchant_code_patch_updates_only_an_unchanged_footer(self):
+		from uganda_compliance.patches import efris_receipt_momo_merchant_codes as patch
+
+		shipped = frappe.db.get_value("Print Format", self.FORMAT, "html")
+		self.assertIn(patch.NEW, shipped)  # new sites get it from the JSON
+		before = shipped.replace(patch.NEW, patch.OLD)
+		edited = before.replace("Thank you!", "Asante!")
+		try:
+			for html, expected in ((before, shipped), (edited, edited)):
+				frappe.db.set_value("Print Format", self.FORMAT, "html", html)
+				patch.execute()
+				patch.execute()  # idempotent
+				self.assertEqual(frappe.db.get_value("Print Format", self.FORMAT, "html"), expected)
+		finally:
+			frappe.db.set_value("Print Format", self.FORMAT, "html", shipped)
+
 	def test_non_efris_receipt_has_no_efris_block(self):
 		frappe.db.set_value("E Invoicing Settings", {"company": self.company}, "enabled", 0)
 		with fake_ura():
