@@ -4,6 +4,7 @@ import json
 from frappe import _
 from frappe.rate_limiter import rate_limit
 from uganda_compliance.efris.api_classes.efris_api import make_post
+from uganda_compliance.efris.inclusive_vat import line_figures
 from uganda_compliance.efris.utils.utils import efris_log_info, safe_load_json, efris_log_error
 from uganda_compliance.efris.api_classes.request_utils import get_ug_time_str
 from datetime import datetime
@@ -1262,25 +1263,22 @@ def sync_additional_discount_percentage(doc, method=None):
 
 def calculate_additional_discounts(doc, method):
 	"""
-	Calculate additional discounts and adjust tax values on Sales Invoice items for EFRIS compliance.
+	Store on each discounted Sales/POS Invoice row the EFRIS discount line figures
+	(see inclusive_vat.line_figures; the E Invoice computes the same figures again).
 	"""
-	doc = _parse_doc(doc)
-
-	efris_log_info(f"Calculate Additional Discounts called: {doc}")
-
 	discount_percentage = doc.get('additional_discount_percentage', 0) or 0.0
-	efris_log_info(f"Issued Discount: {discount_percentage}%")
-
 	if not discount_percentage or not doc.taxes:
 		return
 
-	# Load item tax details
-	item_taxes = json.loads(doc.taxes[0].item_wise_tax_detail)
-	initial_tax = doc.total_taxes_and_charges
-	efris_log_info(f"Initial Tax: {initial_tax}")
+	for row, figures in zip(doc.items, line_figures(doc)):
+		row.efris_dsct_discount_total = figures.discount_total
+		row.efris_dsct_discount_tax = figures.discount_tax
+		row.efris_dsct_discount_tax_rate = f"{figures.rate / 100:.2f}" if figures.rate > 0 else "0.0"
+		row.efris_dsct_item_tax = figures.tax
+		row.efris_dsct_taxable_amount = figures.total
+		row.efris_dsct_item_discount = f"{row.get('item_name', '')} (Discount)"
 
-	total_item_tax, total_discount_tax = _process_items(doc, item_taxes, discount_percentage)
-	
+
 def _parse_doc(doc):
 	"""
 	Parse the `doc` if it's a JSON string.
@@ -1293,54 +1291,6 @@ def _parse_doc(doc):
 			return None
 	return doc
 	
-def _process_items(doc, item_taxes, discount_percentage):
-	"""
-	Process each item in the document to calculate discounts and taxes.
-	"""
-	total_item_tax = 0.0
-	total_discount_tax = 0.0
-
-	for row in doc.get('items', []):
-		item_code = row.get('item_code', '')
-		discount_amount = round(-row.amount * (discount_percentage / 100), 4)
-		discounted_item = f"{row.get('item_name', '')} (Discount)"
-		tax_rate = float(item_taxes.get(item_code, [0, 0])[0]) or 0.0
-
-		if tax_rate > 0:
-			tax_on_discount, discount_tax, item_tax = _calculate_tax_adjustments(discount_amount, tax_rate, row.amount)
-			total_item_tax += item_tax
-			total_discount_tax += discount_tax
-		   
-		else:
-			
-			discount_tax = 0.0
-			item_tax = 0.0
-
-		_update_row_values(row, discount_amount, discount_tax, tax_rate, item_tax, discounted_item, doc.get('is_return', False))
-
-	return total_item_tax, total_discount_tax
-
-def _calculate_tax_adjustments(discount_amount, tax_rate, item_amount):
-	"""
-	Calculate tax adjustments for taxable items.
-	"""
-	tax_on_discount = round(discount_amount / (1 + (tax_rate / 100)), 4)
-	discount_tax = round(discount_amount - tax_on_discount, 4)
-	item_tax = round(item_amount * (tax_rate / (100 + tax_rate)), 4)
-	return tax_on_discount, discount_tax, item_tax
-
-def _update_row_values(row, discount_amount, discount_tax, tax_rate, item_tax, discounted_item, is_return):
-	"""
-	Update row values with calculated discounts and taxes.
-	"""
-	row.efris_dsct_discount_total = -discount_amount if is_return else discount_amount
-	row.efris_dsct_discount_tax = -discount_tax if is_return else discount_tax
-	row.efris_dsct_discount_tax_rate = f"{tax_rate / 100:.2f}" if tax_rate > 0 else "0.0"
-	row.efris_dsct_item_tax = -item_tax if is_return else item_tax
-	row.efris_dsct_taxable_amount = -row.amount if is_return else row.amount
-	row.efris_dsct_item_discount = discounted_item
-
-
 def decode_e_tax_rate(tax_rate, e_tax_category):
 	e_tax_code = e_tax_category.split(':')[0]
 	if e_tax_code == '01':

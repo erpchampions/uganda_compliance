@@ -197,8 +197,8 @@ async function add_custom_buttons(frm) {
                     // Yes callback
                     try {
                         const response = await frappe.call({
-                            method: 'uganda_compliance.efris.api_classes.stock_in.send_purchase_receipt',
-                            args: { doc: frm.doc },
+                            method: 'uganda_compliance.efris.api_classes.stock_in.submit_stock_in',
+                            args: { doctype: frm.doc.doctype, name: frm.doc.name },
                             freeze: true,
                             freeze_message: __('Submitting to EFRIS...')
                         });
