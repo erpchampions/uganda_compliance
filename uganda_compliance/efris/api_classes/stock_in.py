@@ -29,6 +29,10 @@ def get_efris_unit_price(purchase_receipt_no, item_code):
 
 @frappe.whitelist()
 def stock_in_T131(doc, method):
+    # Purchase Receipt / Stock Reconciliation on_submit: a company without enabled E Invoicing
+    # Settings sends nothing (get_e_company_settings throws for it, which failed every submit)
+    if not frappe.db.get_value("E Invoicing Settings", {"company": doc.get("company"), "enabled": 1}):
+        return
     auto_send_submitted_invoice = get_e_company_settings(doc.get("company")).auto_send_submitted_invoice    
     if (auto_send_submitted_invoice == 1) or (method == 'manual_submit'):
         doctype = doc.get("doctype")
