@@ -1,5 +1,4 @@
 import frappe
-import json
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from uganda_compliance.efris.api_classes.efris_api import make_post
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
@@ -51,13 +50,16 @@ def check_efris_item_for_purchase_receipt(accept_warehouse, item_code):
     return {'is_efris': is_efris}
 
 
-@frappe.whitelist() 
+@frappe.whitelist(methods=["POST"])
+def send_item_to_efris(item_code):
+    """Item "Send To EFRIS". Replaces calling after_save_item from the browser, which registered
+    a caller-built item dict with URA without a permission check."""
+    frappe.has_permission("Item", "write", item_code, throw=True)
+    after_save_item(frappe.get_doc("Item", item_code), "manual_submit")
+    return True
+
+
 def after_save_item(doc, method = None):
-    if isinstance(doc, str):
-        doc = json.loads(doc)
-    # Convert dict to Frappe Document
-    if isinstance(doc, dict):
-        doc = frappe.get_doc(doc) 
     efris_log_info(f"The Created Item is: {doc}") 
     
     is_import = frappe.flags.in_import
@@ -306,10 +308,14 @@ def get_cached_price_lists(company, currency):
 
 
 @frappe.whitelist()
-def create_item_prices(item_code, uoms, currency, company):
+def create_item_prices(item_code):
+    """Item after_save: Item Prices from the saved item's EFRIS unit prices (not from values sent
+    by the browser), for a user who may edit the item."""
+    frappe.has_permission("Item", "write", item_code, throw=True)
+    item = frappe.get_doc("Item", item_code)
+    uoms = [row.as_dict() for row in item.uoms]
+    currency, company = item.efris_currency, item.efris_e_company
     try:
-        if isinstance(uoms, str):
-            uoms = json.loads(uoms)
 
         price_lists = get_cached_price_lists(company, currency)
         if not price_lists:
@@ -449,7 +455,6 @@ def validate_uom_counts(has_multiple_uom, piece_count, package_count, efris_coun
 
 
 ###################
-@frappe.whitelist()
 def item_validations(doc, method):
     try:
         if frappe.flags.in_import and doc.get("efris_registered"):

@@ -128,6 +128,13 @@ CLIENT_SAFE_SETTINGS_FIELDS = (
 )
 
 
+def require_efris_admin():
+    """For browser methods that act for every EFRIS company (invoice sync, bulk stock-in resend,
+    URA connection test): the user must be able to edit E Invoicing Settings (System Manager by
+    default). Scheduler jobs run as Administrator and pass."""
+    frappe.has_permission("E Invoicing Settings", "write", throw=True)
+
+
 @frappe.whitelist()
 def get_e_company_client_settings(company_name):
     """Browser-facing subset of E Invoicing Settings (form scripts only need flags)."""

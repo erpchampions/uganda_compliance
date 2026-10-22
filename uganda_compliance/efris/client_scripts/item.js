@@ -111,12 +111,7 @@ frappe.ui.form.on('Item', {
 
             frappe.call({
                 method: 'uganda_compliance.efris.api_classes.e_goods_services.create_item_prices',
-                args: {
-                    item_code: frm.doc.item_code,
-                    uoms: frm.doc.uoms,
-                    currency: frm.doc.efris_currency,
-                    company: frm.doc.efris_e_company
-                },
+                args: { item_code: frm.doc.item_code },
                 callback: function(r) {
                     if (r.message) {
                         frappe.msgprint(r.message);
@@ -304,8 +299,8 @@ async function add_custom_buttons(frm) {
                 async function () {
                     try {
                         const response = await frappe.call({
-                            method: "uganda_compliance.efris.api_classes.e_goods_services.after_save_item",
-                            args: { doc: frm.doc,method: 'manual_submit' },
+                            method: "uganda_compliance.efris.api_classes.e_goods_services.send_item_to_efris",
+                            args: { item_code: frm.doc.name },
                             freeze: true,
                             freeze_message: __("Submitting to EFRIS...")
                         });

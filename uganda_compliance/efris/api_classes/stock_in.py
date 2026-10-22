@@ -1,8 +1,15 @@
 import frappe
+from frappe import _
+from frappe.rate_limiter import rate_limit
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from uganda_compliance.efris.api_classes.efris_api import get_e_company_settings, make_post
 import json
 from datetime import date
+
+# Only the functions marked @frappe.whitelist() below are browser APIs. Each checks the user's
+# permission first and loads documents by name. The doc_event and scheduler functions in this
+# module are not whitelisted: they send stock to URA for whatever document they are given.
+
 
 @frappe.whitelist()
 def get_efris_unit_price(purchase_receipt_no, item_code):
@@ -11,6 +18,7 @@ def get_efris_unit_price(purchase_receipt_no, item_code):
     """
     if not purchase_receipt_no or not item_code:
         frappe.throw("Both Purchase Receipt No and Item Code are required.")
+    frappe.has_permission("Purchase Receipt", "read", purchase_receipt_no, throw=True)
 
     result = frappe.db.get_value(
         'Purchase Receipt Item',
@@ -27,7 +35,6 @@ def get_efris_unit_price(purchase_receipt_no, item_code):
         frappe.msgprint(f"No EFRIS Unit price found for {item_code}")
         return {}
 
-@frappe.whitelist()
 def stock_in_T131(doc, method):
     # Purchase Receipt / Stock Reconciliation on_submit: a company without enabled E Invoicing
     # Settings sends nothing (get_e_company_settings throws for it, which failed every submit)
@@ -43,15 +50,31 @@ def stock_in_T131(doc, method):
         if doctype=="Purchase Receipt":
             send_purchase_receipt(doc)
 
-@frappe.whitelist()
-def send_stock_entry(doc):
-    # If doc is a stringified JSON (sometimes happens), convert to dict
-    if isinstance(doc, str):
-        doc = json.loads(doc)
-    # Convert dict to Frappe Document
-    if isinstance(doc, dict):
-        doc = frappe.get_doc(doc) 
 
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=30, seconds=60)
+def submit_stock_in(doctype, name):
+    """Desk "Submit To EFRIS" on a submitted Purchase Receipt, Stock Reconciliation or Stock Entry.
+
+    Replaces calling send_purchase_receipt / send_stock_entry from the browser, which sent any
+    document (or, for Stock Entry, a document dict built by the caller) to URA without a
+    permission check. The user needs submit permission on the document."""
+    if doctype not in STOCK_IN_SENDERS:
+        frappe.throw(_("{0} is not sent to EFRIS as a stock-in").format(doctype))
+    frappe.has_permission(doctype, "submit", name, throw=True)
+    doc = frappe.get_doc(doctype, name)
+    if doc.docstatus != 1:
+        frappe.throw(_("Only submitted documents are sent to EFRIS"))
+    if not frappe.db.get_value("E Invoicing Settings", {"company": doc.company, "enabled": 1}):
+        frappe.throw(_("E Invoicing is not enabled for company {0}").format(doc.company))
+    STOCK_IN_SENDERS[doctype](doc)
+    return True
+
+
+def send_stock_entry(doc):
+    if doc.get("efris_posted"):
+        efris_log_info(f"Stock Entry {doc.name} is already at EFRIS")
+        return
     e_company = doc.get("company") or ""
     efris_log_info(f"The Company is: {e_company}")
     purpose = doc.get("purpose")
@@ -78,7 +101,9 @@ def send_stock_entry(doc):
         items_by_receipt = {}
       
         for data in doc.get("items", []):
-            
+            if data.get("efris_registered"):
+                # sent by an earlier attempt whose other groups failed
+                continue
             reference_purchase = data.get("efris_purchase_receipt_no") or "" 
             
             if reference_purchase not in items_by_receipt:
@@ -217,129 +242,71 @@ def stock_entry_item_data(items, reference_purchase):
 def send_stock_reconciliation(doc):
     purpose = doc.get("purpose")
     efris_log_info(f"The Selected Stock Reconciliation Purpose is {purpose}")
-    is_efris_count = 0
-    for efris_item in doc.get("items", []):
-        is_efris = efris_item.get('efris_reconcilliation')
-        if is_efris:
-            is_efris_count +=1
-            efris_log_info(f"The number of efris Items in Items table is {is_efris_count}")
-    if not is_efris_count:
-        efris_log_info(f"Purchase Receipt List Items are Non EFRIS")
+    if purpose not in ("Opening Stock", "Stock Reconciliation"):
+        return
+    # rows sent by an earlier attempt (Submit To EFRIS after a partial failure) are skipped
+    rows = [d for d in doc.get("items", []) if d.get("efris_reconcilliation") and not d.get("efris_registered")]
+    if not rows:
+        efris_log_info(f"Stock Reconciliation {doc.name} has no EFRIS lines to send")
         return
 
-    e_company = doc.get("company")
-    efris_log_info(f"The Company is: {e_company}")
-    # Initialize the dictionary to group items
-    items_map = {}
+    # Opening Stock is one stock-in. A count is one T131 per adjustment reason, since URA takes
+    # one adjustType per request. (The rows used to be grouped on `adjustment_type`, a field
+    # that does not exist, so every reason went in one request under the last row's reason.)
+    groups = {}
+    for row in rows:
+        key = doc.name if purpose == "Opening Stock" else row.get("efris_adjustment_type")
+        if not key:
+            frappe.throw(_("Row {0}: select the EFRIS Adjustment Type").format(row.idx))
+        groups.setdefault(key, []).append(row)
 
-    for item_stock in doc.get("items", []):
-        if purpose == "Opening Stock":
-            key = doc.name 
-        elif purpose == "Stock Reconciliation":
-            key = (item_stock.get("adjustment_type"))
-
-        if key not in items_map:
-            items_map[key] = []
-        items_map[key].append(item_stock)
-
-    # Process each group of items based on the grouping key
-    for key, items in items_map.items():
+    stock_in_date = str(doc.get("posting_date"))
+    for key, items in groups.items():
         efris_log_info(f"Processing items for key: {key}")
-
-        item_code = ""
-        goodsCode = ""
-        
-        goodsStockInItem, adjustment_code, supplier,tax_Id, stockIntype, remark = goods_stock_recon_item(items, purpose)
-        
-        # Construct the EFRIS payload based on the purpose
+        goods, sent_rows = goods_stock_recon_item(items, purpose)
+        if not goods:
+            continue
+        remark = "; ".join(dict.fromkeys(r.get("efris_remarks") for r in sent_rows if r.get("efris_remarks")))
         if purpose == "Opening Stock":
-            supplierTin=tax_Id if tax_Id else ""
-            goods_Stock_Reconciliation_T131 = goods_Stock_T131_data("101", "", remark,doc.get("posting_date"), stockIntype, "", "", "", "", "", "", "101", goodsStockInItem, supplier, supplierTin)
-        
-        elif purpose == "Stock Reconciliation":
-            if not remark:
-                remark = "Stock Reconciliation"
-            
-            goods_Stock_Reconciliation_T131 = goods_Stock_T131_data("102", adjustment_code, remark,doc.get("posting_date"), "", "", "", "", "", "", "", "101", goodsStockInItem)
+            content = goods_Stock_T131_data("101", "", remark, stock_in_date, "102", "", "", "", "", "", "", "101", goods, "Opening Balance", "")
+        else:
+            content = goods_Stock_T131_data("102", key.split(":")[0], remark or "Stock Reconciliation", stock_in_date, "", "", "", "", "", "", "", "101", goods)
+        _send_t131(doc, content, "Stock Reconciliation Item", sent_rows, key)
 
-        # Make the post request to EFRIS for the current group
-        success, response = make_post(interfaceCode="T131", content=goods_Stock_Reconciliation_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
-        child_table="Stock Reconciliation Item"
-        handle_response(success,child_table, response, items, e_company, key)
-        
 
 def goods_stock_recon_item(items, purpose):
-    goodsStockInItem = []
-    adjustment_code = ""
-    supplier = ""
-    tax_Id = ""
-    remark = ""
-    stockIntype = "101"
-    item_code = ""
-    goodsCode = ""
+    """``(goods, rows)``: the T131 lines of these rows and the rows they came from. A count
+    sends decreases only (URA's stock adjustment cannot add stock)."""
+    goods, sent_rows = [], []
     for item_stock in items:
-        adjustment_type = item_stock.efris_adjustment_type
-        adjustment_code = adjustment_type.split(":")[0]
-        
-        quantity_variance = str(round(abs(item_stock.quantity_difference),3))
-        remark = item_stock.get("efris_remarks")
-
-        is_efris = item_stock.get("efris_reconcilliation")
-        supplier=""
-        if is_efris:
-            item = frappe.get_doc("Item", item_stock.get("item_code"))
-            standard_rate = item.standard_rate or 0
-            item_code = item.item_code
-            goodsCode = item.efris_product_code
-            if goodsCode: 
-                item_code = goodsCode
-            uom_code = frappe.db.get_value('UOM', {'uom_name': item.stock_uom}, 'efris_uom_code') or ''
-            accept_warehouse = item_stock.get("warehouse")
-            if purpose == "Opening Stock":
-                # Fetch purchase receipt details
-                supplier = "Opening Balance"
-                stockIntype = "102"                        
-                tax_Id = ""
-
-            # Skip positive adjustments for Stock Reconciliation
-            if purpose == "Stock Reconciliation" and item_stock.quantity_difference > 0:
-                frappe.msgprint(f"EFRIS cannot adjust positive stock: {item_code}. {item_stock.quantity_difference}")
-                efris_log_error(f"EFRIS cannot adjust positive stock: {item_code}, {item_stock.quantity_difference}")
-                continue
-            goodsStockInItem.append(
-                {
-                    "commodityGoodsId": "",
-                    "goodsCode": item_code,
-                    "measureUnit": uom_code,
-                    "quantity": quantity_variance,
-                    "unitPrice": str(standard_rate),
-                    "remarks": remark if remark else "adjustment",
-                    "fuelTankId": "",
-                    "lossQuantity": "",
-                    "originalQuantity": "",
-                }
-            )
-            efris_log_info(f"Item {item.item_code} added to goodsStockInItem. Total items: {len(goodsStockInItem)}")
-        else:
-            efris_log_info(f"Item not relevant for EFRIS. Skipping this item.")
+        item = frappe.get_doc("Item", item_stock.get("item_code"))
+        item_code = item.efris_product_code or item.item_code
+        if purpose == "Stock Reconciliation" and item_stock.quantity_difference > 0:
+            frappe.msgprint(f"EFRIS cannot adjust positive stock: {item_code}. {item_stock.quantity_difference}")
+            efris_log_error(f"EFRIS cannot adjust positive stock: {item_code}, {item_stock.quantity_difference}")
             continue
-    return goodsStockInItem, adjustment_code, supplier,tax_Id, stockIntype, remark
+        uom_code = frappe.db.get_value('UOM', {'uom_name': item.stock_uom}, 'efris_uom_code') or ''
+        goods.append(
+            {
+                "commodityGoodsId": "",
+                "goodsCode": item_code,
+                "measureUnit": uom_code,
+                "quantity": str(round(abs(item_stock.quantity_difference), 3)),
+                "unitPrice": str(item.standard_rate or 0),
+                "remarks": item_stock.get("efris_remarks") or "adjustment",
+                "fuelTankId": "",
+                "lossQuantity": "",
+                "originalQuantity": "",
+            }
+        )
+        sent_rows.append(item_stock)
+        efris_log_info(f"Item {item.item_code} added to goodsStockInItem. Total items: {len(goods)}")
+    return goods, sent_rows
 
-@frappe.whitelist()
 def send_purchase_receipt(doc):
-    # ---- Normalize incoming doc ----
-    if isinstance(doc, str):
-        try:
-            doc = json.loads(doc)
-        except Exception:
-            # string = docname
-            doc = frappe.get_doc("Purchase Receipt", doc)
-
-    if isinstance(doc, dict):
-        doc = frappe.get_doc(doc.get("doctype", "Purchase Receipt"), doc.get("name"))
-
-    # Now ALWAYS a Document
-    e_company = doc.get("company")
+    if doc.get("efris_submitted"):
+        efris_log_info(f"Purchase Receipt {doc.name} is already at EFRIS")
+        return
     is_efris_count = 0  
 
     items = doc.get("items", [])
@@ -370,9 +337,7 @@ def send_purchase_receipt(doc):
     branchId=doc.get("branch_id") if doc.get('branch_id') else ""
     goods_Stock_upload_T131 = goods_Stock_T131_data("101", "", remarks,stockInDate, stockInType, "", "", branchId, "", "", "", "101", goodsStockInItem, supplier, supplier_Tin)
 
-    # Make the post request to EFRIS
-    success, response = make_post(interfaceCode="T131", content=goods_Stock_upload_T131, company_name=e_company, reference_doc_type=doc.doctype, reference_document=doc.name)
-    handle_response(success,"Purchase Receipt Item", response, doc.items, e_company=doc.get("company"), key=doc.name)
+    _send_t131(doc, goods_Stock_upload_T131, "Purchase Receipt Item", doc.items, doc.name)
 
 def goods_stock_in_item_data(goodsStockInItem, items):
     for item_stock in items:
@@ -414,45 +379,148 @@ def goods_stock_in_item_data(goodsStockInItem, items):
     return goodsStockInItem
 
 
-def handle_response(success, child_table, response, items, e_company, key):
+def _send_t131(doc, content, child_table, items, key):
+    """Send one T131 stock-in of ``doc`` (a Purchase Receipt or Stock Reconciliation) and mark
+    ``items`` sent.
+
+    T131 runs inside the document's transaction (on_submit, after ERPNext's own on_submit has
+    posted the stock and GL), so URA refusing it still stops the submit. If the transaction is
+    rolled back after URA accepted it, the stock would stay at URA with no trace in ERPNext (the
+    request log is written after the commit): it is then recorded outside the transaction and
+    flagged, and the next attempt for the same document does not send it again."""
+    if _accepted_before(doc, content):
+        frappe.msgprint(
+            _("URA already has this stock-in of {0} {1} from an earlier attempt that was not saved. It was not sent again.").format(
+                _(doc.doctype), doc.name
+            )
+        )
+        _mark_sent(child_table, items)
+        return
+    success, response = make_post(interfaceCode="T131", content=content, company_name=doc.company, reference_doc_type=doc.doctype, reference_document=doc.name)
     if success:
-        efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company}")
-        frappe.msgprint(f"Stock is successfully uploaded to EFRIS for {e_company}")
+        _record_if_rolled_back(doc, content, response)
+    handle_response(success, child_table, response, items, doc.company, key)
 
-        # Mark child rows as registered (used by Stock Entry etc.)
-        for item in items:
-            frappe.db.set_value(child_table, item.name, 'efris_registered', 1)
 
-        # Determine parent document
-        doctype = frappe.get_value(child_table, items[0].name, 'parenttype')
-        docname = frappe.get_value(child_table, items[0].name, 'parent')
+def _t131_lines(content):
+    return json.loads(frappe.as_json(content["goodsStockInItem"]))
 
-        if doctype and docname:
-            parent_doc = frappe.get_doc(doctype, docname)
 
-            # ---- Stock Entry logic (existing) ----
-            if doctype == 'Stock Entry' and hasattr(parent_doc, 'efris_posted'):
-                item_details = parent_doc.get('items', [])
-                efris_items = [
-                    d for d in item_details
-                    if d.get('efris_transfer') and d.get('t_warehouse')
-                ]
+def _accepted_before(doc, content):
+    """Whether URA accepted these lines for ``doc`` in an attempt that ERPNext rolled back.
 
-                if efris_items and all(d.get('efris_registered') for d in efris_items):
-                    frappe.db.set_value(doctype, docname, 'efris_posted', 1)
-                    efris_log_info(f"Stock Entry {docname} marked as posted to EFRIS.")
+    Only attempts since the document was created count, so a later document that reuses the
+    name of one that was rolled back away is sent normally. The same request (operation and
+    adjustment reason) with other lines is a mismatch the user has to resolve."""
+    head = content["goodsStockIn"]
+    logs = frappe.get_all(
+        "E Invoice Request Log",
+        filters={
+            "reference_doc_type": doc.doctype,
+            "reference_document": doc.name,
+            "interface_code": "T131",
+            "status": "Success",
+            "timestamp": (">=", doc.creation),
+        },
+        fields=["name", "request_data"],
+    )
+    for log in logs:
+        sent = json.loads(log.request_data or "{}")
+        sent_head = sent.get("goodsStockIn") or {}
+        if (sent_head.get("operationType"), sent_head.get("adjustType")) != (head["operationType"], head["adjustType"]):
+            continue
+        if sent.get("goodsStockInItem") == _t131_lines(content):
+            return True
+        frappe.throw(
+            _(
+                "URA already accepted a stock-in for {0} {1} with other lines, in an earlier attempt that was not saved "
+                "(E Invoice Request Log {2}). Submit the lines URA has, or correct URA's stock in the EFRIS portal "
+                "and then delete that log."
+            ).format(_(doc.doctype), doc.name, log.name),
+            title=_("EFRIS stock-in mismatch"),
+        )
+    return False
 
-            # ---- Purchase Receipt logic (NEW) ----
-            elif doctype == 'Purchase Receipt' and hasattr(parent_doc, 'efris_submitted'):
-                frappe.db.set_value(doctype, docname, 'efris_submitted', 1)
-                efris_log_info(f"Purchase Receipt {docname} marked as submitted to EFRIS.")
 
-            parent_doc.reload()
+def _record_if_rolled_back(doc, content, response):
+    doctype, name, user = doc.doctype, doc.name, frappe.session.user
 
-    else:
+    def record():
+        log = frappe.get_doc(
+            {
+                "doctype": "E Invoice Request Log",
+                "user": user,
+                "request_data": frappe.as_json(content),
+                "response_data": frappe.as_json(response),
+                "timestamp": frappe.utils.now(),
+                "reference_doc_type": doctype,
+                "reference_document": name,
+                "status": "Success",
+                "interface_code": "T131",
+            }
+        )
+        log.flags.ignore_links = True
+        log.insert(ignore_permissions=True)
+        frappe.log_error(
+            title=f"EFRIS stock-in accepted by URA but {doctype} {name} was not saved"[:140],
+            message=(
+                f"URA accepted the T131 stock-in of {doctype} {name} (E Invoice Request Log {log.name}), "
+                "then ERPNext rolled the document back, so URA's stock and ERPNext's differ.\n"
+                "Submit the document again: the stock-in is not sent twice. If it will not be submitted, "
+                "reverse the stock at URA.\n\n" + frappe.as_json(content)
+            ),
+            reference_doctype=doctype,
+            reference_name=name,
+        )
+        # the request is over and nothing else commits after a rollback. A raw COMMIT, not
+        # frappe.db.commit(), which would drop the other after-rollback callbacks still queued
+        frappe.db.sql("commit")
+        frappe.db.begin()
+
+    # a commit clears this; it runs only if the transaction holding the submit is rolled back
+    frappe.db.after_rollback.add(record)
+
+
+def handle_response(success, child_table, response, items, e_company, key):
+    if not success:
         error_message = f"Failed to upload Stock to EFRIS for {e_company} under key {key}: {response}"
         efris_log_error(error_message)
         frappe.throw(error_message)
+    efris_log_info(f"Stock is successfully uploaded to EFRIS for {e_company}")
+    frappe.msgprint(f"Stock is successfully uploaded to EFRIS for {e_company}")
+    _mark_sent(child_table, items)
+
+
+def _mark_sent(child_table, items):
+    # Mark child rows as registered (used by Stock Entry etc.)
+    for item in items:
+        frappe.db.set_value(child_table, item.name, 'efris_registered', 1)
+        item.efris_registered = 1
+
+    # Determine parent document
+    doctype = frappe.get_value(child_table, items[0].name, 'parenttype')
+    docname = frappe.get_value(child_table, items[0].name, 'parent')
+
+    if doctype and docname:
+        parent_doc = frappe.get_doc(doctype, docname)
+
+        # ---- Stock Entry logic (existing) ----
+        if doctype == 'Stock Entry' and hasattr(parent_doc, 'efris_posted'):
+            item_details = parent_doc.get('items', [])
+            efris_items = [
+                d for d in item_details
+                if d.get('efris_transfer') and d.get('t_warehouse')
+            ]
+
+            if efris_items and all(d.get('efris_registered') for d in efris_items):
+                frappe.db.set_value(doctype, docname, 'efris_posted', 1)
+                efris_log_info(f"Stock Entry {docname} marked as posted to EFRIS.")
+
+        # ---- Purchase Receipt logic (NEW) ----
+        elif doctype == 'Purchase Receipt' and hasattr(parent_doc, 'efris_submitted'):
+            frappe.db.set_value(doctype, docname, 'efris_submitted', 1)
+            efris_log_info(f"Purchase Receipt {docname} marked as submitted to EFRIS.")
+
 
 def goods_Stock_T131_data(operation_type, adjustment_code, remarks,stockInDate, stockInType, productionBatchNo, productionDate, branchId, invoiceNo, isCheckBatchNo, rollBackIfError, goodsTypeCode, goodsStockInItem, supplier=None, supplierTin=None):
     goods_Stock_upload_T131 = {
@@ -477,7 +545,6 @@ def goods_Stock_T131_data(operation_type, adjustment_code, remarks,stockInDate, 
     return goods_Stock_upload_T131
 
 
-@frappe.whitelist()
 def before_submit_on_stock_entry(doc, method):
     purpose = doc.get('purpose')
     efris_log_info(f"The Stock Entry Purpose is {purpose}")
@@ -571,7 +638,6 @@ def before_submit_on_stock_entry(doc, method):
         efris_log_info(f"Purchase Receipt not found for {item.efris_purchase_receipt_no}")
     
 
-@frappe.whitelist()
 def before_save_on_purchase_receipt(doc,method):
     efris_log_info(f"Before Save is Called on Purchase Receipt: {doc}") 
     
@@ -599,6 +665,9 @@ def query_currency_exchange_rate(doc):
             frappe.log_error("Failed to decode `doc` JSON string", "query_currency_exchange_rate Error")
             return {"error": "Failed to decode `doc` JSON string"}
     e_company = doc.get('company')
+    # asks URA with the company's EFRIS credentials: Purchase Receipt users of that company only
+    frappe.has_permission("Purchase Receipt", "create", throw=True)
+    frappe.has_permission("Company", "read", e_company, throw=True)
     today = date.today().strftime("%Y-%m-%d")
     e_currency = doc.get('currency')
     if not e_currency or e_currency == 'UGX':
@@ -624,7 +693,6 @@ def query_currency_exchange_rate(doc):
         return None
     
 
-@frappe.whitelist()
 def purchase_uom_validation(doc,mehtod):
     if isinstance(doc, str):
         try:
@@ -650,7 +718,6 @@ def purchase_uom_validation(doc,mehtod):
                 frappe.throw(f"The Purchase UOM ({purchase_uom}) must be in the Item's UOMs list for item {item_code}.")
 
 
-@frappe.whitelist()
 def get_stock_entry_item_type(items):
     """
     Determines the EFRIS stock-in type: 'purchase' or 'manufacture'.
@@ -700,6 +767,7 @@ def get_serial_batch_no(serial_and_batch_bundle):
     if not serial_and_batch_bundle :
         frappe.log_error("Serial and Batch Bundle name is required.", "EFRIS Batch Fetch")
         return None
+    frappe.has_permission("Serial and Batch Bundle", "read", serial_and_batch_bundle, throw=True)
 
     try:
         doc = frappe.get_doc("Serial and Batch Bundle", serial_and_batch_bundle)
@@ -719,7 +787,6 @@ def get_serial_batch_no(serial_and_batch_bundle):
     frappe.logger().info(f"[EFRIS] No batch_no found in entries for {serial_and_batch_bundle}")
     return None
 
-@frappe.whitelist()
 def process_pending_efris_stock_entries():
     processed_entries = []    
     stock_entries = frappe.db.sql("""
@@ -762,7 +829,12 @@ def is_efris_warehouse(warehouse_name):
     if not warehouse_name:
         return False
 
-    try:
-        return frappe.get_value("Warehouse", warehouse_name, "efris_warehouse") or False
-    except Exception:
-        return False
+    frappe.has_permission("Warehouse", "read", warehouse_name, throw=True)
+    return bool(frappe.db.get_value("Warehouse", warehouse_name, "efris_warehouse"))
+
+
+STOCK_IN_SENDERS = {
+    "Purchase Receipt": send_purchase_receipt,
+    "Stock Reconciliation": send_stock_reconciliation,
+    "Stock Entry": send_stock_entry,
+}

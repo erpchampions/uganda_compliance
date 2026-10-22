@@ -6,9 +6,9 @@ from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from datetime import datetime, timedelta
 
 from uganda_compliance.efris.api_classes.e_invoice import EInvoiceAPI
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import require_efris_admin
 
 
-@frappe.whitelist()
 def format_date(date_string, current_format="%d/%m/%Y", target_format="%Y-%m-%d"):
     try:
         return datetime.strptime(date_string, current_format).strftime(target_format)
@@ -18,6 +18,9 @@ def format_date(date_string, current_format="%d/%m/%Y", target_format="%Y-%m-%d"
 
 @frappe.whitelist()
 def efris_invoice_sync():
+    # pulls every EFRIS company's URA invoices and submits them as Sales Invoices (daily job and
+    # the EFRIS invoice Sync button)
+    require_efris_admin()
     company_settings_list = get_company_settings()
     
     for company in company_settings_list:
@@ -290,10 +293,6 @@ def create_and_submit_einvoice(sales_invoice, invoice_data):
     einvoice.submit()
     return einvoice
 
-def get_customer_type(buyer_type):
-    return "Individual"
-
-@frappe.whitelist()
 def get_customer_type(buyer_type):
     efris_customer_type = ''
     if buyer_type == '0': 

@@ -8,9 +8,9 @@ from json import JSONEncoder
 from frappe.model.document import Document
 from datetime import datetime
 from uganda_compliance.efris.utils.utils import efris_log_info
-from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, require_efris_admin
 from uganda_compliance.efris.api_classes.e_invoice import EInvoiceAPI, decode_e_tax_rate, validate_company,check_credit_note_approval_status
-from uganda_compliance.efris.api_classes.stock_in import process_pending_efris_stock_entries
+from uganda_compliance.efris.api_classes import stock_in
 from uganda_compliance.efris.api_classes.efris_invoice_sync import efris_invoice_sync
 
 @frappe.whitelist()
@@ -18,22 +18,31 @@ def process_pending_efris_entries():
     """
     Function processes all Pending EFRIS Processes Like EFRIS Invoices, EFRIS Credit Notes, EFRIS Debit Notes, EFRIS Purchase Receipts, and EFRIS Stock Entries.
     """
+    require_efris_admin()
     synchronization_settings = get_e_company_settings()
     if not synchronization_settings:
         frappe.throw(_("E-Invoicing Settings not found. Please configure E-Invoicing Settings first."))
     if not validate_company(synchronization_settings.company):
         frappe.throw(_("Invalid Company in E-Invoicing Settings. Please check the company configuration."))
     try:
-        process_pending_efris_stock_entries()
+        stock_in.process_pending_efris_stock_entries()
         efris_log_info("Processing Pending EFRIS Entries", "EFRIS Synchronization Center")
  
     except Exception as e:        
         error_message = f"❌ EFRIS post failed for Stock Entry: {str(e)}"
         frappe.log_error(title=error_message[:140], message=frappe.get_traceback())
 
-import frappe
+@frappe.whitelist()
+def process_pending_efris_stock_entries():
+    """The page's "Send EFRIS Stock Entry" button. It used to call stock_in's function of the same
+    name directly (whitelisted there, so open to any user)."""
+    require_efris_admin()
+    return stock_in.process_pending_efris_stock_entries()
+
+
 @frappe.whitelist()
 def get_recent_efris_statuses():
+    require_efris_admin()
     stock_entries = frappe.db.sql("""
         SELECT
             se.name,
@@ -75,6 +84,7 @@ def get_recent_efris_statuses():
 
 @frappe.whitelist()
 def check_invoice_statuses():
+    require_efris_admin()
     invoices = frappe.get_all("Sales Invoice", filters={
         "docstatus": 1,
     }, fields=["name", "doctype", "posting_date", "efris_invoice"], limit=10)

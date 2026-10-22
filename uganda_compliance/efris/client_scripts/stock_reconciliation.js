@@ -49,15 +49,14 @@ function check_efris_stockin(frm, cdt, cdn) {
 
 
 function add_custom_buttons(frm) {
-    // Check if any item has efris_transfer == 1
-    const has_efris_items = (frm.doc.items || []).some(row => row.efris_reconcilliation);
-    // const has_efris_purchase = (frm.doc.items || []).some(row => row.efris_purchase_receipt_no);
+    // EFRIS lines not sent yet (a count sends decreases only; Stock Reconciliation has no
+    // efris_posted field, so the old check never showed the button)
+    const has_unsent_efris_items = (frm.doc.items || []).some(row =>
+        row.efris_reconcilliation && !row.efris_registered &&
+        (frm.doc.purpose === "Opening Stock" || row.quantity_difference < 0)
+    );
 
-    if (
-        frm.doc.docstatus === 1 &&
-        frm.doc.efris_posted === 0 &&
-        (frm.doc.purpose === "Stock Reconciliation" && has_efris_items
-    ) ){
+    if (frm.doc.docstatus === 1 && has_unsent_efris_items) {
         frm.add_custom_button(__('Submit To EFRIS'), async function() {
             frappe.confirm(
                 __('Are you sure you want to submit?'),
@@ -65,13 +64,13 @@ function add_custom_buttons(frm) {
                     // Yes callback
                     try {
                         const response = await frappe.call({
-                        method: 'uganda_compliance.efris.api_classes.stock_in.send_stock_entry',
-                        args: { doc: frm.doc },
+                        method: 'uganda_compliance.efris.api_classes.stock_in.submit_stock_in',
+                        args: { doctype: frm.doc.doctype, name: frm.doc.name },
                         freeze: true,
                         freeze_message: __('Submitting to EFRIS...')
                          });
                         if (response.message) {
-                            frappe.msgprint(__('Stock Entry submitted to EFRIS successfully.'));
+                            frappe.msgprint(__('Stock Reconciliation submitted to EFRIS successfully.'));
                             frm.reload_doc();
                         } else {
                             console.log(__('Failed to submit Stock Entry to EFRIS.'));

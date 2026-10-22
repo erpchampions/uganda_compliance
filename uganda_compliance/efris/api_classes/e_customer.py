@@ -2,7 +2,6 @@ import frappe
 from uganda_compliance.efris.utils.utils import efris_log_info
 from uganda_compliance.efris.api_classes.efris_api import make_post
 
-@frappe.whitelist()
 def before_save_query_customer(doc, method):
     sync_from_efris = doc.get('efris_sync')
     

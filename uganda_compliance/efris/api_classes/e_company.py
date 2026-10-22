@@ -1,10 +1,9 @@
 import frappe
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from uganda_compliance.efris.api_classes.efris_api import make_post
-from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, require_efris_admin
 
 
-@frappe.whitelist()
 def before_save_query_company(doc, method):
   
     if not doc.get('efris_company_sync'):
@@ -103,6 +102,8 @@ def create_or_update_address(doc, company_data):
 
 @frappe.whitelist()
 def check_efris_company(tax_id, company_name):
+    # queries URA (T119) with the company's EFRIS credentials
+    require_efris_admin()
     if tax_id:
         
         query_tax_details_T119 = {
