@@ -27,6 +27,8 @@ from frappe.model.naming import NamingSeries
 from frappe.utils import add_days, cint, getdate
 from frappe.utils.password import get_decrypted_password
 
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import is_offline_enabler
+
 MODES = ("Sandbox", "Production")
 DEFAULT_MAX_ATTEMPTS = 8
 
@@ -54,6 +56,11 @@ def get_missing_credentials(settings):
 		missing.append("TIN")
 	if not settings.device_no:
 		missing.append("Device No")
+	if is_offline_enabler(settings):
+		# the enabler holds the private key
+		if not settings.get("enabler_url"):
+			missing.append("Enabler URL")
+		return missing
 	if cint(settings.sandbox_mode):
 		if not settings.sandbox_private_key:
 			missing.append("Sandbox Private Key")
@@ -196,6 +203,7 @@ def get_efris_config(company, _extra=None):
 		"settings": s.name,
 		"enabled": bool(s.enabled),
 		"mode": "Sandbox" if cint(s.sandbox_mode) else "Production",
+		"connection_mode": s.connection_mode or "Online (URA)",
 		"tin": s.tin,
 		"device_no": s.device_no,
 		"auto_send": bool(s.auto_send_submitted_invoice),

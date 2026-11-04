@@ -3,7 +3,7 @@ import frappe
 import json
 from frappe import _
 from frappe.rate_limiter import rate_limit
-from uganda_compliance.efris.api_classes.efris_api import make_post
+from uganda_compliance.efris.api_classes.efris_api import EfrisAlreadyUploaded, is_already_uploaded, make_post
 from uganda_compliance.efris.inclusive_vat import line_figures
 from uganda_compliance.efris.utils.utils import efris_log_info, safe_load_json, efris_log_error
 from uganda_compliance.efris.api_classes.request_utils import get_ug_time_str
@@ -14,7 +14,7 @@ from frappe.utils.user import get_users_with_role
 from frappe.utils import flt
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
-from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_data_source, get_e_company_settings, get_mode_private_key_path,get_mode_post_url
 
 class EInvoiceAPI:
 	@staticmethod
@@ -139,7 +139,9 @@ class EInvoiceAPI:
 			efris_log_info(f"EFRIS Generated Successfully. :{einvoice}")
 			frappe.msgprint(_("EFRIS Generated Successfully."), alert=1)
 		else:
-			frappe.throw(response, title=_('EFRIS Generation Failed'))
+			# 2253: the queue looks the invoice up at URA instead of failing (efris_queue._submit_invoice)
+			exc = EfrisAlreadyUploaded if is_already_uploaded(response) else frappe.ValidationError
+			frappe.throw(response, exc=exc, title=_('EFRIS Generation Failed'))
 		
 		return status,response 
 
@@ -153,7 +155,7 @@ class EInvoiceAPI:
 			efris_qr_code = response["summary"]["qrCode"]
 			qrcode = get_qr_code(efris_qr_code)
 			invoice_datetime = datetime.strptime(response["basicInformation"]["issuedDate"], '%d/%m/%Y %H:%M:%S')
-			data_source = response["basicInformation"]["dataSource"] or "103"
+			data_source = response["basicInformation"].get("dataSource") or get_data_source(get_e_company_settings(einvoice.company))
 
 			einvoice.update({
 				'irn': irn,
@@ -352,7 +354,7 @@ def create_credit_note(einvoice, reason_code, remark):
 		"contactName": "",
 		"contactMobileNum": "",
 		"contactEmail": "",
-		"source": "103",
+		"source": get_data_source(get_e_company_settings(einvoice.company)),
 		"remarks": remark,
 		"sellersReferenceNo": einvoice.seller_reference_no,
 		"goodsDetails": create_goods_details(einvoice.items),
@@ -697,7 +699,7 @@ def initialize_credit_note(einvoice, irn, original_einvoice_id, reason, reason_c
 		"contactName": "",
 		"contactMobileNum": "",
 		"contactEmail": "",
-		"source": "103",
+		"source": get_data_source(get_e_company_settings(einvoice.company)),
 		"remarks": einvoice.remarks,
 		"sellersReferenceNo": einvoice.seller_reference_no
 	}

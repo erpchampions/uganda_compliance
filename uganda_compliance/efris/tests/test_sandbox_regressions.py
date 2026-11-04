@@ -127,11 +127,13 @@ class TestOneFailedLogPerRejection(EfrisTestCase):
 		return queued, direct
 
 	def test_rejected_invoice_writes_one_failed_log(self):
+		# any rejection except 2253, which now looks the invoice up (T106) before failing
+		# (test_connection_modes.TestAlreadyUploadedRecovery)
 		rejection = json.dumps(
 			{
 				"returnStateInfo": {
-					"returnCode": "2253",
-					"returnMessage": "Seller's Reference Number already issued",
+					"returnCode": "2122",
+					"returnMessage": "goodsCode does not exist",
 				}
 			}
 		)
@@ -139,7 +141,7 @@ class TestOneFailedLogPerRejection(EfrisTestCase):
 		self.assertEqual(len(queued) + len(direct), 1)
 		# the kept row is make_post's, which has the request and URA's full response
 		self.assertEqual(queued[0]["interface_code"], "T109")
-		self.assertIn("already issued", queued[0]["error_message"])
+		self.assertIn("goodsCode does not exist", queued[0]["error_message"])
 
 	def test_transport_error_still_logged_once_by_the_queue(self):
 		def refused(data, url):

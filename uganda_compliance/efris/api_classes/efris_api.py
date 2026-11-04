@@ -2,16 +2,48 @@ import frappe
 import json
 import base64
 from .encryption_utils import encrypt_aes_ecb, decrypt_aes_ecb, get_AES_key, get_private_key, sign_data
-from .request_utils import fetch_data, post_req
+from .request_utils import decode_plain_content, fetch_data, post_req
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
-from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings, get_mode_private_key_path,get_mode_post_url
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import (
+    get_e_company_settings,
+    get_enabler_access_token,
+    get_mode_private_key_path,
+    get_mode_post_url,
+    is_offline_enabler,
+)
 from ..utils.utils import efris_log_error
+
+RETURN_CODE_SUCCESS = "00"
+# URA/enabler: an invoice with this Seller Reference No. was already uploaded under the TIN
+RETURN_CODE_ALREADY_UPLOADED = "2253"
+
+
+class EfrisRejection(str):
+    """URA's (or the enabler's) returnMessage, as make_post has always returned it, carrying
+    returnCode too so callers can branch on the code instead of parsing the message."""
+
+    def __new__(cls, message, return_code=None):
+        obj = super().__new__(cls, message or "")
+        obj.return_code = str(return_code or "").strip()
+        return obj
+
+
+class EfrisAlreadyUploaded(frappe.ValidationError):
+    """T109 refused with 2253: the seller reference is taken at URA (maybe by our own lost attempt)."""
+
+
+def is_already_uploaded(response):
+    return getattr(response, "return_code", None) == RETURN_CODE_ALREADY_UPLOADED
 
 
 def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
     try:
         # Fetch company settings
         e_settings = get_e_company_settings(company_name)
+        if is_offline_enabler(e_settings):
+            # The enabler holds the key: no T104, no AES, no signing, private key never loaded.
+            return post_plain(interfaceCode, content, e_settings, reference_doc_type, reference_document)
+
         tin, device_no, private_key_path, sandbox_mode, brn,mode_post_url = (
             e_settings.tin,
             e_settings.device_no,
@@ -100,7 +132,7 @@ def send_request_and_handle_response(data_json, aes_key, mode_post_url, content,
                 interface_code=interface_code,
                 error_message=errorMsg,
             )
-            return False, errorMsg
+            return False, EfrisRejection(errorMsg, resp["returnStateInfo"].get("returnCode"))
 
         # Decrypt the response content
         respcontent = resp["data"]["content"]
@@ -123,3 +155,69 @@ def send_request_and_handle_response(data_json, aes_key, mode_post_url, content,
     except Exception as e:
         frappe.log_error(f"An error occurred while sending request and handling response: {e}")
         return False, str(e)
+
+
+def post_plain(interface_code, content, e_settings, reference_doc_type=None, reference_document=None):
+    """Unencrypted envelope: content = base64(JSON), no signature. Used for every call to the
+    Offline Enabler and for T101 (server time) in both modes. Returns (ok, response dict | message)."""
+    data = fetch_data()
+    data["globalInfo"].update(
+        {
+            "interfaceCode": interface_code,
+            "tin": e_settings.tin,
+            "deviceNo": e_settings.device_no,
+            "brn": e_settings.brn or "",
+        }
+    )
+    data["data"]["content"] = (
+        base64.b64encode(json.dumps(content).encode("utf-8")).decode("ascii") if content is not None else ""
+    )
+    data_json = json.dumps(data)
+
+    headers = {}
+    if is_offline_enabler(e_settings):
+        token = get_enabler_access_token(e_settings)
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+
+    try:
+        resp = json.loads(post_req(data_json, get_mode_post_url(e_settings), headers=headers))
+        return_info = resp.get("returnStateInfo") or {}
+        return_code = str(return_info.get("returnCode") or "").strip()
+        message = return_info.get("returnMessage") or ""
+        if return_code != RETURN_CODE_SUCCESS and message != "SUCCESS":
+            message = message or f"EFRIS return code {return_code or '(none)'}"
+            log_request_to_efris(
+                request_data=content,
+                request_full=data_json,
+                response_data={"error": message, "returnCode": return_code},
+                response_full=resp,
+                reference_doc_type=reference_doc_type,
+                reference_document=reference_document,
+                status="Failed",
+                interface_code=interface_code,
+                error_message=message,
+            )
+            return False, EfrisRejection(message, return_code)
+        response = decode_plain_content(resp.get("data"))
+    except Exception as e:
+        # transport errors, non-JSON bodies, bad base64/gzip: the caller retries (queue)
+        efris_log_error(f"EFRIS {interface_code} via {e_settings.get('connection_mode') or 'Online (URA)'} failed: {e}")
+        return False, str(e)
+
+    log_request_to_efris(
+        request_data=content,
+        request_full=data_json,
+        response_data=response,
+        response_full=resp,
+        reference_doc_type=reference_doc_type,
+        reference_document=reference_document,
+        status="Success",
+        interface_code=interface_code,
+    )
+    return True, response
+
+
+def get_server_time(company_name):
+    """T101 through the company's connection mode (no key needed in either mode)."""
+    return post_plain("T101", None, get_e_company_settings(company_name), "E Invoicing Settings", None)

@@ -13,6 +13,9 @@
   "device_no",
   "brn",
   "column_break_1",
+  "connection_mode",
+  "enabler_url",
+  "enabler_access_token",
   "sandbox_mode",
   "sandbox_private_key",
   "live_private_key",
@@ -101,25 +104,25 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.sandbox_mode == 1",
+   "depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (doc.sandbox_mode == 1)",
    "fieldname": "sandbox_private_key",
    "fieldtype": "Attach",
    "label": "Sandbox Private Key",
-   "mandatory_depends_on": "eval:doc.sandbox_mode == 1"
+   "mandatory_depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (doc.sandbox_mode == 1)"
   },
   {
-   "description": "Enter Device Number provided by URA after EFRIS registration.",
+   "description": "Online (URA): the device registered for this TIN. Offline Enabler: the enabler's TCS device number.",
    "fieldname": "device_no",
    "fieldtype": "Data",
    "label": "Device No",
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.sandbox_mode == 0",
+   "depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (doc.sandbox_mode == 0)",
    "fieldname": "live_private_key",
    "fieldtype": "Attach",
    "label": "Live Private Key",
-   "mandatory_depends_on": "eval:doc.sandbox_mode == 0"
+   "mandatory_depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (doc.sandbox_mode == 0)"
   },
   {
    "depends_on": "eval:doc.enabled == 1",
@@ -225,21 +228,21 @@
    "label": "Enable Integration Logging"
   },
   {
-   "depends_on": "eval:doc.sandbox_mode",
+   "depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (doc.sandbox_mode)",
    "description": "Enter the password for the private key file",
    "fieldname": "sandbox_private_key_password",
    "fieldtype": "Password",
    "label": "Sandbox Private Key Password",
-   "mandatory_depends_on": "eval:doc.sandbox_mode",
+   "mandatory_depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (doc.sandbox_mode)",
    "no_copy": 1
   },
   {
-   "depends_on": "eval:!doc.sandbox_mode",
+   "depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (!doc.sandbox_mode)",
    "description": "Enter the password for the private key file",
    "fieldname": "live_private_key_password",
    "fieldtype": "Password",
    "label": "Live Private Key Password",
-   "mandatory_depends_on": "eval:!doc.sandbox_mode",
+   "mandatory_depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (!doc.sandbox_mode)",
    "no_copy": 1
   },
   {
@@ -283,19 +286,19 @@
   },
   {
    "default": "https://efrisws.ura.go.ug/ws/taapp/getInformation",
-   "depends_on": "eval:!doc.sandbox_mode",
+   "depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (!doc.sandbox_mode)",
    "fieldname": "live_portal_url",
    "fieldtype": "Data",
    "label": "Live Portal URL",
-   "mandatory_depends_on": "eval:!doc.sandbox_mode"
+   "mandatory_depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (!doc.sandbox_mode)"
   },
   {
    "default": "https://efristest.ura.go.ug/efrisws/ws/taapp/getInformation",
-   "depends_on": "eval:doc.sandbox_mode",
+   "depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (doc.sandbox_mode)",
    "fieldname": "sandbox_portal_url",
    "fieldtype": "Data",
    "label": "SandBox Portal URL",
-   "mandatory_depends_on": "eval:doc.sandbox_mode"
+   "mandatory_depends_on": "eval:doc.connection_mode != 'Offline Enabler' && (doc.sandbox_mode)"
   },
   {
    "default": "Background",
@@ -319,10 +322,33 @@
    "fieldtype": "Data",
    "label": "Seller Reference Prefix",
    "length": 10
+  },
+  {
+   "default": "Online (URA)",
+   "description": "Online (URA): ERPNext signs and sends to URA directly. Offline Enabler: ERPNext sends to the URA Offline-Mode Enabler, which holds the key and syncs with URA.",
+   "fieldname": "connection_mode",
+   "fieldtype": "Select",
+   "label": "Connection Mode",
+   "options": "Online (URA)\nOffline Enabler"
+  },
+  {
+   "depends_on": "eval:doc.connection_mode == 'Offline Enabler'",
+   "description": "e.g. http://192.0.2.10:9880/efristcs/ws/tcsapp/getInformation",
+   "fieldname": "enabler_url",
+   "fieldtype": "Data",
+   "label": "Enabler URL",
+   "mandatory_depends_on": "eval:doc.enabled && doc.connection_mode == 'Offline Enabler'"
+  },
+  {
+   "depends_on": "eval:doc.connection_mode == 'Offline Enabler'",
+   "description": "Optional. Sent as 'Authorization: Bearer' when the enabler sits behind an authenticated tunnel (https only).",
+   "fieldname": "enabler_access_token",
+   "fieldtype": "Password",
+   "label": "Enabler Access Token"
   }
  ],
  "links": [],
- "modified": "2026-09-28 01:10:00.000000",
+ "modified": "2026-11-04 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "EFRIS",
  "name": "E Invoicing Settings",

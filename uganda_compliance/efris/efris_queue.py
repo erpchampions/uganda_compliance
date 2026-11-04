@@ -34,6 +34,7 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import add_days, cint, flt, get_datetime, get_system_timezone, getdate, now_datetime
 
 from uganda_compliance.efris.api_classes import e_invoice as e_invoice_api
+from uganda_compliance.efris.api_classes.efris_api import EfrisAlreadyUploaded
 from uganda_compliance.efris.utils.utils import efris_log_info
 
 SUPPORTED_DOCTYPES = ("Sales Invoice", "POS Invoice")
@@ -67,7 +68,8 @@ REFERENCE_LOOKUP_PAGE_SIZE = 10
 REFERENCE_LOOKUP_MAX_PAGES = 5
 # A reference found at URA for another invoice moves to "<reference>-R<n>"
 MAX_REFERENCE_BUMPS = 5
-# URA's T109 answer when the Seller Reference No. was already used under the TIN
+# URA's T109 answer when the Seller Reference No. was already used under the TIN. Return code
+# 2253 (EfrisAlreadyUploaded) is the primary signal; the message is matched for answers without it.
 DUPLICATE_REFERENCE_ERROR = re.compile(r"same seller'?s reference number.*already been issued", re.I | re.S)
 
 JOB_QUEUE = "default"
@@ -457,8 +459,9 @@ def _ura_failure_already_logged(doc):
 def _submit_invoice(doc, settings):
 	"""T109. ``EInvoiceAPI.generate_irn`` throws on any URA/transport error.
 
-	When URA answers that the Seller Reference No. was already issued (a tenant
-	restored from backup reuses invoice names URA has fiscalised), the reference is
+	When URA (or the Offline Enabler) answers that the Seller Reference No. was already
+	issued (2253: our own earlier attempt whose answer was lost, or a tenant restored
+	from backup reusing invoice names URA has fiscalised), the reference is
 	looked up: our own earlier attempt is adopted, another invoice's moves this
 	invoice to the next free reference, which is sent once more.
 	"""
@@ -467,7 +470,7 @@ def _submit_invoice(doc, settings):
 	try:
 		e_invoice_api.EInvoiceAPI.generate_irn(frappe.as_json(doc))
 	except frappe.ValidationError as e:
-		if not DUPLICATE_REFERENCE_ERROR.search(str(e)):
+		if not (isinstance(e, EfrisAlreadyUploaded) or DUPLICATE_REFERENCE_ERROR.search(str(e))):
 			raise
 		frappe.db.rollback(save_point="efris_submission")
 		frappe.clear_last_message()

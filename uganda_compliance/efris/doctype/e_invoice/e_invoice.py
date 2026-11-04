@@ -10,7 +10,7 @@ from json import JSONEncoder
 from frappe.model.document import Document
 from datetime import datetime
 from uganda_compliance.efris.utils.utils import efris_log_info
-from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
+from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_data_source, get_e_company_settings
 from uganda_compliance.efris.api_classes.e_invoice import EInvoiceAPI, decode_e_tax_rate, validate_company,get_efris_item_pack_and_stick
 from uganda_compliance.efris.inclusive_vat import line_figures
 
@@ -142,7 +142,8 @@ class EInvoice(Document):
         self.invoiceNo = ""
         self.antifakeCode = ""
 
-        self.device_no = get_e_company_settings(self.company).device_no
+        e_settings = get_e_company_settings(self.company)
+        self.device_no = e_settings.device_no
 
         self.issuedDate = self.sales_invoice.creation
         self.operator = self.sales_invoice.modified_by
@@ -150,7 +151,7 @@ class EInvoice(Document):
         self.oriInvoiceId = ""
         self.invoiceType = self.set_invoice_type()
         self.invoiceKind = 1
-        self.dataSource = 103
+        self.dataSource = get_data_source(e_settings)
         # self.invoiceIndustryCode = 101
         self.isBatch = 0
         self.is_return = self.sales_invoice.is_return,

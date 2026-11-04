@@ -3,7 +3,9 @@ from frappe.model.document import Document
 from frappe import _
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 
-from frappe.utils.password import get_decrypted_password, set_encrypted_password    
+from frappe.rate_limiter import rate_limit
+from frappe.utils import validate_url
+from frappe.utils.password import get_decrypted_password, set_encrypted_password
 
 
 class _RequestScopedCache:
@@ -114,12 +116,59 @@ def get_mode_private_key_path(e_settings):
 def get_mode_post_url(e_settings):
     
     if e_settings.enabled:
+        if is_offline_enabler(e_settings):
+            return e_settings.enabler_url
         if e_settings.sandbox_mode:
             return e_settings.sandbox_portal_url
         else:
             return e_settings.live_portal_url
     else:
         frappe.throw("E Invoicing Settings are disabled")
+
+
+ONLINE_URA = "Online (URA)"
+OFFLINE_ENABLER = "Offline Enabler"
+# basicInformation.dataSource / T110 source (URA code list)
+DATA_SOURCE_WEB_SERVICE = "103"
+DATA_SOURCE_OFFLINE_ENABLER = "106"
+
+
+def is_offline_enabler(e_settings):
+    """Connection mode is the single switch for the transport (efris_api.make_post), the URL
+    (get_mode_post_url) and the data source. Anything else (incl. empty) is Online (URA)."""
+    return e_settings.get("connection_mode") == OFFLINE_ENABLER
+
+
+def get_data_source(e_settings):
+    return DATA_SOURCE_OFFLINE_ENABLER if is_offline_enabler(e_settings) else DATA_SOURCE_WEB_SERVICE
+
+
+def get_enabler_access_token(e_settings):
+    return get_decrypted_password(
+        "E Invoicing Settings", e_settings.name, "enabler_access_token", raise_exception=False
+    )
+
+
+TEST_CONNECTION_ROLES = ("System Manager", "Accounts Manager")
+
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=10, seconds=60)
+def test_connection(company):
+    """Test Connection button: T101 (URA server time) through the company's connection mode."""
+    if not set(TEST_CONNECTION_ROLES) & set(frappe.get_roles()):
+        frappe.throw(_("Only a System Manager or Accounts Manager can test the EFRIS connection"), frappe.PermissionError)
+    frappe.has_permission("Company", "read", company, throw=True)
+
+    from uganda_compliance.efris.api_classes.efris_api import get_server_time
+
+    e_settings = get_e_company_settings(company)
+    ok, response = get_server_time(company)
+    return {
+        "ok": bool(ok),
+        "mode": e_settings.get("connection_mode") or ONLINE_URA,
+        "message": response.get("currentTime") if ok and isinstance(response, dict) else str(response),
+    }
 
 # Fields safe to return to browser clients (no key paths, passwords or portal URLs).
 CLIENT_SAFE_SETTINGS_FIELDS = (
@@ -187,7 +236,24 @@ class EInvoicingSettings(Document):
         """
         if not self.seller_reference_prefix:
             self.seller_reference_prefix = frappe.generate_hash(length=5).upper()
+        self.validate_enabler()
         self.create_tax_templates()
+
+    def validate_enabler(self):
+        if not is_offline_enabler(self):
+            return
+        if self.enabled and not self.enabler_url:
+            frappe.throw(_("Enabler URL is required in Offline Enabler mode"))
+        if self.enabler_url and not validate_url(self.enabler_url, valid_schemes=["http", "https"]):
+            frappe.throw(_("Enabler URL must be an http(s) URL"))
+        if (
+            self.enabler_url
+            and not self.enabler_url.lower().startswith("https://")
+            # new value, or the "***" mask of a stored one; empty = being removed by this save
+            and self.enabler_access_token
+        ):
+            # the token would cross the network in clear text
+            frappe.throw(_("An Enabler Access Token needs an https Enabler URL"))
 
     def create_tax_templates(self):
         """

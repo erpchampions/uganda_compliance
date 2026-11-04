@@ -64,6 +64,7 @@ def ensure_settings(company, max_attempts=3):
 			"company": company,
 			"enabled": 1,
 			"sandbox_mode": 1,
+			"connection_mode": "Online (URA)",
 			"tin": TEST_TIN,
 			"device_no": TEST_DEVICE,
 			"auto_send_submitted_invoice": 1,

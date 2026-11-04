@@ -1,5 +1,7 @@
+import base64
 import json
 import logging
+import zlib
 import requests
 import uuid
 from datetime import datetime
@@ -28,15 +30,15 @@ def fetch_data():
         "globalInfo": {
             "appId": "AP04",
             "version": "1.1.20191201",
-            "dataExchangeId": "9230489223014123",
+            "dataExchangeId": guidv4(),
             "interfaceCode": "T101",
             "requestTime": now,
             "requestCode": "TP",
             "responseCode": "TA",
             "userName": "admin",
             "deviceMAC": "FFFFFFFFFFFF",
-            "deviceNo": "1017460267_01",
-            "tin": "1017460267",
+            "deviceNo": "",
+            "tin": "",
             "brn": "",
             "taxpayerID": "1",
             "longitude": "116.397128",
@@ -58,7 +60,7 @@ def guidv4():
     my_uuid_str_32 = my_uuid_str.replace("-", "")
     return my_uuid_str_32
 
-def post_req(data, mode_post_url):
+def post_req(data, mode_post_url, headers=None):
     if not mode_post_url:
         # Previously this fell back to a leftover module-global `url`, which
         # either raised NameError or silently posted to a stale URL from an
@@ -74,7 +76,7 @@ def post_req(data, mode_post_url):
     http_logger = frappe.logger("uganda_compliance.efris_http", allow_site=True)
     http_logger.setLevel(logging.INFO)
     http_logger.info(f"EFRIS POST {interface_code} -> {mode_post_url}")
-    headers = {"Content-Type": "application/json"}
+    headers = {"Content-Type": "application/json", **(headers or {})}
 
     try:
         response = requests.post(
@@ -101,3 +103,15 @@ def get_ug_time_str():
     uganda_time = now.astimezone(pytz.timezone(ug_time_zone))
     uganda_time_str = uganda_time.strftime("%Y-%m-%d %H:%M:%S")
     return uganda_time_str
+
+
+def decode_plain_content(data):
+    """``data`` block of an unencrypted EFRIS response (URA T101, Offline Enabler): content is
+    base64(JSON), gzip-compressed first when dataDescription.zipCode is "1". Empty content -> {}."""
+    content = (data or {}).get("content")
+    if not content:
+        return {}
+    raw = base64.b64decode(content)
+    if str((data.get("dataDescription") or {}).get("zipCode")) == "1":
+        raw = zlib.decompress(raw, 32 + zlib.MAX_WBITS)  # gzip (or zlib) header auto-detected
+    return json.loads(raw.decode("utf-8"))
