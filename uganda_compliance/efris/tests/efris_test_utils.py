@@ -12,6 +12,7 @@ TEST_DEVICE = "1000000001_01"
 TEST_CUSTOMER = "Nakato Walk-in (EFRIS Test)"
 TEST_ITEM = "EFRIS-TEST-SUGAR-1KG"
 TEST_UOM = "Nos"
+TEST_SELLER_EMAIL = "efris-seller@example.com"
 TEST_COMMODITY = None  # picked from the EFRIS Commodity Code fixture
 
 
@@ -81,7 +82,7 @@ def ensure_settings(company, max_attempts=3):
 def ensure_masters(company):
 	global TEST_COMMODITY
 	abbr = _abbr(company)
-	frappe.db.set_value("Company", company, "tax_id", TEST_TIN)
+	frappe.db.set_value("Company", company, {"tax_id": TEST_TIN, "email": TEST_SELLER_EMAIL})
 	frappe.db.set_value("UOM", TEST_UOM, "efris_uom_code", "101")
 
 	TEST_COMMODITY = frappe.get_all("EFRIS Commodity Code", pluck="name", limit=1, order_by="name")[0]

@@ -61,7 +61,7 @@ jinja = {
 # ------------
 
 # before_install = "uganda_compliance.install.before_install"
-# after_install = "uganda_compliance.install.after_install"
+after_install = "uganda_compliance.install.after_install"
 
 
 # Uninstallation

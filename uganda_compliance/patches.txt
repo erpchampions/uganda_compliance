@@ -1,3 +1,4 @@
 uganda_compliance.patches.restore_erpnext_tax_category
 uganda_compliance.patches.efris_receipt_momo_txn_id
 uganda_compliance.patches.efris_receipt_momo_merchant_codes
+uganda_compliance.patches.backfill_efris_codes

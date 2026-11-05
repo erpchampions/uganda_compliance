@@ -1,6 +1,7 @@
 import frappe
 import json
 import base64
+import zlib
 from .encryption_utils import encrypt_aes_ecb, decrypt_aes_ecb, get_AES_key, get_private_key, sign_data
 from .request_utils import decode_plain_content, fetch_data, post_req
 from uganda_compliance.efris.doctype.e_invoice_request_log.e_invoice_request_log import log_request_to_efris
@@ -34,6 +35,34 @@ class EfrisAlreadyUploaded(frappe.ValidationError):
 
 def is_already_uploaded(response):
     return getattr(response, "return_code", None) == RETURN_CODE_ALREADY_UPLOADED
+
+
+def with_rejection_details(message, data, aes_key=None):
+    """URA's top-level message for a rejected batch call (T130 "Partial failure!") hides the
+    reason: it is per row, inside ``data.content``. Append each failed row's returnMessage.
+    ``content`` is AES-encrypted when dataDescription.encryptCode is "2" (Online), else plain."""
+    content = (data or {}).get("content")
+    if not content:
+        return message
+    try:
+        if aes_key and str((data.get("dataDescription") or {}).get("encryptCode")) == "2":
+            decoded = json.loads(decrypt_aes_ecb(aes_key, content))
+        else:
+            decoded = decode_plain_content(data)
+    except (ValueError, TypeError, IndexError, zlib.error):
+        # unreadable content: URA's own message is all we have
+        return message
+    rows = decoded if isinstance(decoded, list) else [decoded]
+    reasons = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        code = str(row.get("returnCode") or "").strip()
+        reason = row.get("returnMessage")
+        if reason and reason != "SUCCESS" and code != RETURN_CODE_SUCCESS:
+            label = row.get("goodsCode") or row.get("referenceNo")
+            reasons.append(f"{label}: {reason}" if label else reason)
+    return f"{message} {'; '.join(reasons)}" if reasons else message
 
 
 def make_post(interfaceCode, content, company_name, reference_doc_type=None, reference_document=None):
@@ -121,6 +150,7 @@ def send_request_and_handle_response(data_json, aes_key, mode_post_url, content,
 
         errorMsg = resp["returnStateInfo"]["returnMessage"]
         if errorMsg != "SUCCESS":
+            errorMsg = with_rejection_details(errorMsg, resp.get("data"), aes_key)
             log_request_to_efris(
                 request_data=content,
                 request_full=data_json,
@@ -186,7 +216,9 @@ def post_plain(interface_code, content, e_settings, reference_doc_type=None, ref
         return_code = str(return_info.get("returnCode") or "").strip()
         message = return_info.get("returnMessage") or ""
         if return_code != RETURN_CODE_SUCCESS and message != "SUCCESS":
-            message = message or f"EFRIS return code {return_code or '(none)'}"
+            message = with_rejection_details(
+                message or f"EFRIS return code {return_code or '(none)'}", resp.get("data")
+            )
             log_request_to_efris(
                 request_data=content,
                 request_full=data_json,

@@ -287,7 +287,10 @@ class EInvoice(Document):
     def set_seller_details(self):
         company_address = self.sales_invoice.company_address
 
-        self.seller_email = self.sales_invoice.efris_seller_email
+        # invoices saved before Company ▸ Email was set carry none; a retry must not resend it empty
+        self.seller_email = self.sales_invoice.efris_seller_email or frappe.db.get_value(
+            'Company', self.sales_invoice.company, 'email'
+        )
         if company_address:
             seller_address = frappe.get_all('Address', {'name': company_address}, ['*'])[0]
             self.seller_phone = seller_address.phone

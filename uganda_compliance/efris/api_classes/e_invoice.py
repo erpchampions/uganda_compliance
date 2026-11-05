@@ -1150,27 +1150,35 @@ def Sales_invoice_is_efris_validation(doc, method):
 			validate_efris_warehouse(doc)        
 		else:
 			set_efris_based_on_items(doc, items)
+		if doc.get("efris_invoice"):
+			set_efris_seller_email(doc)
 	
 	except Exception as e:
 		frappe.throw(f"Sales Invoice EFRIS Validation Failed: {str(e)}")
 
 
 def validate_efris_warehouse(doc):
-	"""Validate EFRIS warehouse settings."""
-	set_warehouse = doc.get("set_warehouse")
-	target_warehouse = set_warehouse or next(
-		(item.get('warehouse') for item in doc.get('items', []) if item.get('warehouse')),
-		None
-	)
-	
-	if target_warehouse:
-		is_efris_warehouse = frappe.db.get_value(
-			"Warehouse", {"name": target_warehouse}, "efris_warehouse"
+	"""Every stock row must leave an EFRIS warehouse. Services (non-stock rows) move no stock,
+	even when ERPNext fills in a default warehouse for them."""
+	for item in doc.get("items", []):
+		if not frappe.db.get_value("Item", item.get("item_code"), "is_stock_item"):
+			continue
+		warehouse = item.get("warehouse") or doc.get("set_warehouse")
+		if not (warehouse and frappe.db.get_value("Warehouse", warehouse, "efris_warehouse")):
+			frappe.throw(f"Warehouse {warehouse} must be an EFRIS Warehouse")
+
+
+def set_efris_seller_email(doc):
+	"""URA rejects an invoice without sellerDetails.emailAddress. The field is fetched from
+	Company ▸ Email, which a new site leaves empty: fill it, or stop before URA is called."""
+	if not doc.get("efris_seller_email"):
+		doc.efris_seller_email = frappe.db.get_value("Company", doc.get("company"), "email")
+	if not doc.efris_seller_email:
+		frappe.throw(
+			_("Set an Email on Company {0}: EFRIS needs the seller's email on every invoice.").format(
+				doc.get("company")
+			)
 		)
-		efris_log_info(f"The EFRIS Warehouse Flag for {target_warehouse} is {is_efris_warehouse}")
-		
-		if not is_efris_warehouse:
-			frappe.throw(f"Warehouse {target_warehouse} must be an EFRIS Warehouse")
 
 
 def set_efris_based_on_items(doc, items):
