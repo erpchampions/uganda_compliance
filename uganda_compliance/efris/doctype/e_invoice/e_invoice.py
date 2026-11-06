@@ -309,6 +309,8 @@ class EInvoice(Document):
         self.seller_legal_name = self.company
         company = frappe.get_doc('Company', {'name': self.seller_legal_name})
         self.seller_nin_or_brn  = company.efris_nin_or_brn
+        # a new company has no Address yet; the setup wizard stores the phone on the Company
+        self.seller_phone = self.get('seller_phone') or company.phone_no
 
         self.seller_gstin = getattr(self.sales_invoice, 'company_tax_id', None) or company.tax_id
 

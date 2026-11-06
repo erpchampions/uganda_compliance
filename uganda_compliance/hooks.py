@@ -63,6 +63,9 @@ jinja = {
 # before_install = "uganda_compliance.install.before_install"
 after_install = "uganda_compliance.install.after_install"
 
+setup_wizard_requires = "assets/uganda_compliance/js/setup_wizard.js"
+setup_wizard_stages = "uganda_compliance.efris.setup_wizard.get_setup_stages"
+
 
 # Uninstallation
 # ------------

@@ -25,7 +25,9 @@ def backfill_efris_codes():
 			rows = json.load(f)
 		for row in rows:
 			code = row.get(field)
-			if code and frappe.db.exists(doctype, row["name"]) and not frappe.db.get_value(
-				doctype, row["name"], field
+			if (
+				code
+				and frappe.db.exists(doctype, row["name"])
+				and not frappe.db.get_value(doctype, row["name"], field)
 			):
 				frappe.db.set_value(doctype, row["name"], field, code, update_modified=False)

@@ -175,3 +175,16 @@ class TestEfrisCodesOnNewSite(EfrisTestCase):
 		self.assertEqual(frappe.db.get_value("Currency", "UGX", "efris_currency_code"), "101")
 		# a code the site already has is never overwritten
 		self.assertEqual(frappe.db.get_value("Currency", "USD", "efris_currency_code"), "999")
+
+
+class TestSellerPhone(EfrisTestCase):
+	def tearDown(self):
+		frappe.db.set_value("Company", self.company, "phone_no", None)
+
+	def test_seller_phone_comes_from_company_when_it_has_no_address(self):
+		frappe.db.set_value("Company", self.company, "phone_no", "+256700000001")
+		with fake_ura() as ura:
+			inv = make_pos_invoice(self.ctx, company_address=None)
+			run_queued(ura, only=inv)
+		seller = ura.calls_for("T109")[0]["content"]["sellerDetails"]
+		self.assertEqual(seller["mobilePhone"], "+256700000001")
