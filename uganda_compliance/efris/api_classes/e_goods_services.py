@@ -1,4 +1,5 @@
 import frappe
+from frappe.utils import cstr
 from uganda_compliance.efris.utils.utils import efris_log_info, efris_log_error
 from uganda_compliance.efris.api_classes.efris_api import make_post
 from uganda_compliance.efris.doctype.e_invoicing_settings.e_invoicing_settings import get_e_company_settings
@@ -76,6 +77,10 @@ def after_save_item(doc, method = None):
         efris_log_info("Skipping EFRIS Item Upload as Auto Send Submitted Invoice is disabled.")
         return
 
+    if is_registered_item and method != "manual_submit" and not efris_goods_changed(doc):
+        efris_log_info(f"Item {doc.name}: nothing URA holds changed, not uploading it again")
+        return
+
     has_opening_stock = doc.get("opening_stock",0)
     efris_log_info(f"The Opening Stock Quantity is {has_opening_stock}")
     if has_opening_stock:
@@ -91,6 +96,40 @@ def after_save_item(doc, method = None):
             upload_new_item(doc, method, e_company)
     else:
         update_existing_item(doc, method, e_company)
+
+# What URA holds for a good (T130): its name, codes, currency and each EFRIS unit with its price.
+# A save that changes none of these (a photo, a barcode, the item group) is not sent again.
+EFRIS_GOODS_FIELDS = (
+    "item_name", "efris_item", "efris_e_company", "efris_product_code", "efris_currency",
+    "efris_commodity_code", "efris_has_multiple_uom", "standard_rate",
+)
+EFRIS_UOM_FIELDS = (
+    "uom", "conversion_factor", "efris_uom", "efris_package_unit", "efris_is_piece_unit",
+    "efris_package_scale_value", "efris_unit_price",
+)
+
+
+def efris_goods_changed(doc):
+    before = doc.get_doc_before_save()
+    if not before:
+        return True
+
+    def norm(value):
+        # numbers and numeric text alike: a Data field reads back "1" where validate set 1
+        if value is None or value == "":
+            return 0.0
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return cstr(value)
+
+    def units(d):
+        return sorted(tuple(norm(row.get(f)) for f in EFRIS_UOM_FIELDS) for row in d.get("uoms") or [])
+
+    if any(norm(before.get(f)) != norm(doc.get(f)) for f in EFRIS_GOODS_FIELDS):
+        return True
+    return units(before) != units(doc)
+
 
 def query_item_before_post(doc):
     e_company = doc.get('efris_e_company', '')

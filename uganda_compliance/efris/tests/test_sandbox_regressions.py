@@ -47,6 +47,37 @@ class TestSandboxRegressions(EfrisTestCase):
 			e_goods_services.upload_item_to_efris(item, self.company, [{}])
 		self.assertEqual(frappe.db.get_value("Item", TEST_ITEM, "efris_registered"), 1)
 
+	def test_registered_item_goes_to_ura_only_when_its_goods_details_change(self):
+		# regression: every save of an EFRIS item re-sent it to URA (T130), so a new barcode or
+		# photo failed whenever URA was unreachable
+		from uganda_compliance.efris.api_classes import e_goods_services
+
+		currency = frappe.get_cached_value("Company", self.company, "default_currency")
+		frappe.db.set_value(
+			"Item",
+			TEST_ITEM,
+			{"efris_registered": 1, "efris_e_company": self.company, "efris_currency": currency},
+			update_modified=False,
+		)
+		calls = []
+		with patch.object(e_goods_services, "make_post", lambda **kw: calls.append(kw) or (True, {})):
+			item = frappe.get_doc("Item", TEST_ITEM)
+			item.standard_rate = 5900
+			item.flags.ignore_mandatory = True
+			item.save(ignore_permissions=True)  # first save sets the EFRIS unit: sent
+			sent = len(calls)
+			item = frappe.get_doc("Item", TEST_ITEM)
+			item.description = "Sugar, brown, 1 kg bag"
+			item.append("barcodes", {"barcode": "6001001000963"})
+			item.flags.ignore_mandatory = True
+			item.save(ignore_permissions=True)
+			self.assertEqual(len(calls), sent)
+			item.standard_rate = 6100
+			item.save(ignore_permissions=True)
+		self.assertEqual(len(calls), sent + 1)
+		self.assertEqual(calls[-1]["interfaceCode"], "T130")
+		self.assertEqual(float(calls[-1]["content"][0]["unitPrice"]), 6100)
+
 	def test_ugx_exchange_rate_query_does_not_call_ura(self):
 		# regression: `if e_company == 'UGX'` never matched, so UGX documents called URA T121
 		from uganda_compliance.efris.api_classes import stock_in
