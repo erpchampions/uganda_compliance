@@ -455,6 +455,7 @@ def create_payment_details(einvoice):
 	payment_code_map = {
 		"Credit": "101",
 		"Cash": "102",
+		"Loyalty Points": "102",
 		"Cheque": "103",
 		"Demand draft": "104",
 		"Mobile money": "105",
@@ -745,7 +746,7 @@ def get_buyer_details(einvoice):
 
 def get_payment_details(einvoice):
 	payment_code_map = {
-		"Credit": "101", "Cash": "102", "Cheque": "103", "Demand draft": "104",
+		"Credit": "101", "Cash": "102", "Loyalty Points": "102", "Cheque": "103", "Demand draft": "104",
 		"Mobile money": "105", "Visa/Master card": "106", "EFT": "107",
 		"POS": "108", "RTGS": "109", "Swift transfer": "110"
 	}

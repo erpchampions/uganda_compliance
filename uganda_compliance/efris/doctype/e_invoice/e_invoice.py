@@ -16,6 +16,9 @@ from uganda_compliance.efris.inclusive_vat import line_figures
 
 CONST_EFRIS_PAYMENT_MODE_CREDIT = "Credit"
 CONST_EFRIS_PAYMENT_MODE_CREDIT_CODE = "101"
+# Loyalty points paid part of the sale: URA has no code for points, so they go as cash.
+CONST_EFRIS_PAYMENT_MODE_LOYALTY = "Loyalty Points"
+CONST_EFRIS_PAYMENT_MODE_CASH_CODE = "102"
 
 
 class DateTimeEncoder(JSONEncoder):
@@ -269,6 +272,14 @@ class EInvoice(Document):
             )
             self.append('e_payments', e_payments)
             self.paid_amount = total_payment
+        # points pay like cash (ERPNext keeps them out of the payments table)
+        loyalty_amount = self.sales_invoice.get("loyalty_amount") or 0.0
+        if (not self.sales_invoice.is_return and self.sales_invoice.get("redeem_loyalty_points")
+                and loyalty_amount > 0):
+            self.append('e_payments', frappe._dict({
+                "amount": loyalty_amount,
+                "mode_of_payment": CONST_EFRIS_PAYMENT_MODE_LOYALTY,
+            }))
         self.credit_amount = credit
         # Add "Credit" line if credit amount exists
         if abs(credit) > 0:
@@ -685,7 +696,9 @@ class EInvoice(Document):
 
             if float(row.amount) == 0.0:
                 continue
-            if mode_of_payment and mode_of_payment != CONST_EFRIS_PAYMENT_MODE_CREDIT and row.amount > 0:
+            if mode_of_payment == CONST_EFRIS_PAYMENT_MODE_LOYALTY:
+                payment_code = CONST_EFRIS_PAYMENT_MODE_CASH_CODE
+            elif mode_of_payment and mode_of_payment != CONST_EFRIS_PAYMENT_MODE_CREDIT and row.amount > 0:
                 efris_payment_mode  = frappe.db.get_value('Mode of Payment',{'name':mode_of_payment},'efris_payment_mode')
                 if not efris_payment_mode:
                     frappe.throw(f"EFRIS Mode of Payment must be configured on Payment Mode: {mode_of_payment}")
